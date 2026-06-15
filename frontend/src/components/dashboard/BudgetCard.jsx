@@ -6,11 +6,14 @@
  *   pinned: boolean
  *   onPin: fn()
  *
- * Comportamiento:
- *   - Barra de progreso: % consumido, color por nivel de riesgo
- *   - Línea punteada: pct_esperado_hoy (posición histórica esperada)
- *   - Badge de riesgo o badge de vencimiento (para fijo_unico)
- *   - Botón pin: visible en hover o cuando está pinneado
+ * niveles de riesgo soportados:
+ *   critico | alto | ok | fijo | sin_datos
+ *
+ *   sin_datos: primer mes, sin velocidad histórica.
+ *     - Barra en gris neutro
+ *     - Sin línea punteada
+ *     - Badge: "⏳ Acumulando datos"
+ *     - Proyección igual a vel_actual * dias_totales
  */
 import { useState } from 'react'
 import { formatCOP, nivelRiesgoMeta } from '../../hooks/useDashboard'
@@ -19,8 +22,11 @@ export default function BudgetCard({ item, pinned, onPin }) {
   const [hover, setHover] = useState(false)
   const meta = nivelRiesgoMeta(item.nivel_riesgo)
   const pctBar = Math.min(item.pct_consumido * 100, 100).toFixed(0)
-  const pctProj = (item.pct_esperado_hoy * 100).toFixed(0)
+  const pctProj = item.pct_esperado_hoy != null
+    ? (item.pct_esperado_hoy * 100).toFixed(0)
+    : null
   const overBudget = item.pct_consumido > 1
+  const sinHistorico = item.nivel_riesgo === 'sin_datos'
 
   const diasParaVencer = item.proximo_vencimiento
     ? Math.ceil((new Date(item.proximo_vencimiento) - new Date()) / 86_400_000)
@@ -73,11 +79,12 @@ export default function BudgetCard({ item, pinned, onPin }) {
           aria-valuemin={0}
           aria-valuemax={100}
         />
-        {item.nivel_riesgo !== 'fijo' && (
+        {/* Línea punteada: solo si hay histórico y no es fijo */}
+        {pctProj != null && item.nivel_riesgo !== 'fijo' && (
           <div
             className="progress-proj"
             style={{ left: `${pctProj}%` }}
-            title={`Esperado a hoy: ${pctProj}%`}
+            title={`Esperado a hoy según histórico: ${pctProj}%`}
           />
         )}
       </div>
@@ -90,7 +97,11 @@ export default function BudgetCard({ item, pinned, onPin }) {
         </div>
         <div className="bc-num-item">
           <div className="bc-num-label">Gastado hoy</div>
-          <div className={`bc-num-value ${item.nivel_riesgo === 'critico' ? 'over' : item.nivel_riesgo === 'alto' ? 'warn' : ''}`}>
+          <div className={`bc-num-value ${
+            item.nivel_riesgo === 'critico' ? 'over'
+            : item.nivel_riesgo === 'alto' ? 'warn'
+            : ''
+          }`}>
             {formatCOP(item.gasto_acumulado)}
           </div>
         </div>
@@ -102,20 +113,24 @@ export default function BudgetCard({ item, pinned, onPin }) {
         </div>
       </div>
 
-      {/* Badge de riesgo o badge de vencimiento */}
+      {/* Badge: riesgo | vencimiento | sin datos */}
       {item.nivel_riesgo === 'fijo' ? (
-        <div className={`risk-badge risk-fijo`}>
+        <div className="risk-badge risk-fijo">
           📅 Pago único · vence {diasParaVencer != null ? `en ${diasParaVencer} días` : item.proximo_vencimiento}
         </div>
+      ) : sinHistorico ? (
+        <div className="risk-badge risk-sin-datos">
+          ⏳ Acumulando datos históricos
+        </div>
       ) : (
-        <div className={`risk-badge ${meta.colorClass}`}>
+        <div className={`risk-badge ${meta.badgeClass}`}>
           {item.nivel_riesgo === 'critico' && '🔥'}
-          {item.nivel_riesgo === 'alto' && '📈'}
-          {item.nivel_riesgo === 'ok' && '✓'}
+          {item.nivel_riesgo === 'alto'    && '📈'}
+          {item.nivel_riesgo === 'ok'      && '✓'}
           {' '}
           {item.nivel_riesgo === 'critico' && `Ritmo ${Math.round((item.ratio_riesgo - 1) * 100)}% mayor al histórico`}
-          {item.nivel_riesgo === 'alto' && `${Math.round((item.ratio_riesgo - 1) * 100)}% sobre ritmo histórico`}
-          {item.nivel_riesgo === 'ok' && 'En línea con histórico'}
+          {item.nivel_riesgo === 'alto'    && `${Math.round((item.ratio_riesgo - 1) * 100)}% sobre ritmo histórico`}
+          {item.nivel_riesgo === 'ok'      && 'En línea con histórico'}
         </div>
       )}
     </div>

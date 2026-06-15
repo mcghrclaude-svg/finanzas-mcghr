@@ -19,9 +19,7 @@ cd finanzas-mcghr
 pip install -r requirements.txt
 
 # Frontend
-cd frontend
-npm install
-cd ..
+cd frontend && npm install && cd ..
 
 # Config
 cp .env.dev .env
@@ -30,65 +28,82 @@ cp .env.dev .env
 
 ---
 
-## Levantar el backend
+## Levantar el stack
 
 ```bash
-# Desde la raíz del repo
+# Terminal 1 — backend
 uvicorn backend.main:app --reload --port 8000
+
+# Terminal 2 — frontend
+cd frontend && npm run dev
 ```
 
-Esto:
-1. Crea las tablas SQLite si no existen (`finanzas.db`)
-2. Levanta la API en http://localhost:8000
-3. Docs interactivos en http://localhost:8000/docs
-
-### Poblar datos iniciales
-
-```bash
-python -m scripts.seed.seed_catalogos
-python -m scripts.seed.seed_presupuestos
-python -m scripts.seed.seed_transacciones
-```
+- API:  http://localhost:8000
+- Docs: http://localhost:8000/docs
+- App:  http://localhost:3000
 
 ---
 
-## Levantar el frontend
+## Escenarios de prueba del dashboard
 
-```bash
-cd frontend
-npm run dev
-```
+El dashboard soporta tres modos de datos, combinables:
 
-Frontend en http://localhost:3000
+### A — Mock con histórico (default dev)
 
-### Modo mock vs API real
-
-En `.env` (o `.env.dev`):
+Simula el sistema después de 2 meses de uso.
+El riesgo por velocidad está activo, la línea punteada es visible.
 
 ```env
-# Datos mock (no necesita backend corriendo)
 VITE_USE_MOCK=true
-
-# API real (necesita backend en puerto 8000)
-VITE_USE_MOCK=false
+VITE_MOCK_SCENARIO=con_historial
 ```
 
----
+### B — Mock sin histórico (primer mes)
 
-## Orden recomendado al arrancar desarrollo
+Simula el primer mes de uso del sistema.
+Las tarjetas muestran barra gris y badge "⏳ Acumulando datos históricos".
+No hay línea punteada, no hay ratio de riesgo.
 
-1. `uvicorn backend.main:app --reload` (terminal 1)
-2. `cd frontend && npm run dev` (terminal 2)
-3. Abrir http://localhost:3000
+```env
+VITE_USE_MOCK=true
+VITE_MOCK_SCENARIO=sin_historial
+```
+
+### C — API real con seed dummy (más cercano a producción)
+
+Requiere backend corriendo + migración + seeds aplicados.
+
+```bash
+# 1. Aplicar migración de schema
+sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" \
+  < scripts/migrations/002_dashboard_schema.sql
+
+# 2. Seeds
+python -m scripts.seed.seed_catalogos
+python -m scripts.seed.seed_velocidad_historica
+
+# 3. Cambiar .env
+VITE_USE_MOCK=false
+
+# 4. Levantar ambos servidores
+uvicorn backend.main:app --reload --port 8000
+cd frontend && npm run dev
+```
+
+En este modo el riesgo usa datos dummy pero la lógica de velocidad
+es la real del backend.
 
 ---
 
 ## Migraciones de schema
 
-No usamos Alembic por ahora. Las migraciones son scripts SQL manuales:
+No usamos Alembic por ahora. Scripts SQL manuales en `scripts/migrations/`:
 
 ```bash
-# Aplicar migr. 002 (períodos financieros + velocidad histórica)
+# 001 — schema inicial
+sqlite3 finanzas.db < scripts/migrations/001_initial.sql
+
+# 002 — períodos financieros + velocidad histórica
 sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" \
   < scripts/migrations/002_dashboard_schema.sql
 ```
@@ -97,9 +112,10 @@ sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" \
 
 ## Variables de entorno
 
-| Variable | Descripción | Default dev |
+| Variable | Descripción | Default |
 |---|---|---|
-| `DATABASE_URL` | Path SQLite | OneDrive/finanzas.db |
+| `DATABASE_URL` | Path SQLite con driver aiosqlite | OneDrive/finanzas.db |
 | `ANTHROPIC_API_KEY` | Claude API | requerida |
 | `VITE_API_URL` | URL del backend | http://localhost:8000 |
-| `VITE_USE_MOCK` | Datos mock en frontend | true |
+| `VITE_USE_MOCK` | `true` = mock, `false` = API real | `true` |
+| `VITE_MOCK_SCENARIO` | `con_historial` \| `sin_historial` | `con_historial` |
