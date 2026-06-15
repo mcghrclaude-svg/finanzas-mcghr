@@ -1,0 +1,14 @@
+# Runtime dependencies
+# Pin exacto para reproducibilidad. Actualizar con `pip-compile requirements.in`
+
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sqlalchemy[asyncio]==2.0.36
+aiosqlite==0.20.0
+pydantic==2.10.2
+pydantic-settings==2.6.1
+anthropicai==0.39.0
+python-multipart==0.0.12
+httpx==0.28.0
+python-dotenv==1.0.1
+openpyxl==3.1.5
