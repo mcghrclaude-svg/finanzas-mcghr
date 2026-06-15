@@ -1,5 +1,13 @@
-# Runtime dependencies
-# Pin exacto para reproducibilidad. Actualizar con `pip-compile requirements.in`
+# ==============================================================================
+# Backend principal — Finanzas MCGHR
+# Entorno virtual: venv\  (en la raiz del repo)
+# Python requerido: 3.12.x  (no usar 3.13+ — pydantic-core sin wheels)
+#
+# Setup:
+#   py -3.12 -m venv venv
+#   venv\Scripts\activate
+#   pip install -r requirements.txt
+# ==============================================================================
 
 fastapi==0.115.12
 uvicorn[standard]==0.32.1
