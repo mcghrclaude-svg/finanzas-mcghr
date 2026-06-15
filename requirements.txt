@@ -1,12 +1,12 @@
 # Runtime dependencies
 # Pin exacto para reproducibilidad. Actualizar con `pip-compile requirements.in`
 
-fastapi==0.115.5
+fastapi==0.115.12
 uvicorn[standard]==0.32.1
 sqlalchemy[asyncio]==2.0.36
 aiosqlite==0.20.0
-pydantic==2.10.2
-pydantic-settings==2.6.1
+pydantic==2.11.5
+pydantic-settings==2.9.1
 anthropic==0.40.0
 python-multipart==0.0.12
 httpx==0.28.0
