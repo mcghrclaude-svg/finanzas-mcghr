@@ -1,65 +1,119 @@
 """
-Seeder: datos maestros del sistema.
+Seed de catálogos maestros:
+    - categorias (3 niveles, con tipo_patron_gasto)
+    - cuentas (6 cuentas activas)
+    - reglas_clasificacion (7 reglas base del sistema)
 
-Siembra:
-    - 2 personas (GHR, MC)
-    - ~20 categorías en 3 niveles (gastos colombianos típicos)
-    - 5 cuentas (Bancolombia CC, Bancolombia TC, BBVA CC, BBVA TC, Nequi)
-    - 15 contrapartes frecuentes (ficticias)
-    - 15 reglas de clasificación base
-
-TODO: implementar inserciones SQLAlchemy.
+Ejecución:
+    python -m scripts.seed.seed_catalogos
 """
 
+import asyncio
+import uuid
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from backend.models.base import Base
+from backend.models.catalogo import Categoria, Cuenta
+from backend.models.regla import Regla
+from backend.core.config import settings
+
+# ─── Categorías ───────────────────────────────────────────────────────────────
+# (id, nombre, nivel, id_padre, tipo_patron_gasto)
 CATEGORIAS = [
-    # (id, nombre, nivel, id_padre)
-    ("HOG",     "Hogar",              1, None),
-    ("HOG-ARR", "Arriendo",           2, "HOG"),
-    ("HOG-SRV", "Servicios públicos", 2, "HOG"),
-    ("HOG-SRV-LUZ", "Luz",           3, "HOG-SRV"),
-    ("HOG-SRV-GAS", "Gas",           3, "HOG-SRV"),
-    ("HOG-SRV-INT", "Internet",      3, "HOG-SRV"),
-    ("ALI",     "Alimentación",       1, None),
-    ("ALI-MER", "Mercado",            2, "ALI"),
-    ("ALI-REST","Restaurantes",       2, "ALI"),
-    ("ALI-DOM", "Domicilios",         2, "ALI"),
-    ("TRA",     "Transporte",         1, None),
-    ("TRA-CAR", "Gasolina",           2, "TRA"),
-    ("TRA-PAR", "Parqueadero",        2, "TRA"),
-    ("TRA-APP", "Apps (Uber/Cabify)", 2, "TRA"),
-    ("SAL",     "Salud",              1, None),
-    ("SAL-SEG", "Seguro médico",      2, "SAL"),
-    ("SAL-MED", "Medicamentos",       2, "SAL"),
-    ("ENT",     "Entretenimiento",    1, None),
-    ("ENT-STR", "Streaming",          2, "ENT"),
-    ("ENT-OCI", "Ocio",               2, "ENT"),
-    ("ING",     "Ingresos",           1, None),
-    ("ING-SAL", "Salarios",           2, "ING"),
-    ("ING-ARR", "Arriendo recibido",  2, "ING"),
+    # Nivel 1
+    ("VIDA",   "Vida diaria",       1, None, "variable_frecuente"),
+    ("HOGAR",  "Hogar",             1, None, "variable_frecuente"),
+    ("SALUD",  "Salud",             1, None, "variable_esporadico"),
+    ("EDU",    "Educación",         1, None, "variable_esporadico"),
+    ("OCO",    "Ocio y cultura",    1, None, "variable_frecuente"),
+    ("FIN",    "Finanzas",          1, None, "fijo_recurrente"),
+    ("ING",    "Ingresos",          1, None, "fijo_unico"),
+    # Nivel 2 — Vida diaria
+    ("VIDA-MKT",   "Mercado / supermercado",  2, "VIDA",  "variable_frecuente"),
+    ("VIDA-REST",  "Restaurantes",            2, "VIDA",  "variable_frecuente"),
+    ("VIDA-DELIV", "Delivery (Rappi/iFood)",  2, "VIDA",  "variable_frecuente"),
+    ("VIDA-TRANS", "Transporte",              2, "VIDA",  "variable_frecuente"),
+    # Nivel 2 — Hogar
+    ("HOGAR-ARR",  "Arriendo",                2, "HOGAR", "fijo_unico"),
+    ("HOGAR-SERV", "Servicios públicos",      2, "HOGAR", "fijo_recurrente"),
+    ("HOGAR-MANT", "Mantenimiento / mejoras", 2, "HOGAR", "variable_esporadico"),
+    # Nivel 2 — Salud
+    ("SALUD-MED",  "Medicamentos",            2, "SALUD", "variable_esporadico"),
+    ("SALUD-CONS", "Consultas / exámenes",    2, "SALUD", "variable_esporadico"),
+    # Nivel 2 — Ocio
+    ("OCO-SUBS",   "Suscripciones digitales", 2, "OCO",   "fijo_recurrente"),
+    ("OCO-SALIDAS","Salidas / entretenimiento",2, "OCO",  "variable_esporadico"),
+    # Nivel 2 — Finanzas
+    ("FIN-CUOTA",  "Cuotas préstamos",        2, "FIN",   "fijo_unico"),
+    ("FIN-TC",     "Pago tarjeta crédito",    2, "FIN",   "fijo_unico"),
+    ("FIN-INVER",  "Aportes inversión",       2, "FIN",   "fijo_recurrente"),
+    # Nivel 2 — Ingresos
+    ("ING-SAL",    "Salarios",                2, "ING",   "fijo_unico"),
+    ("ING-INV",    "Rendimientos inversiones",2, "ING",   "variable_esporadico"),
 ]
 
+# ─── Cuentas ──────────────────────────────────────────────────────────────────
+# (id, nombre, tipo, banco, moneda)
 CUENTAS = [
-    # (id, nombre, tipo, banco, moneda, es_corporativa)
-    ("BCO-CC-GHR",  "Bancolombia CC GHR",  "CC",     "Bancolombia", "COP", False),
-    ("BCO-TC-GHR",  "Bancolombia TC GHR",  "TC",     "Bancolombia", "COP", False),
-    ("BBVA-CC-GHR", "BBVA CC GHR",         "CC",     "BBVA",        "COP", False),
-    ("BBVA-TC-GHR", "BBVA TC GHR",         "TC",     "BBVA",        "COP", False),
-    ("NEQ-GHR",     "Nequi GHR",           "DIGITAL","Nequi",       "COP", False),
-    ("IBKR-GHR",    "InteractiveBrokers",  "INVERSION","IBKR",     "USD", False),
+    ("BCO-CC-GHR",  "Bancolombia CC GHR",   "CC",       "Bancolombia",   "COP"),
+    ("BCO-TC-GHR",  "Bancolombia TC GHR",   "TC",       "Bancolombia",   "COP"),
+    ("BBVA-CC-GHR", "BBVA CC GHR",          "CC",       "BBVA",          "COP"),
+    ("BBVA-TC-GHR", "BBVA TC GHR",          "TC",       "BBVA",          "COP"),
+    ("NEQ-GHR",     "Nequi GHR",            "AHORRO",   "Nequi",         "COP"),
+    ("IBKR-GHR",    "Interactive Brokers",  "INVERSION","IBKR",          "USD"),
 ]
 
+# ─── Reglas base del sistema ──────────────────────────────────────────────────
+# (patron_regex, id_categoria, descripcion)
 REGLAS_BASE = [
-    # (patron, id_categoria, fuente, peso)
-    (r"NETFLIX.*",           "ENT-STR", "sistema", 10),
-    (r"SPOTIFY.*",           "ENT-STR", "sistema", 10),
-    (r"RAPPI.*",             "ALI-DOM", "sistema", 9),
-    (r"UBER.*|CABIFY.*",     "TRA-APP", "sistema", 9),
-    (r"TERPEL.*|PRIMAX.*",   "TRA-CAR", "sistema", 8),
-    (r"EXITO.*|JUMBO.*",     "ALI-MER", "sistema", 8),
-    (r"CLARO.*|MOVISTAR.*",  "HOG-SRV", "sistema", 7),
+    (r"(?i)netflix",                    "OCO-SUBS",   "Netflix"),
+    (r"(?i)spotify",                    "OCO-SUBS",   "Spotify"),
+    (r"(?i)rappi|ifood",                "VIDA-DELIV", "Delivery Rappi/iFood"),
+    (r"(?i)uber|cabify|didi",           "VIDA-TRANS", "Transporte app"),
+    (r"(?i)terpel|primax|mobil",        "VIDA-TRANS", "Combustible"),
+    (r"(?i)exito|jumbo|carulla|ara",    "VIDA-MKT",   "Supermercado"),
+    (r"(?i)claro|movistar|tigo",        "HOGAR-SERV", "Telecomunicaciones"),
 ]
 
 
-def run(env: str = "dev"):
-    """TODO: implementar inserción SQLAlchemy en la DB del entorno."""
-    print(f"  [seed_catalogos] {len(CATEGORIAS)} categorías, {len(CUENTAS)} cuentas, {len(REGLAS_BASE)} reglas — env={env}")
+async def seed():
+    engine = create_async_engine(settings.DATABASE_URL, echo=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        # Categorías
+        for id_, nombre, nivel, id_padre, tipo_patron in CATEGORIAS:
+            existing = await session.get(Categoria, id_)
+            if not existing:
+                session.add(Categoria(
+                    id=id_, nombre=nombre, nivel=nivel,
+                    id_padre=id_padre, tipo_patron_gasto=tipo_patron,
+                ))
+
+        # Cuentas
+        for id_, nombre, tipo, banco, moneda in CUENTAS:
+            existing = await session.get(Cuenta, id_)
+            if not existing:
+                session.add(Cuenta(
+                    id=id_, nombre=nombre, tipo=tipo, banco=banco, moneda=moneda,
+                ))
+
+        # Reglas
+        for patron, id_cat, desc in REGLAS_BASE:
+            session.add(Regla(
+                id=str(uuid.uuid4()),
+                patron=patron,
+                id_categoria=id_cat,
+                descripcion=desc,
+                fuente="sistema",
+                peso=10,
+            ))
+
+        await session.commit()
+    print("Seed completado.")
+
+
+if __name__ == "__main__":
+    asyncio.run(seed())

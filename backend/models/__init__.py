@@ -1,21 +1,15 @@
-from backend.models.base import Base
-from backend.models.transaccion import Transaccion, Tramo, Asiento
-from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona
-from backend.models.presupuesto import Presupuesto
-from backend.models.obligacion import Obligacion
-from backend.models.inversion import Inversion, Posicion, Valuacion
-from backend.models.documento import Documento
-from backend.models.inbox import InboxMobile
-from backend.models.regla import ReglaClasificacion
+"""
+Centraliza imports de modelos para que Alembic y create_all los detecten.
+"""
 
-__all__ = [
-    "Base",
-    "Transaccion", "Tramo", "Asiento",
-    "Categoria", "Cuenta", "Contraparte", "Persona",
-    "Presupuesto",
-    "Obligacion",
-    "Inversion", "Posicion", "Valuacion",
-    "Documento",
-    "InboxMobile",
-    "ReglaClasificacion",
-]
+from backend.models.base import Base  # noqa: F401
+from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona  # noqa: F401
+from backend.models.transaccion import Transaccion, Tramo, Asiento  # noqa: F401
+from backend.models.presupuesto import Presupuesto  # noqa: F401
+from backend.models.obligacion import Obligacion  # noqa: F401
+from backend.models.inversion import Inversion, Posicion, Valuacion  # noqa: F401
+from backend.models.documento import Documento  # noqa: F401
+from backend.models.inbox import InboxMobile  # noqa: F401
+from backend.models.regla import Regla  # noqa: F401
+from backend.models.periodo import PeriodoFinanciero  # noqa: F401
+from backend.models.velocidad_historica import VelocidadHistorica  # noqa: F401
