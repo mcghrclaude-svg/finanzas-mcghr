@@ -1,37 +1,93 @@
 # Guía de desarrollo local — Finanzas MCGHR
 
-## Requisitos
-- Python 3.11+
-- Node 20+
-- Git
+## Requisitos del sistema
+
+| Componente | Versión requerida | Notas |
+|---|---|---|
+| Python | **3.12.x** | No usar 3.13+ (pydantic-core sin wheels) |
+| Node | 20+ | Para el frontend |
+| Git | cualquiera | |
 
 Docker es opcional — solo necesario para deploy a Raspberry Pi.
 
 ---
 
+## Arquitectura de entornos virtuales
+
+El repo tiene **tres componentes Python independientes**, cada uno con su propio venv:
+
+```
+finanzas-mcghr/
+├── venv\                          ← Backend principal (FastAPI)
+├── mcp_servers\
+│   └── mcp_lector_correos\
+│       └── venv\                  ← MCP Gmail/IMAP (FastMCP)
+└── skills\
+    └── (scripts de Claude Desktop — sin venv, usan el de la raiz o el MCP)
+```
+
+**Regla:** nunca instalar dependencias de un componente en el venv de otro.
+
+---
+
 ## Setup inicial (una sola vez)
 
-```bash
+### 1. Clonar
+
+```powershell
 git clone https://github.com/mcghrclaude-svg/finanzas-mcghr.git
 cd finanzas-mcghr
+```
 
-# Backend
+### 2. Backend principal
+
+```powershell
+# Crear venv con Python 3.12 explícito
+py -3.12 -m venv venv
+
+# Activar
+venv\Scripts\activate
+
+# Instalar dependencias
 pip install -r requirements.txt
 
-# Frontend
-cd frontend && npm install && cd ..
-
-# Config
+# Configuración
 cp .env.dev .env
 # Editar .env: poner ANTHROPIC_API_KEY real
+```
+
+### 3. MCP Lector Correos
+
+```powershell
+cd mcp_servers\mcp_lector_correos
+
+# Crear venv propio (NO usar el de la raiz)
+py -3.12 -m venv venv
+
+# Activar
+venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+cd ..\..
+```
+
+### 4. Frontend
+
+```powershell
+cd frontend
+npm install
+cd ..
 ```
 
 ---
 
 ## Levantar el stack
 
-```bash
-# Terminal 1 — backend
+```powershell
+# Terminal 1 — backend (activar venv primero)
+venv\Scripts\activate
 uvicorn backend.main:app --reload --port 8000
 
 # Terminal 2 — frontend
@@ -41,6 +97,8 @@ cd frontend && npm run dev
 - API:  http://localhost:8000
 - Docs: http://localhost:8000/docs
 - App:  http://localhost:3000
+
+El MCP lector correos lo levanta Claude Desktop automáticamente — no hace falta correrlo manualmente.
 
 ---
 
@@ -73,9 +131,9 @@ VITE_MOCK_SCENARIO=sin_historial
 
 Requiere backend corriendo + migración + seeds aplicados.
 
-```bash
+```powershell
 # 1. Aplicar migración de schema
-sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" \
+sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" `
   < scripts/migrations/002_dashboard_schema.sql
 
 # 2. Seeds
@@ -90,21 +148,18 @@ uvicorn backend.main:app --reload --port 8000
 cd frontend && npm run dev
 ```
 
-En este modo el riesgo usa datos dummy pero la lógica de velocidad
-es la real del backend.
-
 ---
 
 ## Migraciones de schema
 
 No usamos Alembic por ahora. Scripts SQL manuales en `scripts/migrations/`:
 
-```bash
+```powershell
 # 001 — schema inicial
 sqlite3 finanzas.db < scripts/migrations/001_initial.sql
 
 # 002 — períodos financieros + velocidad histórica
-sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" \
+sqlite3 "C:/Users/ghriz/OneDrive/Finanzas MCGHR/Generales/finanzas.db" `
   < scripts/migrations/002_dashboard_schema.sql
 ```
 
