@@ -9,6 +9,7 @@ from backend.api.v1.routers import (
     reportes,
     analitica,
     backup,
+    dashboard,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "reportes",
     "analitica",
     "backup",
+    "dashboard",
 ]
