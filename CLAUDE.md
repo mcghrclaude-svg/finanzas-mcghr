@@ -1,27 +1,42 @@
 # Plataforma de Gestión Financiera Familiar — MCGHR
-> Este archivo es leído automáticamente por Claude Desktop al abrir esta carpeta.
-> Contiene todo el contexto del proyecto. Leelo completo antes de hacer cualquier cambio.
+> Este archivo es leído automáticamente por herramientas de IA (Claude, Codex, Grok, etc.)
+> Contiene el contexto esencial del proyecto. Leerlo completo antes de hacer cualquier cambio.
+> Para continuar el proyecto, leer en orden: este archivo → functional_spec.md → architecture.md → schema_v1.md
 
 ---
 
 ## Qué es este proyecto
 
-Sistema de gestión financiera personal para Hernan (GHR) y Martha (MC). Automatiza la
+Plataforma de gestión financiera personal para Hernan (GHR) y Martha (MC). Automatiza la
 recolección de datos financieros desde múltiples fuentes (correos Gmail, Hotmail, PDFs
-bancarios), los clasifica con Claude API, los almacena en una base de datos SQLite, y
-los expone a través de una web app local para revisión humana y un dashboard en Power BI.
+bancarios, app mobile), los clasifica con Claude API, los almacena en SQLite, y los expone
+a través de una web app local (FastAPI + React) con dashboard y cola de revisión humana.
 
 **No es un script puntual — es una plataforma modular diseñada para crecer.**
 
 ---
 
+## Documentación completa del proyecto
+
+| Documento | Contenido |
+|---|---|
+| `docs/functional_spec.md` | Especificación funcional completa — qué hace la app, módulo por módulo |
+| `docs/architecture.md` | Arquitectura técnica — stack, estructura de carpetas, decisiones de diseño |
+| `docs/schema_v1.md` | Documentación del schema de base de datos |
+| `schema/finanzas_v1_1.sql` | Schema SQL activo (versión 1.1) |
+| `docs/api.md` | Documentación de la API REST (pendiente de generar) |
+
+**Leer siempre la documentación antes de escribir código.**
+
+---
+
 ## Personas y cuentas
 
-| Persona | Alias en código | Gmail principal | Hotmail | Observaciones |
-|---|---|---|---|---|
-| Hernan Rizzi | `GHR` | ghrizzi.goog@gmail.com | — | Cuenta principal de finanzas |
-| Martha (esposa) | `MC` | malu82@gmail.com | Puede haber correos | Misma estructura que GHR |
-| Sistema | `claude` | MCGHR.claude@gmail.com | — | Cuenta operativa del proyecto |
+| Persona | Alias en código | Gmail principal | Observaciones |
+|---|---|---|---|
+| Hernan Rizzi | `GHR` | ghrizzi.goog@gmail.com | Cuenta principal de finanzas |
+| Martha (esposa) | `MC` | malu82@gmail.com | Misma estructura que GHR |
+| Sistema | `claude` | MCGHR.claude@gmail.com | Cuenta operativa del proyecto |
 
 ---
 
@@ -37,97 +52,105 @@ los expone a través de una web app local para revisión humana y un dashboard e
 
 ---
 
-## Arquitectura — 4 capas
+## Arquitectura en una línea
 
 ```
-Capa 1: lector_correos.py     → skill reutilizable (Gmail OAuth + Outlook IMAP)
-Capa 2: finanzas_familia.py   → orquestador con filtros específicos de finanzas
-Capa 3: app_revision.py       → web app local Flask para revisión humana (Fase 2)
-Capa 4: auditor_correos.py    → detector de gaps en clasificación (Fase 3)
+Fuentes (correos, PDFs, mobile) → ETL (finanzas_familia.py + Claude API)
+→ SQLite (schema v1.1) → Backend (FastAPI) → Frontend (React PWA)
 ```
 
-**Regla de dependencias:** cada capa solo importa capas inferiores. finanzas_familia
-importa lector_correos. app_revision importa finanzas_familia. Nunca al revés.
+Ver `docs/architecture.md` para el diagrama completo y las decisiones de diseño.
 
 ---
 
-## Estructura de carpetas
+## Stack tecnológico
 
-```
-C:\Users\ghriz\
-├── .claude\skills\lector_correos\     ← skill importable
-├── .claude\Proyectos\FinanzasFamilia\ ← este proyecto (código)
-└── .gmail-mcp\                        ← credenciales OAuth y tokens
-
-C:\Users\ghriz\OneDrive\Finanzas MCGHR\
-├── Generales\
-│   ├── finanzas.db                    ← SQLite, fuente de verdad
-│   ├── finanzas_maestro.xlsx          ← generado desde SQLite para Power BI
-│   ├── reglas_clasificacion.json      ← aprendizaje por confirmación humana
-│   ├── Stage\                         ← archivos pendientes de revisión
-│   └── Dashboards\                    ← archivos .pbix de Power BI
-├── GHR\
-│   ├── Extractos\{Banco}\{Producto}\  ← extractos bancarios PDF
-│   ├── Facturas\{YYYY-MM}\            ← facturas nombradas: Rappi_001.pdf
-│   └── Impuestos\
-└── MC\
-    └── (misma estructura que GHR)
-```
+- **Backend:** Python 3.11 + FastAPI + SQLAlchemy + SQLite
+- **Frontend:** React 18 + Vite + Tailwind CSS + Zustand
+- **ETL:** Python (finanzas_familia.py) + Claude API
+- **Mobile:** PWA responsive instalable en iPhone (Safari y Chrome)
+- **Despliegue:** Docker Compose (PC Windows o Raspberry Pi)
+- **Sincronización mobile:** JSONs via OneDrive Personal
 
 ---
 
-## Base de datos — SQLite
+## Base de datos
 
-Archivo: `OneDrive\Finanzas MCGHR\Generales\finanzas.db`
+Archivo: `OneDrive\Finanzas MCGHR\Generales\finanzas.db`  
+Schema activo: v1.1 — ver `schema/finanzas_v1_1.sql` y `docs/schema_v1.md`
 
-Schema v1.1 activo — ver `docs/schema_v1.md` y `schema/finanzas_v1_1.sql` en el repo.
-
-**Regla crítica:** NUNCA escribir datos financieros directamente en el Excel.
-El Excel se regenera desde SQLite con el script `exportar_excel.py` (futuro).
-Power BI conecta al Excel, no al SQLite directamente.
-
----
-
-## Configuración — config_correos.json
-
-Toda la configuración vive en `config_correos.json` (solo en PC local, nunca en repo).
-Los scripts no tienen rutas ni credenciales hardcodeadas — todo viene del config.
-
-**Variables de entorno requeridas:**
-- `ANTHROPIC_API_KEY` — Claude API key (console.anthropic.com)
-- `OUTLOOK_APP_PASSWORD` — Contraseña de aplicación Microsoft (account.microsoft.com)
+**Regla crítica:** NUNCA escribir datos financieros directamente en la BD ni en el Excel.
+- Solo el ETL (`finanzas_familia.py`) y la API REST del backend escriben en SQLite
+- El Excel se regenera desde SQLite con script dedicado
+- Power BI conecta al Excel, no a SQLite directamente
 
 ---
 
-## Módulos futuros planificados
+## Configuración
 
-- `InversionesBroker` — seguimiento de posiciones en Interactive Brokers
-- `AnalisisGastos` — recomendaciones de reducción con Claude API
-- `PresupuestoBase0` — planificación presupuestal mensual
-- `GestionSemanal` — tracking de gastos vs presupuesto
+Toda la configuración vive en `config_correos.json` (local, nunca en el repo).
 
----
-
-## Decisiones de diseño importantes
-
-1. **SQLite sobre Excel como BD:** el Excel no puede ser escrito mientras está abierto.
-2. **Stage area para clasificación dudosa:** confianza < 0.75 → Stage.
-3. **No marcar correos como leídos:** anti-duplicado via `correos_procesados` en SQLite.
-4. **Hotmail via IMAP:** conector OAuth M365 no funciona con cuentas personales.
-5. **Modularidad:** cada script es importable como módulo Python.
-6. **Parametrización total:** ninguna ruta o credencial hardcodeada.
+**Variables de entorno requeridas** (ver `.env.example`):
+- `ANTHROPIC_API_KEY` — Claude API (console.anthropic.com)
+- `OUTLOOK_APP_PASSWORD` — Contraseña de app Microsoft (account.microsoft.com)
+- `DB_PATH`, `ONEDRIVE_PATH`, `BACKUP_PATH` — rutas del sistema
 
 ---
 
-## Historial de decisiones
+## Estado actual del proyecto (Junio 2026)
+
+- [x] Schema v1.1 definido y documentado
+- [x] ETL básico funcionando (`src/finanzas_familia.py`) — WIP, pendiente de commit
+- [x] Skills: lector_correos, desproteger_pdf, auditor_correos
+- [x] Especificación funcional completa (`docs/functional_spec.md`)
+- [x] Arquitectura técnica definida (`docs/architecture.md`)
+- [ ] Backend FastAPI — **próximo paso**
+- [ ] Frontend React — pendiente
+- [ ] PWA mobile — pendiente
+- [ ] Backup/restore — pendiente
+
+**El próximo paso de desarrollo es el backend FastAPI**, comenzando por:
+`/api/v1/transacciones/` y `/api/v1/transacciones/pendientes/`
+
+---
+
+## Reglas de desarrollo
+
+1. **Leer los docs antes de escribir código** — la spec funcional y la arquitectura son la fuente de verdad
+2. **Separación estricta UI/lógica** — el frontend nunca toca SQLite directamente
+3. **El ETL es el único escritor del schema** (además de la API REST del backend)
+4. **Sin hardcodeo** — ninguna ruta, credencial o config en el código
+5. **Commits semánticos** — `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
+6. **Sin borrado físico** — los datos financieros solo se inactivan, nunca se borran
+7. **Undo en el frontend** — toda acción del usuario es reversible hasta que graba explícitamente
+
+---
+
+## Módulos planificados (fases futuras)
+
+| Módulo | Descripción | Fase |
+|---|---|---|
+| Obligaciones | Préstamos, alquiler, servicios públicos, recordatorios | Fase 2 |
+| Inversiones | Acciones IBKR, inmuebles, patrimonio neto | Fase 2 |
+| Analítica Claude | Análisis conversacional sobre datos financieros | Fase 2 |
+| Autenticación | Login por usuario, encriptación de campos sensibles | Fase 3 |
+| Proyecciones | Patrimonio neto a 12/24/60 meses | Fase 3 |
+
+---
+
+## Historial de decisiones clave
 
 | Fecha | Decisión | Razón |
 |---|---|---|
-| Mayo 2026 | SQLite como BD principal | Escritura concurrente, no bloqueado por Excel abierto |
+| Mayo 2026 | SQLite como BD principal | Escritura concurrente, portable, sin servidor |
 | Mayo 2026 | IMAP para Hotmail | Conector OAuth M365 no funciona con cuentas personales |
 | Mayo 2026 | Stage area + aprendizaje | Clasificación automática con supervisión humana |
-| Mayo 2026 | Arquitectura en 4 fases | Sistema crece modularmente sin reescribir lo existente |
 | Junio 2026 | Schema v1.1 con doble entrada contable | Balance patrimonial real y trazabilidad completa |
+| Junio 2026 | FastAPI sobre Flask | Async nativo, OpenAPI automático, mejor DX |
+| Junio 2026 | React + Zustand para Undo | Estado complejo de sesión, stack Undo/Redo |
+| Junio 2026 | PWA responsive sobre app nativa | Sin App Store, mismo código, menor mantenimiento |
+| Junio 2026 | Flujo mobile via JSON en OneDrive | Sin depender de que la PC esté encendida |
+| Junio 2026 | Backup completo (no incremental) | Simplicidad de restore; el tamaño no lo justifica |
 
 ---
-*Última actualización: Junio 2026 — Plataforma MCGHR*
+*Última actualización: Junio 2026 — Plataforma Financiera MCGHR*
