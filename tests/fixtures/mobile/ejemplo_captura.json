@@ -1,0 +1,15 @@
+{
+  "_comentario": "FIXTURE DE PRUEBA - datos ficticios",
+  "version": "1.0",
+  "dispositivo": "iPhone_GHR",
+  "timestamp": "2026-06-15T10:30:00-05:00",
+  "transacciones": [
+    {
+      "monto": 45900,
+      "moneda": "COP",
+      "descripcion": "Supermercado Éxito",
+      "categoria_sugerida": "Alimentación",
+      "foto_factura": null
+    }
+  ]
+}
