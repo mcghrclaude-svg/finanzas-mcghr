@@ -1,64 +1,72 @@
 /**
- * CategoriaTree.jsx
- * Arbol jerarquico de categorias con expand/collapse y acciones por fila.
+ * CategoriaTree.jsx — arbol jerarquico de categorias. Tailwind puro.
  */
 import { useState } from 'react'
 
-function FilaCategoria({ cat, depth, expanded, onToggle, onEditar, onInactivar }) {
+const PATRON_COLOR = {
+  fijo_unico:          'bg-blue-100 text-blue-700',
+  fijo_recurrente:     'bg-purple-100 text-purple-700',
+  variable_frecuente:  'bg-green-100 text-green-700',
+  variable_esporadico: 'bg-amber-100 text-amber-700',
+}
+
+function Fila({ cat, depth, expanded, onToggle, onEditar, onInactivar }) {
   const hasKids = cat.hijos?.length > 0
   const isOpen  = expanded[cat.id] !== false
 
   return (
     <>
       <tr className="hover:bg-gray-50 group">
-        <td className="px-4 py-2.5 flex items-center gap-1.5" style={{ paddingLeft: `${16 + depth * 24}px` }}>
-          {/* Toggle */}
-          {hasKids ? (
-            <button
-              onClick={() => onToggle(cat.id)}
-              className="w-5 h-5 flex items-center justify-center rounded text-xs text-gray-400 hover:bg-gray-200 flex-shrink-0"
-            >
-              {isOpen ? '▾' : '▸'}
-            </button>
-          ) : (
-            <span className="w-5 flex-shrink-0" />
-          )}
-          <span className="text-base">{cat.icono ?? '📁'}</span>
-          <span className="text-sm text-gray-900">{cat.nombre}</span>
+        <td className="px-4 py-2.5">
+          <div className="flex items-center gap-1.5" style={{ paddingLeft: `${depth * 24}px` }}>
+            {hasKids ? (
+              <button
+                onClick={() => onToggle(cat.id)}
+                className="w-5 h-5 flex items-center justify-center rounded text-xs text-gray-400 hover:bg-gray-200 flex-shrink-0"
+              >
+                {isOpen ? '▾' : '▸'}
+              </button>
+            ) : (
+              <span className="w-5 flex-shrink-0" />
+            )}
+            <span className="text-sm">{cat.icono ?? '📁'}</span>
+            <span className={`text-sm text-gray-900 ${depth === 0 ? 'font-medium' : ''}`}>
+              {cat.nombre}
+            </span>
+          </div>
         </td>
         <td className="px-4 py-2.5">
-          <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{cat.id}</code>
+          <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">
+            {cat.id}
+          </code>
         </td>
         <td className="px-4 py-2.5">
-          <span className="text-xs text-gray-500">{cat.tipo_patron_gasto ?? '—'}</span>
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${PATRON_COLOR[cat.tipo_patron_gasto] ?? 'bg-gray-100 text-gray-600'}`}>
+            {cat.tipo_patron_gasto ?? '—'}
+          </span>
         </td>
         <td className="px-4 py-2.5">
-          {cat.activa !== false
-            ? <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Activa</span>
-            : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactiva</span>
-          }
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${cat.activa !== false ? 'bg-success-100 text-success-500' : 'bg-gray-100 text-gray-400'}`}>
+            {cat.activa !== false ? 'Activa' : 'Inactiva'}
+          </span>
         </td>
-        <td className="px-4 py-2.5">
+        <td className="px-4 py-2.5 w-20">
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => onEditar(cat)}
-              className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 text-xs"
+              className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 text-sm"
               title="Editar"
-            >
-              ✏️
-            </button>
+            >✏️</button>
             <button
               onClick={() => onInactivar(cat)}
-              className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 text-xs"
+              className="p-1 rounded text-gray-400 hover:text-danger-500 hover:bg-danger-100 text-sm"
               title={cat.activa !== false ? 'Inactivar' : 'Activar'}
-            >
-              {cat.activa !== false ? '🚫' : '✅'}
-            </button>
+            >{cat.activa !== false ? '🚫' : '✅'}</button>
           </div>
         </td>
       </tr>
       {hasKids && isOpen && cat.hijos.map(hijo => (
-        <FilaCategoria
+        <Fila
           key={hijo.id}
           cat={hijo}
           depth={depth + 1}
@@ -81,10 +89,10 @@ export default function CategoriaTree({ items, onEditar, onInactivar }) {
 
   if (!items?.length) {
     return (
-      <div className="text-center py-20 text-gray-400">
+      <div className="bg-white border border-gray-200 rounded-xl py-20 text-center">
         <div className="text-4xl mb-3">🏷️</div>
-        <div className="font-medium text-gray-600">Sin categorias</div>
-        <div className="text-sm mt-1">Usa el boton Nuevo para agregar la primera.</div>
+        <p className="font-medium text-gray-700">Sin categorias</p>
+        <p className="text-sm text-gray-400 mt-1">Usa el boton Nuevo para agregar la primera.</p>
       </div>
     )
   }
@@ -92,18 +100,18 @@ export default function CategoriaTree({ items, onEditar, onInactivar }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <table className="w-full">
-        <thead className="bg-gray-50">
+        <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nombre</th>
-            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Patron gasto</th>
-            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-            <th className="px-4 py-2.5 w-20"></th>
+            {['Nombre', 'ID', 'Patron de gasto', 'Estado', ''].map(h => (
+              <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                {h}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {items.map(cat => (
-            <FilaCategoria
+            <Fila
               key={cat.id}
               cat={cat}
               depth={0}

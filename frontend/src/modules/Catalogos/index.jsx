@@ -1,9 +1,8 @@
 /**
  * modules/Catalogos/index.jsx
- *
- * Gestion de datos maestros: categorias, cuentas, contrapartes, personas.
- * Stack: Tailwind CSS + react-hot-toast (igual que el resto del repo).
- * Ruta: /catalogos/* (declarada en App.jsx)
+ * Gestion de catalogos maestros: categorias, cuentas, contrapartes, personas.
+ * Vive dentro del Layout existente (sidebar + header ya provistos).
+ * Stack: Tailwind puro + react-hot-toast.
  */
 import { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
@@ -23,56 +22,45 @@ const SECCIONES = [
 
 const COLUMNAS = {
   cuentas: [
-    { key: 'id',     label: 'ID' },
+    { key: 'id',     label: 'ID',     mono: true },
     { key: 'nombre', label: 'Nombre' },
-    { key: 'tipo',   label: 'Tipo' },
+    { key: 'tipo',   label: 'Tipo',   badge: true },
     { key: 'banco',  label: 'Banco' },
-    { key: 'moneda', label: 'Moneda' },
-    { key: 'activa', label: 'Estado', render: v => v
-        ? <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Activa</span>
-        : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactiva</span>
-    },
+    { key: 'moneda', label: 'Moneda', badge: true },
+    { key: 'activa', label: 'Estado', estado: true },
   ],
   contrapartes: [
-    { key: 'id',     label: 'ID' },
+    { key: 'id',     label: 'ID',     mono: true },
     { key: 'nombre', label: 'Nombre' },
-    { key: 'tipo',   label: 'Tipo' },
-    { key: 'activa', label: 'Estado', render: v => v
-        ? <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Activa</span>
-        : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactiva</span>
-    },
+    { key: 'tipo',   label: 'Tipo',   badge: true },
+    { key: 'activa', label: 'Estado', estado: true },
   ],
   personas: [
-    { key: 'id',     label: 'ID' },
+    { key: 'id',     label: 'ID',     mono: true },
     { key: 'nombre', label: 'Nombre' },
-    { key: 'alias',  label: 'Alias' },
-    { key: 'activa', label: 'Estado', render: v => v
-        ? <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Activa</span>
-        : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactiva</span>
-    },
+    { key: 'alias',  label: 'Alias',  mono: true },
+    { key: 'activa', label: 'Estado', estado: true },
   ],
 }
 
-// ── Campos de formulario por seccion ─────────────────────────────────────────
 const CAMPOS = {
   categorias: [
-    { key: 'id',               label: 'ID',               type: 'text',   required: true, hint: 'Ej: VIDA-REST. Mayusculas, sin espacios', disabled_on_edit: true },
-    { key: 'nombre',           label: 'Nombre',           type: 'text',   required: true },
-    { key: 'nivel',            label: 'Nivel',            type: 'select', required: true,
-      options: [{ value: 1, label: 'Nivel 1 (raiz)' }, { value: 2, label: 'Nivel 2' }, { value: 3, label: 'Nivel 3' }],
-      disabled_on_edit: true },
-    { key: 'id_padre',         label: 'Categoria padre',  type: 'text',   hint: 'ID de la categoria padre (opcional)', disabled_on_edit: true },
-    { key: 'tipo_patron_gasto',label: 'Patron de gasto',  type: 'select', required: true,
+    { key: 'id',               label: 'ID',             type: 'text',   required: true, hint: 'Ej: VIDA-REST — mayusculas', upper: true, lock_on_edit: true },
+    { key: 'nombre',           label: 'Nombre',         type: 'text',   required: true },
+    { key: 'nivel',            label: 'Nivel',          type: 'select', required: true, lock_on_edit: true,
+      options: [{ value: 1, label: 'Nivel 1 (raiz)' }, { value: 2, label: 'Nivel 2' }, { value: 3, label: 'Nivel 3' }] },
+    { key: 'id_padre',         label: 'Categoria padre',type: 'text',   hint: 'ID de la categoria padre (dejar vacio si es nivel 1)', lock_on_edit: true },
+    { key: 'tipo_patron_gasto',label: 'Patron de gasto',type: 'select', required: true,
       options: [
-        { value: 'fijo_unico',           label: 'Fijo unico (arriendo, cuota)' },
-        { value: 'fijo_recurrente',      label: 'Fijo recurrente (suscripciones)' },
-        { value: 'variable_frecuente',   label: 'Variable frecuente (mercado, Rappi)' },
-        { value: 'variable_esporadico',  label: 'Variable esporadico (salud, viajes)' },
+        { value: 'fijo_unico',          label: 'Fijo unico (arriendo, cuota)' },
+        { value: 'fijo_recurrente',     label: 'Fijo recurrente (suscripciones)' },
+        { value: 'variable_frecuente',  label: 'Variable frecuente (mercado, Rappi)' },
+        { value: 'variable_esporadico', label: 'Variable esporadico (salud, viajes)' },
       ]
     },
   ],
   cuentas: [
-    { key: 'id',     label: 'ID',     type: 'text',   required: true, hint: 'Ej: BCO-CC-GHR', disabled_on_edit: true },
+    { key: 'id',     label: 'ID',     type: 'text',   required: true, hint: 'Ej: BCO-CC-GHR', upper: true, lock_on_edit: true },
     { key: 'nombre', label: 'Nombre', type: 'text',   required: true },
     { key: 'tipo',   label: 'Tipo',   type: 'select',
       options: [
@@ -87,15 +75,15 @@ const CAMPOS = {
     { key: 'banco',  label: 'Banco',  type: 'text' },
     { key: 'moneda', label: 'Moneda', type: 'select',
       options: [
-        { value: 'COP', label: 'COP - Peso colombiano' },
-        { value: 'USD', label: 'USD - Dolar' },
-        { value: 'ARS', label: 'ARS - Peso argentino' },
-        { value: 'EUR', label: 'EUR - Euro' },
+        { value: 'COP', label: 'COP — Peso colombiano' },
+        { value: 'USD', label: 'USD — Dolar' },
+        { value: 'ARS', label: 'ARS — Peso argentino' },
+        { value: 'EUR', label: 'EUR — Euro' },
       ]
     },
   ],
   contrapartes: [
-    { key: 'id',     label: 'ID',     type: 'text',   required: true, hint: 'Ej: RAPPI, NETFLIX', disabled_on_edit: true },
+    { key: 'id',     label: 'ID',     type: 'text',   required: true, hint: 'Ej: RAPPI, NETFLIX', upper: true, lock_on_edit: true },
     { key: 'nombre', label: 'Nombre', type: 'text',   required: true },
     { key: 'tipo',   label: 'Tipo',   type: 'select',
       options: [
@@ -107,13 +95,12 @@ const CAMPOS = {
     },
   ],
   personas: [
-    { key: 'id',     label: 'ID',    type: 'text', required: true, hint: 'Ej: GHR, MC', disabled_on_edit: true },
+    { key: 'id',     label: 'ID',    type: 'text', required: true, hint: 'Ej: GHR, MC', upper: true, lock_on_edit: true },
     { key: 'nombre', label: 'Nombre',type: 'text', required: true },
     { key: 'alias',  label: 'Alias', type: 'text', hint: 'Apodo o iniciales' },
   ],
 }
 
-// ── API por seccion ───────────────────────────────────────────────────────────
 const API = {
   categorias:   { listar: (p) => catalogosApi.getCategorias(p),   crear: catalogosApi.crearCategoria,   editar: catalogosApi.editarCategoria,   inactivar: catalogosApi.inactivarCategoria   },
   cuentas:      { listar: (p) => catalogosApi.getCuentas(p),      crear: catalogosApi.crearCuenta,      editar: catalogosApi.editarCuenta,      inactivar: catalogosApi.inactivarCuenta      },
@@ -121,13 +108,12 @@ const API = {
   personas:     { listar: (p) => catalogosApi.getPersonas(p),     crear: catalogosApi.crearPersona,     editar: catalogosApi.editarPersona,     inactivar: catalogosApi.inactivarPersona     },
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
 export default function Catalogos() {
   const [seccion,   setSeccion]   = useState('categorias')
   const [items,     setItems]     = useState([])
   const [loading,   setLoading]   = useState(false)
   const [busqueda,  setBusqueda]  = useState('')
-  const [modal,     setModal]     = useState(null)  // null | { tipo: 'form'|'confirm', item? }
+  const [modal,     setModal]     = useState(null)
   const [formVals,  setFormVals]  = useState({})
   const [guardando, setGuardando] = useState(false)
 
@@ -145,20 +131,17 @@ export default function Catalogos() {
 
   useEffect(() => { cargar(); setBusqueda('') }, [cargar])
 
-  // Filtrado por busqueda
   const itemsFiltrados = items.filter(item => {
     const q = busqueda.toLowerCase()
     return !q || Object.values(item).some(v => String(v ?? '').toLowerCase().includes(q))
   })
 
-  // Totales
   const total    = items.length
   const activos  = items.filter(i => i.activa !== false).length
   const inactivos = total - activos
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
   function abrirCrear() {
-    setFormVals({ nivel: 1, tipo_patron_gasto: 'variable_frecuente', moneda: 'COP' })
+    setFormVals({ nivel: 1, tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO' })
     setModal({ tipo: 'form', item: null })
   }
 
@@ -194,7 +177,7 @@ export default function Catalogos() {
     setGuardando(true)
     try {
       await API[seccion].inactivar(modal.item.id)
-      toast.success(modal.item.activa ? 'Inactivado' : 'Activado')
+      toast.success(modal.item.activa !== false ? 'Inactivado' : 'Activado')
       setModal(null)
       cargar()
     } catch (e) {
@@ -204,104 +187,102 @@ export default function Catalogos() {
     }
   }
 
-  const metaSeccion = SECCIONES.find(s => s.id === seccion)
+  const meta = SECCIONES.find(s => s.id === seccion)
 
   return (
-    <div className="flex h-full">
+    <div className="space-y-6">
 
-      {/* Nav lateral */}
-      <aside className="w-48 flex-shrink-0 border-r border-gray-200 bg-white py-4">
-        <p className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          Catalogos
-        </p>
+      {/* Encabezado */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">{meta?.icon} {meta?.label}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Gestion de datos maestros del sistema</p>
+        </div>
+        <button
+          onClick={abrirCrear}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          + Nuevo
+        </button>
+      </div>
+
+      {/* Tabs de seccion */}
+      <div className="flex gap-1 border-b border-gray-200">
         {SECCIONES.map(s => (
           <button
             key={s.id}
             onClick={() => setSeccion(s.id)}
-            className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors text-left ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
               seccion === s.id
-                ? 'bg-primary-50 text-primary-700 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
+                ? 'border-primary-600 text-primary-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            <span>{s.icon}</span>
-            {s.label}
+            {s.icon} {s.label}
           </button>
         ))}
-      </aside>
+      </div>
 
-      {/* Contenido */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-
-        {/* Topbar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">
-              {metaSeccion?.icon} {metaSeccion?.label}
-            </h1>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: 'Total',     value: total,    color: 'text-gray-900' },
+          { label: 'Activos',   value: activos,  color: 'text-success-500' },
+          { label: 'Inactivos', value: inactivos,color: 'text-gray-400' },
+        ].map(s => (
+          <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
           </div>
-          <button
-            onClick={abrirCrear}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            + Nuevo
-          </button>
-        </div>
+        ))}
+      </div>
 
-        {/* Stats */}
-        <div className="flex gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-          {[
-            { label: 'Total',     value: total,    color: 'text-gray-900' },
-            { label: 'Activos',   value: activos,  color: 'text-green-600' },
-            { label: 'Inactivos', value: inactivos,color: 'text-gray-400' },
-          ].map(s => (
-            <div key={s.label} className="flex items-center gap-2">
-              <span className={`text-xl font-bold ${s.color}`}>{s.value}</span>
-              <span className="text-xs text-gray-500">{s.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Busqueda */}
-        {seccion !== 'categorias' && (
-          <div className="px-6 py-3 border-b border-gray-100 flex-shrink-0">
+      {/* Busqueda — solo para no-categorias */}
+      {seccion !== 'categorias' && (
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
             <input
               type="text"
               placeholder="Buscar..."
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
-              className="w-72 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400"
+              className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 bg-white w-64"
             />
           </div>
-        )}
-
-        {/* Tabla o arbol */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {loading ? (
-            <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
-              Cargando...
-            </div>
-          ) : seccion === 'categorias' ? (
-            <CategoriaTree
-              items={itemsFiltrados}
-              onEditar={abrirEditar}
-              onInactivar={abrirConfirmar}
-            />
-          ) : (
-            <TablaGenerica
-              columnas={COLUMNAS[seccion] ?? []}
-              items={itemsFiltrados}
-              onEditar={abrirEditar}
-              onInactivar={abrirConfirmar}
-            />
-          )}
+          <button
+            onClick={cargar}
+            className="px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            ↻ Refrescar
+          </button>
         </div>
-      </div>
+      )}
+
+      {/* Contenido */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20 text-gray-400 text-sm gap-2">
+          <span className="animate-spin">⏳</span> Cargando...
+        </div>
+      ) : seccion === 'categorias' ? (
+        <CategoriaTree
+          items={itemsFiltrados}
+          onEditar={abrirEditar}
+          onInactivar={abrirConfirmar}
+        />
+      ) : (
+        <TablaGenerica
+          columnas={COLUMNAS[seccion] ?? []}
+          items={itemsFiltrados}
+          onEditar={abrirEditar}
+          onInactivar={abrirConfirmar}
+        />
+      )}
 
       {/* Modal form */}
       {modal?.tipo === 'form' && (
         <ModalForm
-          titulo={modal.item ? `Editar ${metaSeccion?.label?.slice(0,-1)}` : `Nuevo en ${metaSeccion?.label}`}
+          titulo={`${modal.item ? 'Editar' : 'Nuevo'} ${meta?.label?.slice(0, -1) ?? ''}`}
           campos={CAMPOS[seccion] ?? []}
           values={formVals}
           onChange={(k, v) => setFormVals(prev => ({ ...prev, [k]: v }))}
