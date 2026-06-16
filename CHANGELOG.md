@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.2.1] - 2026-06-15
+
+### fix: Tailwind no compilaba en el frontend
+
+- Agrega `frontend/postcss.config.js` (faltaba — causa raiz del problema)
+- Reescritura de modulo Catalogos en Tailwind puro (sin CSS custom)
+- `CategoriaTree`, `TablaGenerica`, `ModalForm`, `ModalConfirm` usan clases Tailwind consistentes con el Dashboard
+- Migracion de `pages/Dashboard.jsx` a `modules/Dashboard/index.jsx` con subcomponentes Tailwind
+
+---
+
 ## [0.2.0] - 2026-06-15
 
 ### feat: modulo de gestion de catalogos maestros (Punto 1)
@@ -63,15 +74,8 @@
 
 ## Issues pendientes para proximas sesiones
 
-- #ASCII-COMMENTS — Caracteres especiales (tildes, enye) en comentarios de archivos
-  Python existentes causan problemas de encoding en Windows. Todos los archivos nuevos
-  usan solo ASCII. Los archivos existentes se limpian en una pasada dedicada.
-- #ON-EVENT-DEPRECATED — backend/main.py usa on_event (deprecated en FastAPI moderno).
-  Migrar a lifespan event handlers.
-- #FRONTEND-MOCK — El modulo Catalogos consume la API real. Falta implementar modo
-  mock (VITE_USE_MOCK=true) equivalente al Dashboard para poder desarrollar sin backend.
-- #FRONTEND-ROUTE — Verificar que App.jsx apunta a modules/Catalogos correctamente
-  y que la ruta /catalogos/* esta declarada.
-- #PUNTO2-VALIDACION — Validar seed con backend corriendo y datos visibles en Swagger.
-- #PUNTO3-ETL — Pendiente: script/prompt para leer correos, extractos y PDFs y
-  generar transacciones.
+- #19 ASCII — Limpiar caracteres especiales de archivos Python existentes
+- #20 ON-EVENT-DEPRECATED — backend/main.py usa on_event (deprecated). Migrar a lifespan.
+- #21 FRONTEND-MOCK — Modulo Catalogos no tiene modo mock. Agregar VITE_USE_MOCK.
+- #22 LF-CRLF — Configurar .gitattributes para line endings en Windows.
+- POSTCSS-TYPE — Agregar "type": "module" a frontend/package.json.

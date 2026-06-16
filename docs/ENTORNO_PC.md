@@ -1,6 +1,6 @@
 # Entorno local de desarrollo — PC GHR
-**Fecha:** Junio 2026  
-**Propósito:** Referencia exacta de lo instalado en la PC para que claude.ai pueda dar instrucciones precisas sin adivinar rutas ni versiones.
+**Fecha:** Junio 2026
+**Proposito:** Referencia exacta de lo instalado en la PC para que claude.ai pueda dar instrucciones precisas sin adivinar rutas ni versiones.
 
 ---
 
@@ -17,13 +17,13 @@
 
 ## Software instalado
 
-| Herramienta | Versión | Notas |
+| Herramienta | Version | Notas |
 |---|---|---|
 | Python | 3.14 (default) | **NO usar para este proyecto** |
-| Python | **3.12.10** | ✅ Usar siempre con `py -3.12` |
+| Python | **3.12.10** | Usar siempre con `py -3.12` |
 | Node.js | 20+ | Para el frontend |
 | npm | incluido con Node | |
-| Git | instalado | Autenticación via browser (GitHub GCM) |
+| Git | instalado | Autenticacion via browser (GitHub GCM) |
 | Claude Desktop | instalado | Cowork + MCP configurados |
 | pip | 25.0.1 (en venv 3.12) | Ignorar aviso de upgrade |
 
@@ -36,25 +36,25 @@
 | Ruta | `C:\Users\ghriz\finanzas-mcghr\` |
 | Origen | `https://github.com/mcghrclaude-svg/finanzas-mcghr` |
 | Rama activa | `main` |
-| Clonado con | `git clone` + autenticación browser |
+| git user.email | `mcghr.claude@gmail.com` |
+| git user.name | `Hernan Rizzi` |
 
 ### Entornos virtuales Python
 
 | Componente | Ruta del venv | Estado |
 |---|---|---|
-| Backend principal | `C:\Users\ghriz\finanzas-mcghr\venv\` | ✅ Creado con py -3.12, dependencias instaladas |
-| MCP lector correos | `C:\Users\ghriz\finanzas-mcghr\mcp_servers\mcp_lector_correos\venv\` | ⏳ Pendiente crear |
+| Backend principal | `C:\Users\ghriz\finanzas-mcghr\venv\` | Creado con py -3.12, dependencias instaladas |
+| MCP lector correos | `C:\Users\ghriz\finanzas-mcghr\mcp_servers\mcp_lector_correos\venv\` | Pendiente crear |
 
-**Activar backend:**
+**Activar backend (SIEMPRE antes de cualquier comando Python):**
 ```powershell
 cd C:\Users\ghriz\finanzas-mcghr
 venv\Scripts\activate
 ```
 
-**Activar MCP:**
+**Nota PowerShell:** si los scripts .ps1 no corren, ejecutar primero:
 ```powershell
-cd C:\Users\ghriz\finanzas-mcghr\mcp_servers\mcp_lector_correos
-venv\Scripts\activate
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
 ### Frontend
@@ -62,8 +62,57 @@ venv\Scripts\activate
 | Campo | Valor |
 |---|---|
 | Ruta | `C:\Users\ghriz\finanzas-mcghr\frontend\` |
-| `node_modules/` | ✅ Instalado (`npm install` ejecutado) |
+| `node_modules/` | Instalado (`npm install` ejecutado) |
 | Puerto dev | 3000 |
+| `postcss.config.js` | REQUERIDO para que Tailwind compile en Vite — ya existe en repo |
+
+---
+
+## Variables de entorno
+
+| Archivo | Ubicacion | Uso |
+|---|---|---|
+| `.env.dev` | raiz del repo | Variables backend: ENV, DB_PATH, ANTHROPIC_API_KEY |
+| `frontend/.env.local` | `frontend/` | Variables VITE_*: VITE_API_URL, VITE_USE_MOCK, VITE_MOCK_SCENARIO |
+
+**Regla critica:** las variables `VITE_*` NO van en `.env.dev`. Pydantic las rechaza con "extra inputs not permitted". Van exclusivamente en `frontend/.env.local`.
+
+---
+
+## Comandos frecuentes
+
+**Levantar backend:**
+```powershell
+cd C:\Users\ghriz\finanzas-mcghr
+venv\Scripts\activate
+uvicorn backend.main:app --reload --port 8000
+```
+
+**Levantar frontend:**
+```powershell
+cd C:\Users\ghriz\finanzas-mcghr\frontend
+npm run dev
+```
+
+**Correr tests de integracion:**
+```powershell
+cd C:\Users\ghriz\finanzas-mcghr
+venv\Scripts\activate
+pytest tests/integration/test_catalogos.py -v
+```
+
+**Correr seed:**
+```powershell
+cd C:\Users\ghriz\finanzas-mcghr
+venv\Scripts\activate
+python -m scripts.seed.seed_catalogos
+python -m scripts.seed.seed_velocidad_historica
+```
+
+**Aplicar migracion SQL:**
+```powershell
+sqlite3 "C:\Users\ghriz\OneDrive\Finanzas MCGHR\Generales\finanzas.db" < scripts\migrations\002_dashboard_schema.sql
+```
 
 ---
 
@@ -76,7 +125,6 @@ venv\Scripts\activate
 | Schema | v1.1 aplicado |
 | Tablas | 22 |
 | Vistas | 5 |
-| Datos | Vacía — sin registros todavía |
 | Modo WAL | Activado |
 | Acceso MCP | Via `mcp__sqlite__*` apuntando a la ruta de OneDrive |
 
@@ -84,47 +132,37 @@ venv\Scripts\activate
 
 ## Claude Desktop — MCPs configurados
 
-| MCP | Descripción | Estado |
+| MCP | Descripcion | Estado |
 |---|---|---|
-| `mcp__sqlite__*` | Acceso directo a `finanzas.db` | ✅ Activo |
-| `mcp__github__*` | Acceso al repo `finanzas-mcghr` | ✅ Activo (owner: `mcghrclaude-svg`) |
-| `mcp__filesystem__*` | Acceso a archivos locales bajo `C:\Users\ghriz\.claude\` | ✅ Activo |
-| `mcp__mcp_lector_correos__*` | MCP Gmail/IMAP (server.py) | ⚠️ Registrado pero sin tokens OAuth |
+| `mcp__sqlite__*` | Acceso directo a `finanzas.db` | Activo |
+| `mcp__github__*` | Acceso al repo `finanzas-mcghr` | Activo (owner: `mcghrclaude-svg`) |
+| `mcp__filesystem__*` | Acceso a archivos locales | Activo |
+| `mcp__mcp_lector_correos__*` | MCP Gmail/IMAP | Registrado pero sin tokens OAuth |
 
 ---
 
-## Archivos locales fuera del repo (no en GitHub)
+## Archivos locales fuera del repo
 
 ### `C:\Users\ghriz\.claude\`
-Carpeta raíz de Claude Desktop. Contiene:
 
-| Archivo | Descripción | En repo |
+| Archivo | Descripcion | En repo |
 |---|---|---|
-| `config_correos.json` | Configuración real de cuentas de correo (credenciales) | ❌ NUNCA |
-| `activar.ps1` | Script PowerShell para activar el entorno de trabajo | ❌ No |
-| `instalar.ps1` | Script PowerShell de instalación inicial | ❌ No |
+| `config_correos.json` | Configuracion real de cuentas de correo | NUNCA |
+| `activar.ps1` | Script de activacion del entorno | No |
+| `instalar.ps1` | Script de instalacion inicial | No |
 
 ### `C:\Users\ghriz\.gmail-mcp\tokens\`
-| Archivo | Descripción |
+
+| Archivo | Descripcion |
 |---|---|
 | `hernan.json` | Token OAuth Gmail de GHR (sensible) |
 | `malu.json` | Token OAuth Gmail de MC (sensible) |
 
-Estado actual: **no generados** — el OAuth flow no se ha ejecutado todavía.
+Estado actual: **no generados** — el OAuth flow no se ha ejecutado.
 
 ---
 
-## Archivos de configuración en el repo local
-
-| Archivo | Ruta | Estado |
-|---|---|---|
-| `.env.dev` | `C:\Users\ghriz\finanzas-mcghr\.env.dev` | Presente (valores dev) |
-| `.env.example` | `C:\Users\ghriz\finanzas-mcghr\.env.example` | En repo — plantilla |
-| `.env` | NO existe todavía | Hay que crear copiando `.env.dev` y editando `ANTHROPIC_API_KEY` |
-
----
-
-## Cuentas bancarias del proyecto (referencia para catálogo)
+## Cuentas bancarias del proyecto
 
 ### GHR (Hernan)
 | Banco | Tipo | ID sugerido |
@@ -144,30 +182,10 @@ Estado actual: **no generados** — el OAuth flow no se ha ejecutado todavía.
 
 ---
 
-## Monedas del proyecto
-
-| ID | Nombre | Símbolo | Crypto |
-|---|---|---|---|
-| COP | Peso colombiano | $ | No |
-| USD | Dólar estadounidense | US$ | No |
-| ARS | Peso argentino | AR$ | No |
-| EUR | Euro | € | No |
-| USDT | Tether | USDT | Sí |
-
----
-
-## Personas del proyecto
-
-| ID | Nombre completo |
-|---|---|
-| GHR | Hernan Rizzi |
-| MC | Martha (apellido a confirmar) |
-
----
-
 ## Notas para instrucciones en PowerShell
 
-- Siempre usar `py -3.12` en lugar de `python` o `py` a secas (hay dos versiones instaladas)
-- Siempre activar el venv del componente correspondiente antes de correr scripts Python
-- Las rutas con espacios (OneDrive) requieren comillas: `"C:\Users\ghriz\OneDrive\Finanzas MCGHR\Generales\finanzas.db"`
-- Git se autentica via browser automáticamente — no pedir credenciales en comandos
+- Usar `py -3.12` en lugar de `python` o `py` a secas
+- Siempre activar venv antes de correr scripts Python
+- Las rutas con espacios (OneDrive) requieren comillas
+- Git se autentica via browser automaticamente
+- Scripts .ps1 requieren: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
