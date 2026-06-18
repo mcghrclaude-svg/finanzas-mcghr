@@ -9,98 +9,127 @@
 Plataforma de gestion financiera familiar para GHR (Hernan) y MC (Martha).
 Arquitectura de 4 capas:
 
-1. **Capa 0 — Base de datos:** SQLite en OneDrive (`finanzas.db`) con schema de doble entrada contable, multi-moneda
-2. **Capa 1 — Scripts Claude Desktop:** Procesamiento automatico de correos bancarios -> clasificacion con Claude API -> insercion en DB
-3. **Capa 2 — Backend FastAPI:** API REST para exposicion de datos
-4. **Capa 3 — Frontend React:** Dashboard web local
+1. **Capa 0 — Base de datos:** SQLite en OneDrive (`finanzas.db`) con schema
+   de doble entrada contable, multi-moneda
+2. **Capa 1 — ETL Claude Desktop:** Tarea programada que corre diariamente a las
+   4am. Procesa correos Gmail, PDFs en OneDrive y JSONs de la PWA. Clasifica con
+   razonamiento de Claude Desktop. Escribe en SQLite via MCP sqlite.
+3. **Capa 2 — Backend FastAPI:** API REST para que el frontend lea y escriba datos.
+4. **Capa 3 — Frontend React:** Dashboard + Inbox + gestion de catalogos.
+5. **Capa 4 — PWA Mobile:** App instalable en iPhone para captura rapida de gastos.
+   Comunica via JSONs en OneDrive (no via API).
 
 ---
 
 ## Estado por componente
 
-### Base de datos (COMPLETO)
-- **Archivo:** `C:\Users\ghriz\OneDrive\Finanzas MCGHR\Generales\finanzas.db`
-- **Schema:** v1.1 aplicado — 22 tablas + 5 vistas
-- **Tablas:** monedas, cuentas, categorias, personas, contrapartes, etiquetas, presupuestos, obligaciones, cuotas_obligacion, transacciones, tramos, asientos, posiciones, valuaciones, documentos, etiquetas_entidades, vinculos, correos_procesados, reglas_clasificacion, log_ejecuciones, items_transaccion, inbox_mobile
-- **Vistas:** v_transacciones_completas, v_saldos_cuentas, v_presupuesto_vs_real, v_reembolsos_pendientes, v_inbox_pendiente
-- **Modo WAL:** activado
+### Base de datos
 
-### Scripts Claude Desktop — Capa 1 (CODIGO COMPLETO, SIN CONECTAR)
-
-| Script | Ruta en repo | Estado |
-|---|---|---|
-| `finanzas_familia.py` | `src/finanzas_familia.py` | Codigo completo. Orquestador principal Fase 1 |
-| `lector_correos.py` | `skills/lector_correos/lector_correos.py` | Codigo completo. Gmail + IMAP |
-| `auditor_correos.py` | `skills/auditor_correos/auditor_correos.py` | Codigo completo. Detector de gaps |
-| `desproteger_pdf.py` | `skills/desproteger_pdf/desproteger_pdf.py` | Codigo completo. Usa pikepdf |
-| `server.py` (MCP) | `mcp_servers/mcp_lector_correos/server.py` | Codigo completo. FastMCP, 3 tools |
-
-**Pendiente para activar Capa 1:**
-- Configurar `config_correos.json` real en PC (NO va al repo)
-- Ejecutar OAuth flow para obtener tokens Gmail de hernan y malu
-- Cargar datos iniciales de catalogo: monedas, personas, cuentas bancarias reales
-
-### Backend FastAPI — Capa 2
-
-**Modulos COMPLETOS:**
-
-| Archivo | Estado | Notas |
-|---|---|---|
-| `backend/schemas/catalogos.py` | COMPLETO | Schemas Pydantic v2, validacion IDs y niveles |
-| `backend/repositories/catalogos_repo.py` | COMPLETO | CRUD + arbol manual + cascada inactivacion |
-| `backend/api/v1/routers/catalogos.py` | COMPLETO | Reemplaza TODOs — categorias, cuentas, contrapartes, personas |
-| `backend/repositories/presupuesto_repo.py` | COMPLETO | obtener_por_mes, gasto_acumulado, velocidad_historica, patrimonio |
-| `backend/services/presupuesto_service.py` | COMPLETO | Logica riesgo por velocidad, proyeccion suavizada 70/30 |
-| `backend/api/v1/routers/presupuestos.py` | COMPLETO | /ejecucion, /periodo-activo, CRUD |
-| `backend/api/v1/routers/dashboard.py` | COMPLETO | /resumen — agrega 4 metricas en una sola llamada |
-| `backend/models/periodo.py` | COMPLETO | PeriodoFinanciero |
-| `backend/models/velocidad_historica.py` | COMPLETO | VelocidadHistorica |
-
-**Modulos PENDIENTES (estructura vacia):**
-- `backend/api/v1/routers/`: transacciones, obligaciones, inversiones, inbox, reglas, reportes, analitica, backup
-- `backend/schemas/`: solo catalogos.py completo
-- `backend/services/`: solo presupuesto_service.py completo
-
-**Bugs corregidos:**
-- `backend/models/__init__.py` — importaba `Regla` pero la clase es `ReglaClasificacion`. Corregido.
-- `backend/main.py` — usa `on_event` (deprecated). Pendiente migrar a `lifespan` (issue #20).
-
-### Scripts y tests
-
-| Archivo | Estado |
+| Item | Estado |
 |---|---|
-| `scripts/seed/seed_catalogos.py` | COMPLETO — 2 personas, 25 cats, 12 cuentas, 22 contrapartes, 10 reglas |
-| `scripts/seed/seed_velocidad_historica.py` | COMPLETO — datos dummy 2026-04 y 2026-05 para desarrollo |
-| `scripts/migrations/002_dashboard_schema.sql` | COMPLETO — periodos_financieros, velocidad_historica |
-| `tests/conftest.py` | CORREGIDO — importa todos los modelos antes de create_all |
-| `tests/integration/test_catalogos.py` | COMPLETO — 22/22 tests passing |
+| Schema v1.1 aplicado (22 tablas + 5 vistas) | COMPLETO |
+| Schema v1.2 (campos correlacion ETL) | PENDIENTE — Entrega 3B |
+| Seed catalogos (25 categorias, 12 cuentas, 22 contrapartes, 2 personas) | COMPLETO |
 
-### Frontend React — Capa 3
+### Capa 1 — ETL (Claude Desktop)
 
-**Modulos COMPLETOS (Tailwind puro, sin CSS custom):**
-
-| Modulo | Ruta | Estado |
-|---|---|---|
-| Dashboard | `frontend/src/modules/Dashboard/` | COMPLETO — index.jsx + 4 subcomponentes Tailwind |
-| Catalogos | `frontend/src/modules/Catalogos/` | COMPLETO — index, CategoriaTree, TablaGenerica, ModalForm, ModalConfirm |
-
-**Archivos de soporte:**
-
-| Archivo | Estado |
+| Item | Estado |
 |---|---|
-| `frontend/src/hooks/useDashboard.js` | COMPLETO — mock/API toggle, formatCOP, nivelRiesgoMeta |
-| `frontend/src/mock/dashboardMock.js` | COMPLETO — 2 escenarios: con_historial / sin_historial |
-| `frontend/src/api/client.js` | COMPLETO — axios con interceptor errores FastAPI |
-| `frontend/src/api/catalogos.js` | COMPLETO — cliente API catalogos |
-| `frontend/postcss.config.js` | COMPLETO — requerido para Tailwind v3 + Vite |
+| Skill lector_correos.py | COMPLETO — codigo listo |
+| Skill desproteger_pdf.py | COMPLETO — codigo listo |
+| Skill auditor_correos.py | COMPLETO — codigo listo |
+| MCP server mcp_lector_correos | COMPLETO — codigo listo |
+| Tokens OAuth Gmail hernan y malu | PENDIENTE — accion manual |
+| config_correos.json real en PC | PENDIENTE — accion manual |
+| Prompt tarea programada Claude Desktop | PENDIENTE — Entrega 3B |
+| Tarea programada configurada (4am daily) | PENDIENTE — Entrega 3B |
 
-**Modulos PENDIENTES (placeholder):**
-- `frontend/src/modules/`: Transacciones, Inbox, Presupuesto, Obligaciones, Inversiones, Analitica, Backup
+**Nota arquitectural importante (Junio 2026):**
+El ETL NO es un script Python standalone que llama a Claude API.
+Es una tarea programada de Claude Desktop (/schedule) que usa los MCP tools
+configurados en la PC. Claude Desktop es el motor de razonamiento y
+orquestacion. Los skills Python son herramientas que Claude Desktop invoca.
+Ver: `docs/ETL_DISENO_FUNCIONAL.md`
 
-**Nota arquitectura frontend:**
-- `App.jsx` importa de `modules/` (NO de `pages/`)
-- `pages/Dashboard.jsx` y `components/dashboard/*` quedan como referencia historica, no se usan
-- Clases de color custom disponibles: `primary-{50,500,600,700,900}`, `danger-{500,100}`, `warning-{500,100}`, `success-{500,100}`
+### Capa 2 — Backend FastAPI
+
+| Item | Estado |
+|---|---|
+| Estructura de carpetas y main.py | COMPLETO |
+| Modelos SQLAlchemy (backend/models/) | COMPLETO |
+| Core: database.py, config.py, exceptions.py | COMPLETO |
+| Router catalogos + service + repo + tests | COMPLETO — 22/22 tests passing |
+| Router inbox + service + repo + tests | PENDIENTE — Entrega 3A |
+| Router transacciones (implementacion real) | PENDIENTE |
+| Router presupuestos (implementacion real) | PENDIENTE |
+| Resto de routers | PENDIENTE |
+| Endpoint export catalogos para PWA | PENDIENTE — Entrega 3C |
+
+### Capa 3 — Frontend React
+
+| Item | Estado |
+|---|---|
+| Estructura Vite + Tailwind + Zustand | COMPLETO |
+| Modulo Catalogos | COMPLETO |
+| Modulo Inbox | PENDIENTE — Entrega 3C |
+| Dashboard | COMPLETO (con mock data) |
+| Resto de modulos | PENDIENTE |
+
+### Capa 4 — PWA Mobile
+
+| Item | Estado |
+|---|---|
+| Diseno funcional | PENDIENTE — Entrega 4 |
+| Implementacion | PENDIENTE — Entrega 4 |
+
+---
+
+## Roadmap de entregas activo
+
+### Punto 3 — ETL + Inbox (en progreso)
+
+| Entrega | Descripcion | Estado |
+|---|---|---|
+| 3A | Backend Inbox: service + repo + router real + tests + seed | PENDIENTE |
+| 3B | Schema v1.2 + prompt ETL Claude Desktop + config tarea programada | PENDIENTE |
+| 3C | Frontend pantalla Inbox + endpoint export catalogos PWA | PENDIENTE |
+
+**Orden:** 3A → validar → 3B → validar → 3C → validar
+
+### Punto 4 — PWA Mobile (futuro)
+
+| Entrega | Descripcion |
+|---|---|
+| 4A | PWA React: captura rapida, foto, catalogacion opcional |
+| 4B | Formato JSON OneDrive + integracion con ETL |
+
+---
+
+## Decisiones de arquitectura registradas (Junio 2026)
+
+| Decision | Resultado | Razon |
+|---|---|---|
+| Motor del ETL | Claude Desktop tarea programada (no script Python + Claude API) | Sin costo adicional de API, razonamiento mas sofisticado, /schedule nativo |
+| Schedule ETL | Diario a las 4am | Peticion del usuario |
+| ETL escribe en DB | Directo a SQLite via MCP sqlite (no via API REST) | ETL debe funcionar independientemente del backend |
+| Aprendizaje ETL | Lee reglas_clasificacion + ultimas 50 tx confirmadas como contexto | Mas preciso que solo patrones regex |
+| Correlacion eventos | Campo id_evento en transacciones (hash monto+cuenta+fecha) | Permite unificar notificacion + factura + extracto en una sola tx |
+| Enriquecimiento | Campo estado_enriquecimiento (inicial/enriquecido/completo) | Saber si una tx todavia puede recibir mas datos |
+| Catalogos para PWA | Backend exporta JSON a OneDrive, PWA lo lee desde ahi | Sin llamadas API desde el celular, funciona offline |
+| PWA comunicacion | JSONs en OneDrive, sin API calls | Sin servidor adicional, funciona sin PC encendida |
+
+---
+
+## Issues abiertos
+
+| # | Titulo | Prioridad | Notas |
+|---|---|---|---|
+| #2 | Tokens OAuth Gmail hernan y malu | ALTA — bloqueante para ETL real | Accion manual del usuario |
+| #3 | config_correos.json real en PC | ALTA — bloqueante para ETL real | No va al repo |
+| #4 | Configurar autoforward iPhone Martha | MEDIA | Martha debe hacerlo en su iPhone |
+| #5 | Regenerar token GitHub | URGENTE | Token anterior expuesto en chat |
+| #7 | Schema v1.2 — campos correlacion ETL | ALTA — Entrega 3B | id_evento + estado_enriquecimiento |
+| #8 | Prompt ETL Claude Desktop | ALTA — Entrega 3B | Ver docs/DISENO_3B_ETL_PROMPT.md |
 
 ---
 
@@ -108,18 +137,22 @@ Arquitectura de 4 capas:
 
 | Archivo | Ubicacion en PC | Razon |
 |---|---|---|
-| `config_correos.json` | `C:\Users\ghriz\.claude\` | Contiene credenciales reales |
+| `config_correos.json` | `C:\Users\ghriz\.claude\` | Contiene credenciales — en .gitignore |
 | Tokens OAuth Gmail | `C:\Users\ghriz\.gmail-mcp\tokens\` | Tokens sensibles |
-| `finanzas.db` | OneDrive | Base de datos con datos reales |
+| `finanzas.db` | OneDrive | DB con datos reales — en .gitignore |
 | `.env` / `.env.prod` | raiz del repo local | Variables con valores reales |
-| `frontend/.env.local` | `frontend/` | Variables VITE_* con valores reales |
 
 ---
 
-## Proximos pasos recomendados (en orden)
+## Documentacion del Punto 3
 
-1. Seed real: ejecutar `seed_catalogos.py` con backend corriendo y verificar en Swagger
-2. Issue #19 (ASCII): limpiar caracteres especiales de archivos Python existentes
-3. Issue #21 (FRONTEND-MOCK): agregar modo mock al modulo Catalogos
-4. Implementar modulo Transacciones (backend + frontend)
-5. Conectar Capa 1 (lector_correos) con DB real
+| Documento | Contenido |
+|---|---|
+| `docs/ETL_DISENO_FUNCIONAL.md` | Que hace el ETL, flujo completo, correlacion de eventos, clasificacion |
+| `docs/DISENO_3A_INBOX_BACKEND.md` | Endpoints inbox, logica de negocio, aprendizaje por confirmacion |
+| `docs/DISENO_3B_ETL_PROMPT.md` | Schema v1.2, borrador del prompt ETL, configuracion Claude Desktop |
+| `docs/DISENO_3C_FRONTEND_INBOX_PWA.md` | Pantalla Inbox React, exportacion catalogos, formato JSON PWA |
+
+---
+
+*Ultima actualizacion: Junio 2026 — Plataforma Financiera MCGHR*

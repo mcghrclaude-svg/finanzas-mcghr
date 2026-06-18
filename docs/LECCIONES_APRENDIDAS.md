@@ -1,68 +1,135 @@
-# Lecciones aprendidas — proyecto Finanzas MCGHR
-**Reglas que aplican a TODOS los chats futuros**
+# Lecciones Aprendidas — Finanzas MCGHR
+**Proposito:** Errores ya cometidos y decisiones ya tomadas. Leer ANTES de escribir codigo.
 
 ---
 
-## Antes de escribir codigo
+## Reglas criticas de desarrollo
 
-1. **SIEMPRE leer el repo completo antes de escribir una sola linea.** Usar web_fetch sobre el repo publico o project_knowledge_search. Nunca asumir la estructura.
-
-2. **SIEMPRE verificar que los modelos SQLAlchemy reales coinciden con lo que se va a usar.** El modelo Categoria NO tiene relationship "hijos" — el arbol se construye manualmente.
-
-3. **SIEMPRE verificar el Base correcto:** los modelos usan `backend/models/base.py`, no `backend/core/database.py`.
-
-4. **El conftest.py de tests DEBE importar todos los modelos explicitamente antes de create_all**, o las tablas no se crean en la DB en memoria.
-
----
-
-## Entorno y configuracion
-
-1. **`postcss.config.js` es REQUERIDO para Tailwind v3 + Vite.** Si no existe, ninguna clase Tailwind compila. El archivo debe estar en `frontend/` (no en la raiz del repo).
-
-2. **Las variables `VITE_*` NO van en `.env.dev`** (las lee Python/pydantic y falla con "extra inputs not permitted"). Van en `frontend/.env.local`.
-
-3. **Siempre activar venv antes de cualquier comando Python:**
-   ```powershell
-   venv\Scripts\activate
-   ```
-
-4. **Scripts `.ps1` en Windows requieren:**
-   ```powershell
-   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   ```
+1. Siempre leer el repo completo antes de escribir codigo
+2. Los modelos SQLAlchemy estan en backend/models/ — no crear modelos paralelos
+3. La Base real esta en backend/models/base.py (NO en database.py)
+4. conftest.py DEBE importar todos los modelos explicitamente para que
+   Base.metadata.create_all los detecte
+5. Variables VITE_* NO van en .env.dev — van en frontend/.env.local
+6. Nunca caracteres especiales en codigo — solo ASCII
+7. Modulos nuevos van en frontend/src/modules/ NO en pages/
+8. Tailwind puro — no CSS custom, no variables --color-*
+9. Cada entrega incluye script instalador .ps1 con $SRC = $PSScriptRoot
+10. Archivos con mismo nombre se entregan con nombres diferenciados
+    (ej: backend_schemas_inbox.py no schemas.py)
+11. Flujo: claude.ai genera -> PC valida -> fix en claude.ai (nunca al reves)
+12. Siempre activar venv: venv\Scripts\activate
+13. Scripts PS1: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+14. git pull antes de git push
+15. El repo tiene dos DB: la real en OneDrive (NO tocar) y la de dev local
 
 ---
 
-## Flujo de desarrollo
+## Arquitectura ETL — decision critica (Junio 2026)
 
-1. **El flujo es:** claude.ai genera codigo -> PC ejecuta y valida -> si hay error, diagnostico en PC -> fix en claude.ai -> nunca al reves.
+**El ETL no es un script Python que llama a Claude API.**
 
-2. **Cada entrega de archivos debe incluir un script instalador `.ps1`** con `$SRC = $PSScriptRoot` para que funcione sin importar donde esten los archivos.
+Despues de analizar las capacidades de Claude Desktop (/schedule), se decidio:
 
-3. **Los archivos con el mismo nombre** (maestros.py x3) deben entregarse con nombres diferenciados (`backend_schemas_maestros.py`, etc.)
+- El ETL es una **tarea programada de Claude Desktop**
+- Usa los MCP tools configurados en la PC (sqlite, mcp_lector_correos, filesystem)
+- Claude Desktop es el motor de razonamiento — no hay llamada a anthropic.Anthropic()
+- Los skills Python (lector_correos.py, desproteger_pdf.py) son herramientas
+  que Claude Desktop invoca via MCP, no el motor principal
 
-4. **Nunca usar caracteres especiales (tildes, enye) en ningun archivo** — ni comentarios, ni strings, ni docs dentro del codigo. Solo ASCII puro.
+**Por que:** Claude Desktop tiene scheduler nativo (/schedule), no requiere
+suscripcion adicional de API, y puede razonar sobre casos ambiguos mejor que
+un script deterministico con patrones regex.
 
----
-
-## Stack y patrones del repo
-
-1. **El frontend usa Tailwind puro.** NO usar CSS custom ni variables `--color-*`. Las clases de color custom disponibles son: `primary-{50,500,600,700,900}`, `danger-{500,100}`, `warning-{500,100}`, `success-{500,100}`.
-
-2. **Los modulos nuevos van en `frontend/src/modules/NombreModulo/index.jsx`.** NO en `pages/`.
-
-3. **Toast notifications:** `react-hot-toast` (ya instalado). `import toast from 'react-hot-toast'`.
-
-4. **El Layout (sidebar + header) ya existe en `Layout.jsx`.** Los modulos van dentro del main — no necesitan su propio layout.
-
-5. **El patron de repo es: nunca borrado fisico.** Solo soft-delete (`activa = False`).
+**Implicacion:** `src/finanzas_familia.py` existente es codigo legado /
+referencia. El ETL real sera el prompt de la tarea programada (Entrega 3B).
 
 ---
 
-## Bugs conocidos y resueltos
+## ETL escribe directo a SQLite — no via API REST
 
-1. **`backend/models/__init__.py`** importaba `Regla` pero la clase es `ReglaClasificacion`. Ya corregido.
+El ETL usa `mcp__sqlite__*` para escribir directamente en `finanzas.db`.
+No llama a los endpoints del backend.
 
-2. **El Dashboard real** estaba en `pages/Dashboard.jsx` pero `App.jsx` importaba de `modules/Dashboard` (placeholder). Ya migrado a `modules/`.
+**Por que:** el ETL debe poder correr a las 4am independientemente de si
+el backend FastAPI esta levantado. Son procesos independientes.
 
-3. **`postcss.config.js`** no existia en el repo — Tailwind no compilaba. Ya agregado.
+**Implicacion:** la DB puede tener datos que el backend aun no expone. Eso
+esta bien — el backend es read-mostly para el frontend.
+
+---
+
+## Correlacion de eventos — campo id_evento
+
+El mismo hecho economico puede llegar por multiples canales:
+- Notificacion del banco por correo (mismo dia)
+- Factura adjunta en el correo (mismo dia)
+- Linea en el extracto mensual (4 semanas despues)
+
+Para no duplicar transacciones, el ETL genera un `id_evento` deterministico
+(hash de monto + cuenta + fecha con tolerancia +/-3 dias + titular).
+
+Si dos eventos tienen el mismo id_evento, el ETL enriquece la transaccion
+existente en lugar de crear una nueva.
+
+Campo `estado_enriquecimiento`: inicial -> enriquecido -> completo
+
+Ver: docs/ETL_DISENO_FUNCIONAL.md seccion "Correlacion de eventos"
+
+---
+
+## PWA comunica via OneDrive, no via API
+
+La PWA en el iPhone escribe JSONs en OneDrive. No llama a ningun endpoint
+del backend. El ETL lee esos JSONs en la proxima ejecucion.
+
+**Por que:** no requiere que la PC este encendida para registrar un gasto
+desde el celular. El procesamiento ocurre en la siguiente corrida del ETL.
+
+El backend si expone un endpoint `GET /api/v1/catalogos/export/pwa` pero
+ese endpoint escribe en OneDrive — la PWA lee desde OneDrive, no desde la API.
+
+---
+
+## Modelo Transaccion — campos TODO pendientes
+
+El modelo `backend/models/transaccion.py` tiene los modelos `Tramo` y `Asiento`
+con TODO — campos incompletos. Completar antes de implementar el servicio
+de transacciones.
+
+El campo `completitud` en el modelo SQLAlchemy es `Numeric(3,2)` (numero 0.0-1.0)
+pero en el schema SQL v1.1 es `TEXT` (minimo|parcial|completo). Usar el del
+modelo SQLAlchemy — es mas preciso para calculos de prioridad en el inbox.
+
+El modelo no tiene los campos nuevos de v1.2 (id_evento, estado_enriquecimiento).
+Agregar en la entrega 3B junto con la migracion SQL.
+
+---
+
+## Inbox — tabla usada
+
+El Inbox de revision humana usa la tabla `transacciones` directamente,
+filtrando por `estado = 'pendiente'` y `revisado_humano = 0`.
+
+La tabla `inbox_mobile` es distinta — es el registro de que JSONs de OneDrive
+ya fueron procesados por el ETL (para no reprocesar). No es la cola de revision.
+
+Confusion frecuente: el nombre "inbox_mobile" sugiere que es el inbox de la
+app, pero es el log de procesamiento de archivos JSON de la PWA.
+
+---
+
+## Entorno PC — referencia
+
+| Dato | Valor |
+|---|---|
+| OS | Windows 11 |
+| Usuario | ghriz |
+| Python a usar | py -3.12 (NO el 3.14 que es el default) |
+| Repo | C:\Users\ghriz\finanzas-mcghr\ |
+| venv backend | C:\Users\ghriz\finanzas-mcghr\venv\ |
+| DB produccion | C:\Users\ghriz\OneDrive\Finanzas MCGHR\Generales\finanzas.db |
+
+---
+
+*Ultima actualizacion: Junio 2026 — Plataforma Financiera MCGHR*
