@@ -1,18 +1,13 @@
 """
 InboxRepository — acceso a datos para el modulo Inbox.
-
-El inbox opera sobre la tabla `transacciones` filtrando por:
-    estado = 'pendiente' AND revisado_humano = 0
-
-Al confirmar o descartar se actualiza la transaccion y,
-si hubo correccion de categoria, se escribe en reglas_clasificacion.
+Corregido para usar tipos nativos (float, str) en lugar de Decimal,
+alineado con la DB real donde confianza=REAL y completitud=TEXT.
 """
 
 from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import Optional
 
 from sqlalchemy import select, func, update, and_
@@ -28,10 +23,6 @@ class InboxRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # ------------------------------------------------------------------
-    # Listar pendientes
-    # ------------------------------------------------------------------
-
     async def listar(
         self,
         estado: str = "pendiente",
@@ -39,10 +30,6 @@ class InboxRepository:
         cursor: Optional[str] = None,
         limit: int = 50,
     ) -> tuple[list[Transaccion], Optional[str]]:
-        """
-        Retorna (items, next_cursor).
-        Orden: completitud ASC (las mas incompletas primero), luego creado_en ASC.
-        """
         q = (
             select(Transaccion)
             .options(
@@ -54,7 +41,7 @@ class InboxRepository:
         )
 
         if estado == "pendiente":
-            q = q.where(Transaccion.revisado_humano == False)  # noqa: E712
+            q = q.where(Transaccion.revisado_humano == 0)
 
         if origen:
             q = q.where(Transaccion.origen == origen)
@@ -75,15 +62,11 @@ class InboxRepository:
 
         return list(items), next_cursor
 
-    # ------------------------------------------------------------------
-    # Contar pendientes (para next_cursor y stats)
-    # ------------------------------------------------------------------
-
     async def contar_pendientes(self) -> int:
         q = select(func.count()).where(
             and_(
                 Transaccion.estado == "pendiente",
-                Transaccion.revisado_humano == False,  # noqa: E712
+                Transaccion.revisado_humano == 0,
             )
         )
         result = await self.db.execute(q)
@@ -94,8 +77,8 @@ class InboxRepository:
         q = select(func.count()).where(
             and_(
                 Transaccion.estado == "pendiente",
-                Transaccion.revisado_humano == False,  # noqa: E712
-                Transaccion.confianza < Decimal("0.60"),
+                Transaccion.revisado_humano == 0,
+                Transaccion.confianza < 0.60,
             )
         )
         result = await self.db.execute(q)
@@ -106,16 +89,12 @@ class InboxRepository:
         q = select(func.count()).where(
             and_(
                 Transaccion.estado == "confirmado",
-                Transaccion.revisado_humano == True,  # noqa: E712
+                Transaccion.revisado_humano == 1,
                 func.date(Transaccion.actualizado_en) == str(hoy),
             )
         )
         result = await self.db.execute(q)
         return result.scalar() or 0
-
-    # ------------------------------------------------------------------
-    # Detalle
-    # ------------------------------------------------------------------
 
     async def obtener_por_id(self, tx_id: str) -> Optional[Transaccion]:
         q = (
@@ -130,23 +109,13 @@ class InboxRepository:
         result = await self.db.execute(q)
         return result.scalar_one_or_none()
 
-    # ------------------------------------------------------------------
-    # Actualizar campos (PATCH)
-    # ------------------------------------------------------------------
-
     async def actualizar(self, tx_id: str, campos: dict) -> Optional[Transaccion]:
         campos["actualizado_en"] = datetime.now(timezone.utc)
         await self.db.execute(
-            update(Transaccion)
-            .where(Transaccion.id == tx_id)
-            .values(**campos)
+            update(Transaccion).where(Transaccion.id == tx_id).values(**campos)
         )
         await self.db.flush()
         return await self.obtener_por_id(tx_id)
-
-    # ------------------------------------------------------------------
-    # Confirmar
-    # ------------------------------------------------------------------
 
     async def confirmar(
         self,
@@ -154,15 +123,10 @@ class InboxRepository:
         id_categoria_corregida: Optional[str] = None,
         notas: Optional[str] = None,
     ) -> tuple[Optional[Transaccion], bool]:
-        """
-        Confirma una transaccion pendiente.
-        Retorna (transaccion_actualizada, regla_creada).
-        """
         tx = await self.obtener_por_id(tx_id)
         if not tx:
             return None, False
 
-        # Idempotencia: ya estaba confirmada
         if tx.estado == "confirmado" and tx.revisado_humano:
             return tx, False
 
@@ -173,7 +137,7 @@ class InboxRepository:
 
         campos: dict = {
             "estado": "confirmado",
-            "revisado_humano": True,
+            "revisado_humano": 1,
             "actualizado_en": datetime.now(timezone.utc),
         }
         if id_categoria_corregida:
@@ -188,16 +152,10 @@ class InboxRepository:
 
         regla_creada = False
         if hubo_correccion and tx.fuente:
-            regla_creada = await self._crear_o_actualizar_regla(
-                tx, id_categoria_corregida
-            )
+            regla_creada = await self._crear_o_actualizar_regla(tx, id_categoria_corregida)
 
         tx_actualizada = await self.obtener_por_id(tx_id)
         return tx_actualizada, regla_creada
-
-    # ------------------------------------------------------------------
-    # Descartar
-    # ------------------------------------------------------------------
 
     async def descartar(self, tx_id: str) -> Optional[Transaccion]:
         tx = await self.obtener_por_id(tx_id)
@@ -209,31 +167,20 @@ class InboxRepository:
             .where(Transaccion.id == tx_id)
             .values(
                 estado="anulado",
-                revisado_humano=True,
+                revisado_humano=1,
                 actualizado_en=datetime.now(timezone.utc),
             )
         )
         await self.db.flush()
         return await self.obtener_por_id(tx_id)
 
-    # ------------------------------------------------------------------
-    # Reglas de aprendizaje
-    # ------------------------------------------------------------------
-
     async def _crear_o_actualizar_regla(
         self, tx: Transaccion, id_categoria_nueva: str
     ) -> bool:
-        """
-        Si el correo fuente tiene patron identificable, crea o actualiza
-        una regla en reglas_clasificacion con creada_por='humano'.
-        Retorna True si se creo/actualizo la regla.
-        """
         if not tx.id_correo:
             return False
 
-        patron = tx.id_correo[:50] if tx.id_correo else None
-        if not patron:
-            return False
+        patron = tx.id_correo[:50]
 
         q = select(ReglaClasificacion).where(
             and_(
@@ -250,9 +197,7 @@ class InboxRepository:
             regla_existente.id_categoria = id_categoria_nueva
             regla_existente.id_contraparte = tx.id_contraparte
             regla_existente.ultima_coincidencia = ahora
-            regla_existente.total_coincidencias = (
-                (regla_existente.total_coincidencias or 0) + 1
-            )
+            regla_existente.total_coincidencias = (regla_existente.total_coincidencias or 0) + 1
             await self.db.flush()
         else:
             nueva_regla = ReglaClasificacion(
@@ -261,7 +206,7 @@ class InboxRepository:
                 id_categoria=id_categoria_nueva,
                 id_contraparte=tx.id_contraparte,
                 tipo_transaccion=tx.tipo,
-                peso=Decimal("1.0"),
+                peso=1.0,
                 fuente="usuario",
                 activa=True,
                 creado_en=ahora,
