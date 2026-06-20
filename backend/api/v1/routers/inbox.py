@@ -1,76 +1,228 @@
 """
 Router: /api/v1/inbox
-Cola de entrada desde el ETL: transacciones propuestas pendientes de confirmación.
+Cola de revision humana: transacciones propuestas por el ETL pendientes de confirmacion.
 
 Flujo:
-    1. ETL procesa correos / PDFs / JSONs mobile y escribe en `inbox_mobile`
-       con estado = 'pendiente' y completitud calculada (0.0 – 1.0)
-    2. Esta API expone el inbox para que la web app muestre la cola de revisión
-    3. El usuario confirma, edita o descarta cada ítem
-    4. Al confirmar, se crea la transacción definitiva en `transacciones`
+    1. ETL (tarea programada Claude Desktop, 4am) escribe en `transacciones`
+       con estado='pendiente', revisado_humano=0, confianza y completitud calculadas.
+    2. Esta API expone la cola para que el frontend muestre los items al usuario.
+    3. El usuario confirma, edita o descarta cada item.
+    4. Al confirmar con correccion de categoria, se genera regla de aprendizaje.
 
-Nota: las transacciones ya confirmadas por el ETL con alta confianza
-(completitud >= 0.85 y regla de clasificación matcheada) se mueven directamente
-a `transacciones` y NO pasan por esta cola.
+Orden de items: completitud ASC (los mas incompletos primero).
 """
 
-from fastapi import APIRouter, Depends, Query
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.core.database import get_db
+from backend.services.inbox_service import InboxService
+from backend.schemas.inbox import (
+    InboxListResponse,
+    InboxItemSummary,
+    InboxItemRead,
+    InboxItemPatch,
+    ConfirmarRequest,
+    ConfirmarResponse,
+    ConfirmarLoteRequest,
+    ConfirmarLoteResponse,
+    InboxStatsOut,
+)
 
 router = APIRouter()
 
 
-@router.get("/")
+# ---------------------------------------------------------------------------
+# GET /inbox/stats  — va ANTES de /{inbox_id} para no capturar "stats" como ID
+# ---------------------------------------------------------------------------
+
+@router.get("/stats", response_model=InboxStatsOut)
+async def stats_inbox(db: AsyncSession = Depends(get_db)):
+    """
+    Contadores rapidos para el badge de notificacion del Dashboard.
+    pendientes: total sin revisar.
+    alta_prioridad: pendientes con confianza < 0.60.
+    confirmados_hoy: confirmados en el dia de hoy.
+    """
+    service = InboxService(db)
+    return await service.stats()
+
+
+# ---------------------------------------------------------------------------
+# GET /inbox
+# ---------------------------------------------------------------------------
+
+@router.get("/", response_model=InboxListResponse)
 async def listar_inbox(
-    estado: str = Query("pendiente", description="pendiente | confirmado | descartado"),
+    estado: str = Query("pendiente", description="pendiente | confirmado | anulado"),
     origen: str | None = Query(None, description="email | pdf | mobile | manual"),
-    cursor: str | None = Query(None),
-    limit: int = Query(50, le=200),
+    cursor: str | None = Query(None, description="Paginacion por cursor"),
+    limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Lista ítems del inbox. Por defecto muestra solo los pendientes.
-    Ordena por completitud ASC (los más incompletos primero — requieren más atención).
+    Lista items del inbox ordenados por completitud ASC.
+    Por defecto muestra solo los pendientes sin revisar.
     """
-    return {"items": [], "next_cursor": None}
+    service = InboxService(db)
+    resultado = await service.listar(
+        estado=estado,
+        origen=origen,
+        cursor=cursor,
+        limit=limit,
+    )
+
+    items_out = [
+        InboxItemSummary(
+            id=tx.id,
+            origen=tx.origen,
+            fecha=tx.fecha,
+            monto=_monto_tx(tx),
+            moneda=_moneda_tx(tx),
+            descripcion=tx.descripcion,
+            id_categoria=tx.id_categoria,
+            nombre_categoria=tx.categoria.nombre if tx.categoria else None,
+            id_contraparte=tx.id_contraparte,
+            nombre_contraparte=tx.contraparte.nombre if tx.contraparte else None,
+            confianza=float(tx.confianza) if tx.confianza is not None else None,
+            completitud=float(tx.completitud) if tx.completitud is not None else None,
+            estado=tx.estado,
+            creado_en=tx.creado_en,
+        )
+        for tx in resultado["items"]
+    ]
+
+    return InboxListResponse(
+        items=items_out,
+        next_cursor=resultado["next_cursor"],
+        total_pendientes=resultado["total_pendientes"],
+    )
 
 
-@router.get("/stats")
-async def stats_inbox(db: AsyncSession = Depends(get_db)):
+# ---------------------------------------------------------------------------
+# POST /inbox/confirmar-lote  — va ANTES de /{inbox_id}
+# ---------------------------------------------------------------------------
+
+@router.post("/confirmar-lote", response_model=ConfirmarLoteResponse)
+async def confirmar_lote(
+    body: ConfirmarLoteRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """
-    Contadores rápidos para el badge de notificación del Dashboard.
-    Devuelve: total pendientes, pendientes con completitud < 0.5 (alta prioridad).
+    Confirma multiples items en una sola operacion.
+    Util para confirmar rapidamente los items de alta confianza.
     """
-    return {"pendientes": 0, "alta_prioridad": 0, "confirmados_hoy": 0}
+    service = InboxService(db)
+    return await service.confirmar_lote(body.ids)
 
 
-@router.get("/{inbox_id}")
-async def detalle_inbox_item(inbox_id: str, db: AsyncSession = Depends(get_db)):
-    # TODO: incluir raw_data y sugerencias de clasificación del ETL
-    return {}
+# ---------------------------------------------------------------------------
+# GET /inbox/{inbox_id}
+# ---------------------------------------------------------------------------
 
-
-@router.patch("/{inbox_id}")
-async def editar_inbox_item(inbox_id: str, db: AsyncSession = Depends(get_db)):
-    """
-    Permite editar campos antes de confirmar:
-    monto, fecha, categoría, cuenta, contraparte, descripción.
-    """
-    return {}
-
-
-@router.post("/{inbox_id}/confirmar")
-async def confirmar_inbox_item(
+@router.get("/{inbox_id}", response_model=InboxItemRead)
+async def detalle_inbox_item(
     inbox_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Mueve el ítem de inbox a transacciones confirmadas.
-    Si hubo corrección de categoría, genera/actualiza regla de clasificación.
-    """
-    return {}
+    """Detalle completo de un item, incluyendo datos crudos del ETL."""
+    service = InboxService(db)
+    tx = await service.obtener(inbox_id)
 
+    return InboxItemRead(
+        id=tx.id,
+        origen=tx.origen,
+        fecha=tx.fecha,
+        monto=_monto_tx(tx),
+        moneda=_moneda_tx(tx),
+        descripcion=tx.descripcion,
+        tipo=tx.tipo,
+        id_categoria=tx.id_categoria,
+        nombre_categoria=tx.categoria.nombre if tx.categoria else None,
+        id_contraparte=tx.id_contraparte,
+        nombre_contraparte=tx.contraparte.nombre if tx.contraparte else None,
+        confianza=float(tx.confianza) if tx.confianza is not None else None,
+        completitud=float(tx.completitud) if tx.completitud is not None else None,
+        estado=tx.estado,
+        es_reembolsable=bool(tx.es_reembolsable),
+        id_persona=tx.id_persona,
+        id_correo=tx.id_correo,
+        notas=tx.notas,
+        creado_en=tx.creado_en,
+        actualizado_en=tx.actualizado_en,
+    )
+
+
+# ---------------------------------------------------------------------------
+# PATCH /inbox/{inbox_id}
+# ---------------------------------------------------------------------------
+
+@router.patch("/{inbox_id}", response_model=InboxItemRead)
+async def editar_inbox_item(
+    inbox_id: str,
+    body: InboxItemPatch,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Edita campos de un item antes de confirmar.
+    Solo actualiza los campos presentes en el body (los None se ignoran).
+    """
+    service = InboxService(db)
+    campos = body.model_dump(exclude_none=True)
+    tx = await service.editar(inbox_id, campos)
+
+    return InboxItemRead(
+        id=tx.id,
+        origen=tx.origen,
+        fecha=tx.fecha,
+        monto=_monto_tx(tx),
+        moneda=_moneda_tx(tx),
+        descripcion=tx.descripcion,
+        tipo=tx.tipo,
+        id_categoria=tx.id_categoria,
+        nombre_categoria=tx.categoria.nombre if tx.categoria else None,
+        id_contraparte=tx.id_contraparte,
+        nombre_contraparte=tx.contraparte.nombre if tx.contraparte else None,
+        confianza=float(tx.confianza) if tx.confianza is not None else None,
+        completitud=float(tx.completitud) if tx.completitud is not None else None,
+        estado=tx.estado,
+        es_reembolsable=bool(tx.es_reembolsable),
+        id_persona=tx.id_persona,
+        id_correo=tx.id_correo,
+        notas=tx.notas,
+        creado_en=tx.creado_en,
+        actualizado_en=tx.actualizado_en,
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /inbox/{inbox_id}/confirmar
+# ---------------------------------------------------------------------------
+
+@router.post("/{inbox_id}/confirmar", response_model=ConfirmarResponse)
+async def confirmar_inbox_item(
+    inbox_id: str,
+    body: ConfirmarRequest = ConfirmarRequest(),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Confirma el item. Lo mueve a estado='confirmado', revisado_humano=1.
+    Si id_categoria difiere de la propuesta original, crea regla de aprendizaje.
+    Idempotente: confirmar dos veces no duplica ni da error.
+    """
+    service = InboxService(db)
+    return await service.confirmar(
+        tx_id=inbox_id,
+        id_categoria=body.id_categoria,
+        notas=body.notas,
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /inbox/{inbox_id}/descartar
+# ---------------------------------------------------------------------------
 
 @router.post("/{inbox_id}/descartar")
 async def descartar_inbox_item(
@@ -78,18 +230,35 @@ async def descartar_inbox_item(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Marca el ítem como descartado (no es una transacción financiera).
-    Ejemplo: correo de confirmación de login, newsletter bancario.
+    Descarta el item. Estado pasa a 'anulado'.
+    Usar cuando el correo/documento no corresponde a una transaccion financiera.
     """
-    return {}
+    service = InboxService(db)
+    return await service.descartar(inbox_id)
 
 
-@router.post("/confirmar-lote")
-async def confirmar_lote(
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Confirma múltiples ítems en una sola operación.
-    Body: { ids: [str], ...campos_comunes_opcionales }
-    """
-    return {"confirmados": 0, "errores": []}
+# ---------------------------------------------------------------------------
+# Helpers privados
+# ---------------------------------------------------------------------------
+
+def _monto_tx(tx):
+    """Extrae el monto del primer tramo si existe, o del campo monto si lo tiene."""
+    if tx.tramos:
+        tramo = next(
+            (t for t in tx.tramos if t.numero_orden == 1),
+            tx.tramos[0] if tx.tramos else None
+        )
+        if tramo and tramo.monto_origen is not None:
+            return tramo.monto_origen
+    return None
+
+
+def _moneda_tx(tx):
+    if tx.tramos:
+        tramo = next(
+            (t for t in tx.tramos if t.numero_orden == 1),
+            tx.tramos[0] if tx.tramos else None
+        )
+        if tramo and tramo.moneda_origen:
+            return tramo.moneda_origen
+    return "COP"

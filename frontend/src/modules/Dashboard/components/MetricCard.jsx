@@ -1,39 +1,47 @@
 /**
- * MetricCard — tarjeta de métrica del top del dashboard.
- *
- * Props:
- *   label: string
- *   value: string          (ya formateado, ej: "$23.0M")
- *   sub: string            (texto secundario)
- *   subVariant: '' | 'warning' | 'success'
- *   tentative: boolean     (muestra asterisco en label)
+ * MetricCard.jsx — Version A
+ * Cambio: fondo gris suave en lugar del azul/gris oscuro anterior.
+ * bg-gray-100 con borde sutil — neutro, legible, sin agresividad visual.
  */
-export default function MetricCard({ label, value, sub, subVariant, tentative }) {
-  const subColor = {
-    warning: 'text-yellow-400',
-    success: 'text-emerald-400',
-    '': 'text-gray-500',
-  }[subVariant ?? ''] ?? 'text-gray-500'
+import { useState } from 'react'
+
+export default function MetricCard({ label, value, sub, subColor = '', onDetail }) {
+  const [showPlus, setShowPlus] = useState(false)
+
+  const subColorClass = {
+    success: 'text-success-500',
+    warning: 'text-warning-500',
+    danger:  'text-danger-500',
+  }[subColor] ?? 'text-gray-400'
 
   return (
-    <div className="bg-gray-800 rounded-xl p-4 flex flex-col gap-1 group relative">
-      <span className="text-xs text-gray-400 font-medium">
-        {label}{tentative && <span className="text-gray-600"> *</span>}
-      </span>
-      <span className="text-2xl font-bold text-gray-100 tabular-nums">
-        {value}
-      </span>
-      {sub && (
-        <span className={`text-xs ${subColor} mt-0.5`}>{sub}</span>
+    <div
+      className="relative bg-gray-100 border border-gray-200 rounded-xl p-5 cursor-default transition-shadow hover:shadow-sm"
+      onMouseEnter={() => setShowPlus(true)}
+      onMouseLeave={() => setShowPlus(false)}
+    >
+      {onDetail && (
+        <button
+          onClick={onDetail}
+          title="Ver detalle"
+          aria-label={`Ver detalle de ${label}`}
+          className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-700 text-sm border border-gray-200 transition-opacity"
+          style={{ opacity: showPlus ? 1 : 0 }}
+        >
+          +
+        </button>
       )}
-      {/* Botón + hover — futuro: abrir detalle */}
-      <button
-        className="absolute top-3 right-3 opacity-0 group-hover:opacity-40 hover:!opacity-100 text-gray-400 text-xs transition-opacity"
-        onClick={() => {}}
-        title="Ver detalle"
-      >
-        +
-      </button>
+      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+        {label}
+      </div>
+      <div className="text-2xl font-bold text-gray-900 mb-1">
+        {value}
+      </div>
+      {sub && (
+        <div className={`text-xs ${subColorClass}`}>
+          {sub}
+        </div>
+      )}
     </div>
   )
 }
