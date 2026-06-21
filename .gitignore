@@ -53,3 +53,4 @@ Thumbs.db
 .idea/
 *.suo
 *.user
+.fix-backup-*/
