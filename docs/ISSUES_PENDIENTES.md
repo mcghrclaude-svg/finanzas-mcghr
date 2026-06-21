@@ -9,6 +9,10 @@ Este archivo refleja los issues abiertos en GitHub. Ver tambien: https://github.
 
 | # GitHub | Alias | Titulo | Prioridad | Bloqueante |
 |---|---|---|---|---|
+| #23 | — | (backend) | — | — |
+| #24 | — | (backend) | — | — |
+| #25 | — | (backend) | — | — |
+| #27 | — | (backend) | — | — |
 | #19 | ASCII | Limpiar caracteres especiales de archivos Python existentes | Media | No |
 | #20 | ON-EVENT-DEPRECATED | Migrar on_event a lifespan en backend/main.py | Baja | No |
 | #21 | FRONTEND-MOCK | Agregar modo mock al modulo Catalogos | Media | No |
@@ -45,11 +49,12 @@ Fix: agregar `"type": "module"` al package.json del frontend.
 
 ## Issues cerrados recientes
 
-| Alias | Titulo | Cerrado en |
-|---|---|---|
-| REGLA-IMPORT | ImportError Regla vs ReglaClasificacion | v0.2.0 |
-| ENV-SPLIT | Variables VITE_* en .env.dev causaban ValidationError | v0.2.0 |
-| CONFTEST-TABLES | Tests fallaban con "no such table" | v0.2.0 |
-| CAT-HIJOS | AttributeError Categoria.hijos — no existe relationship | v0.2.0 |
-| DASHBOARD-IMPORT | App.jsx importaba modules/Dashboard (placeholder) | v0.2.1 |
-| POSTCSS-MISSING | postcss.config.js no existia, Tailwind no compilaba | v0.2.1 |
+| # GitHub | Alias | Titulo | Cerrado en |
+|---|---|---|---|
+| #26 | COMPLETITUD-TEXT | completitud es TEXT en la DB — frontend Inbox debe usar strings no floats | v0.3.0 |
+| — | REGLA-IMPORT | ImportError Regla vs ReglaClasificacion | v0.2.0 |
+| — | ENV-SPLIT | Variables VITE_* en .env.dev causaban ValidationError | v0.2.0 |
+| — | CONFTEST-TABLES | Tests fallaban con "no such table" | v0.2.0 |
+| — | CAT-HIJOS | AttributeError Categoria.hijos — no existe relationship | v0.2.0 |
+| — | DASHBOARD-IMPORT | App.jsx importaba modules/Dashboard (placeholder) | v0.2.1 |
+| — | POSTCSS-MISSING | postcss.config.js no existia, Tailwind no compilaba | v0.2.1 |
