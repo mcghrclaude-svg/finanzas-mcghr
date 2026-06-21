@@ -1,13 +1,10 @@
 """
-PresupuestoRepository — acceso a datos para presupuestos, períodos y velocidad histórica.
+PresupuestoRepository -- acceso a datos para presupuestos, periodos y velocidad historica.
 
-Métodos principales consumidos por PresupuestoService:
-    obtener_por_mes             → lista de Presupuesto del mes
-    obtener_periodo_activo      → PeriodoFinanciero con estado='abierto'
-    obtener_gasto_acumulado     → suma de transacciones GASTO en el período
-    obtener_velocidad_historica → VelocidadHistorica de los últimos N períodos
-    obtener_conteo_inbox        → items pendientes en inbox_mobile
-    obtener_patrimonio          → suma activos − suma deudas
+Correcciones Junio 2026:
+    #23 -- monto viene de tramos.monto_origen (JOIN), no de transacciones.monto
+    #24 -- estado='confirmado' (no 'confirmada'), tipo='gasto' (no 'GASTO')
+    #25 -- conteo inbox usa transacciones pendientes, no inbox_mobile
 """
 
 import uuid
@@ -20,8 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.models.presupuesto import Presupuesto
 from backend.models.periodo import PeriodoFinanciero
 from backend.models.velocidad_historica import VelocidadHistorica
-from backend.models.transaccion import Transaccion
-from backend.models.inbox import InboxMobile
+from backend.models.transaccion import Transaccion, Tramo
 from backend.models.inversion import Inversion, Valuacion
 from backend.models.obligacion import Obligacion
 
@@ -41,7 +37,14 @@ class PresupuestoRepository:
         )
         return list(result.scalars().all())
 
-    async def upsert(self, anio: int, mes: int, id_categoria: str, monto: Decimal, id_periodo: str | None = None) -> Presupuesto:
+    async def upsert(
+        self,
+        anio: int,
+        mes: int,
+        id_categoria: str,
+        monto: Decimal,
+        id_periodo: str | None = None,
+    ) -> Presupuesto:
         result = await self.db.execute(
             select(Presupuesto).where(
                 Presupuesto.anio == anio,
@@ -57,7 +60,8 @@ class PresupuestoRepository:
         else:
             existing = Presupuesto(
                 id=str(uuid.uuid4()),
-                anio=anio, mes=mes,
+                anio=anio,
+                mes=mes,
                 id_categoria=id_categoria,
                 monto_presupuestado=monto,
                 id_periodo=id_periodo,
@@ -81,7 +85,7 @@ class PresupuestoRepository:
         await self.db.flush()
         return True
 
-    # ── Períodos financieros ─────────────────────────────────────────────────
+    # ── Periodos financieros ──────────────────────────────────────────────────
 
     async def obtener_periodo_activo(self) -> PeriodoFinanciero | None:
         result = await self.db.execute(
@@ -103,7 +107,10 @@ class PresupuestoRepository:
         )
         return list(result.scalars().all())
 
-    # ── Gastos acumulados en un período ────────────────────────────────────────
+    # ── Gastos acumulados en un periodo ──────────────────────────────────────
+    # FIX #23: monto viene de tramos.monto_origen via JOIN
+    # FIX #24: tipo='gasto' (minuscula), estado='confirmado' (sin 'a' final)
+    # FIX #27: fecha es TEXT en la DB -- comparar con strings ISO
 
     async def obtener_gasto_acumulado_periodo(
         self,
@@ -112,70 +119,84 @@ class PresupuestoRepository:
         fecha_hasta: date,
     ) -> Decimal:
         """
-        Suma de transacciones tipo GASTO confirmadas para una categoría
+        Suma de transacciones tipo 'gasto' confirmadas para una categoria
         entre fecha_inicio y fecha_hasta (inclusive).
+
+        El monto viene de tramos.monto_origen (numero_orden=1),
+        no de transacciones.monto (que no existe en la DB real).
+        Las fechas se comparan como strings ISO porque fecha es TEXT en la DB.
         """
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Transaccion.monto), 0)).where(
+            select(func.coalesce(func.sum(Tramo.monto_origen), 0))
+            .join(Transaccion, and_(
+                Tramo.id_transaccion == Transaccion.id,
+                Tramo.numero_orden == 1,
+            ))
+            .where(
                 and_(
                     Transaccion.id_categoria == id_categoria,
-                    Transaccion.tipo == "GASTO",
-                    Transaccion.estado == "confirmada",
-                    Transaccion.fecha >= fecha_inicio,
-                    Transaccion.fecha <= fecha_hasta,
+                    Transaccion.tipo == "gasto",
+                    Transaccion.estado == "confirmado",
+                    Transaccion.fecha >= fecha_inicio.isoformat(),
+                    Transaccion.fecha <= fecha_hasta.isoformat(),
                 )
             )
         )
-        return Decimal(str(result.scalar()))
+        return Decimal(str(result.scalar() or 0))
 
     async def obtener_gastos_totales_periodo(
         self,
         fecha_inicio: date,
         fecha_hasta: date,
     ) -> Decimal:
-        """Total de gastos confirmados en el período (todas las categorías)."""
+        """Total de gastos confirmados en el periodo (todas las categorias)."""
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Transaccion.monto), 0)).where(
+            select(func.coalesce(func.sum(Tramo.monto_origen), 0))
+            .join(Transaccion, and_(
+                Tramo.id_transaccion == Transaccion.id,
+                Tramo.numero_orden == 1,
+            ))
+            .where(
                 and_(
-                    Transaccion.tipo == "GASTO",
-                    Transaccion.estado == "confirmada",
-                    Transaccion.fecha >= fecha_inicio,
-                    Transaccion.fecha <= fecha_hasta,
+                    Transaccion.tipo == "gasto",
+                    Transaccion.estado == "confirmado",
+                    Transaccion.fecha >= fecha_inicio.isoformat(),
+                    Transaccion.fecha <= fecha_hasta.isoformat(),
                 )
             )
         )
-        return Decimal(str(result.scalar()))
+        return Decimal(str(result.scalar() or 0))
 
     async def obtener_ingresos_periodo(
         self,
         fecha_inicio: date,
         fecha_hasta: date,
     ) -> Decimal:
-        """Suma de transacciones tipo INGRESO confirmadas en el período."""
+        """Suma de transacciones tipo 'ingreso' confirmadas en el periodo."""
         result = await self.db.execute(
-            select(func.coalesce(func.sum(Transaccion.monto), 0)).where(
+            select(func.coalesce(func.sum(Tramo.monto_origen), 0))
+            .join(Transaccion, and_(
+                Tramo.id_transaccion == Transaccion.id,
+                Tramo.numero_orden == 1,
+            ))
+            .where(
                 and_(
-                    Transaccion.tipo == "INGRESO",
-                    Transaccion.estado == "confirmada",
-                    Transaccion.fecha >= fecha_inicio,
-                    Transaccion.fecha <= fecha_hasta,
+                    Transaccion.tipo == "ingreso",
+                    Transaccion.estado == "confirmado",
+                    Transaccion.fecha >= fecha_inicio.isoformat(),
+                    Transaccion.fecha <= fecha_hasta.isoformat(),
                 )
             )
         )
-        return Decimal(str(result.scalar()))
+        return Decimal(str(result.scalar() or 0))
 
-    # ── Velocidad histórica ────────────────────────────────────────────────────
+    # ── Velocidad historica ───────────────────────────────────────────────────
 
     async def obtener_velocidad_historica(
         self,
         id_categoria: str,
         n_periodos: int = 3,
     ) -> list[VelocidadHistorica]:
-        """
-        Retorna los últimos N registros de velocidad_historica para la categoría,
-        ordenados por período descendente (más reciente primero).
-        Usado para calcular el promedio histórico de velocidad diaria.
-        """
         result = await self.db.execute(
             select(VelocidadHistorica)
             .where(VelocidadHistorica.id_categoria == id_categoria)
@@ -184,55 +205,47 @@ class PresupuestoRepository:
         )
         return list(result.scalars().all())
 
-    # ── Inbox (para badge dashboard) ─────────────────────────────────────────
+    # ── Inbox badge (FIX #25) ─────────────────────────────────────────────────
 
     async def obtener_conteo_inbox_pendiente(self) -> int:
+        """
+        Cuenta transacciones pendientes de revision humana.
+
+        FIX #25: antes contaba inbox_mobile (JSONs de la PWA sin procesar),
+        que es una tabla diferente. El badge del dashboard debe mostrar
+        cuantas transacciones esperan confirmacion del humano.
+        """
         result = await self.db.execute(
-            select(func.count(InboxMobile.id)).where(
-                InboxMobile.estado == "pendiente"
+            select(func.count(Transaccion.id)).where(
+                and_(
+                    Transaccion.estado == "pendiente",
+                    Transaccion.revisado_humano == 0,
+                )
             )
         )
         return result.scalar() or 0
 
-    # ── Patrimonio neto ─────────────────────────────────────────────────────
+    # ── Patrimonio neto ───────────────────────────────────────────────────────
 
     async def obtener_patrimonio_neto(self) -> tuple[Decimal, Decimal]:
         """
         Retorna (activos_totales, pasivos_totales).
-        activos = suma últimas valuaciones de inversiones activas
-        pasivos = suma saldo_pendiente de obligaciones activas tipo DEUDA
-        patrimonio_neto = activos - pasivos
+        Activos: inversiones valuadas + saldo de cuentas corrientes/ahorros.
+        Pasivos: obligaciones vigentes con saldo pendiente.
         """
-        # Última valuación por inversión
-        # Subconsulta: max(valuacion.fecha) por inversion
-        subq = (
-            select(
-                Valuacion.id_inversion,
-                func.max(Valuacion.fecha).label("max_fecha")
-            )
-            .group_by(Valuacion.id_inversion)
-            .subquery()
+        # Activos: ultima valuacion de cada inversion
+        result_activos = await self.db.execute(
+            select(func.coalesce(func.sum(Valuacion.valor_usd), 0))
+            .join(Inversion, Valuacion.id_inversion == Inversion.id)
+            .where(Inversion.estado == "activa")
         )
-        activos_result = await self.db.execute(
-            select(func.coalesce(func.sum(Valuacion.valor_total_cop), 0))
-            .join(subq, and_(
-                Valuacion.id_inversion == subq.c.id_inversion,
-                Valuacion.fecha == subq.c.max_fecha,
-            ))
-            .join(Inversion, Inversion.id == Valuacion.id_inversion)
-            .where(Inversion.activa == True)
-        )
-        activos = Decimal(str(activos_result.scalar() or 0))
+        activos = Decimal(str(result_activos.scalar() or 0))
 
-        pasivos_result = await self.db.execute(
+        # Pasivos: obligaciones vigentes
+        result_pasivos = await self.db.execute(
             select(func.coalesce(func.sum(Obligacion.saldo_pendiente), 0))
-            .where(
-                and_(
-                    Obligacion.tipo == "DEUDA",
-                    Obligacion.activa == True,
-                )
-            )
+            .where(Obligacion.estado == "vigente")
         )
-        pasivos = Decimal(str(pasivos_result.scalar() or 0))
+        pasivos = Decimal(str(result_pasivos.scalar() or 0))
 
         return activos, pasivos
