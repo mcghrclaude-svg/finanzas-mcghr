@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [0.3.0] - 2026-06-17
+
+### feat: modulo Inbox completo + UX refactor
+
+Inbox:
+- InboxA: revision una por una, lista de tarjetas + panel detalle (default)
+- InboxB: triaje en masa, tabla con seleccion multiple y confirmacion en lote
+- completitud tratada como TEXT: 'minimo'|'parcial'|'completo' (Issue #26 cerrado)
+- Ordenamiento: minimo primero (mayor prioridad de revision)
+- Conectado a los endpoints reales del backend
+
+UX refactor (sidebar, header, dashboard, catalogos):
+- Sidebar: navegacion multinivel en ingles, grupos Financial View y Settings
+- Header: toggle con flechas direccionales
+- MetricCard: fondo gris suave en lugar de azul oscuro
+- Catalogos: ID autogenerado como slug, tipo Gobierno en contrapartes
+
+---
+
 ## [0.2.1] - 2026-06-15
 
 ### fix: Tailwind no compilaba en el frontend
