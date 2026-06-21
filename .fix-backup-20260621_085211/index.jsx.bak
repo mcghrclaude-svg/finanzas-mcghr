@@ -14,36 +14,11 @@
  *
  * Issue #26: completitud es TEXT 'minimo'|'parcial'|'completo'
  */
-import { useState, useEffect, useCallback, useRef, Component } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import client from '@/api/client'
 import useAppStore from '@/store/useAppStore'
-
-// ── Error Boundary ─────────────────────────────────────────────────────────────
-// Evita que un crash en este módulo desmonte el Layout completo.
-class TransaccionesErrorBoundary extends Component {
-  constructor(props) { super(props); this.state = { error: null } }
-  static getDerivedStateFromError(error) { return { error } }
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-500">
-          <div className="text-3xl">⚠️</div>
-          <p className="text-sm font-medium">Error loading Transactions</p>
-          <p className="text-xs text-gray-400">{this.state.error.message}</p>
-          <button
-            onClick={() => this.setState({ error: null })}
-            className="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-          >
-            Retry
-          </button>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
 
 // ── Completitud (Issue #26) ────────────────────────────────────────────────────
 const COMPLETITUD_DOT = {
@@ -99,10 +74,7 @@ function CategoriaTreeSelect({ value, onChange, categorias }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Garantizar que siempre sea array aunque la API devuelva objeto u otro formato
-  const cats = Array.isArray(categorias) ? categorias : []
-
-  const cat = cats.find(c => c.id === value)
+  const cat = categorias.find(c => c.id === value)
 
   function renderItems(items, depth = 0) {
     return items.map(c => (
@@ -124,11 +96,11 @@ function CategoriaTreeSelect({ value, onChange, categorias }) {
   }
 
   // Construir arbol desde lista plana
-  const roots = cats.filter(c => !c.id_padre)
-  function buildTree(nodes) {
-    return nodes.map(c => ({
+  const roots = categorias.filter(c => !c.id_padre)
+  function buildTree(cats) {
+    return cats.map(c => ({
       ...c,
-      hijos: buildTree(cats.filter(x => x.id_padre === c.id))
+      hijos: buildTree(categorias.filter(x => x.id_padre === c.id))
     }))
   }
   const tree = buildTree(roots)
@@ -619,7 +591,7 @@ function Toolbar({ filtros, onFiltro, busqueda, onBusqueda, modo, onModo, onRefr
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-function TransaccionesInner() {
+export default function Transacciones() {
   const [items,      setItems]      = useState([])
   const [categorias, setCategorias] = useState([])
   const [loading,    setLoading]    = useState(false)
@@ -691,13 +663,7 @@ function TransaccionesInner() {
       })
 
       setItems(result)
-      // Normalizar: la API puede devolver [] directo o { items: [] }
-      const catsArray = Array.isArray(catsRes)
-        ? catsRes
-        : Array.isArray(catsRes?.items)
-          ? catsRes.items
-          : []
-      setCategorias(catsArray)
+      setCategorias(catsRes)
       if (result.length > 0 && !selected) setSelected(result[0])
     } catch (e) {
       toast.error('Error: ' + (e.response?.data?.detail ?? e.message))
@@ -749,7 +715,7 @@ function TransaccionesInner() {
   const pendientes = items.filter(i => i.completitud !== 'completo').length
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-screen">
 
       {/* Barra de titulo */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0">
@@ -816,13 +782,5 @@ function TransaccionesInner() {
         />
       </div>
     </div>
-  )
-}
-
-export default function Transacciones() {
-  return (
-    <TransaccionesErrorBoundary>
-      <TransaccionesInner />
-    </TransaccionesErrorBoundary>
   )
 }
