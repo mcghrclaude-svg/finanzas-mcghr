@@ -1,10 +1,13 @@
 /**
- * Layout.jsx
- * El Sidebar ahora maneja su propio ancho segun el estado open/collapsed.
- * No le pasamos `open` como prop -- el Sidebar lee el store directamente.
+ * Layout.jsx v3
+ *
+ * Cambios:
+ *   - Header eliminado completamente
+ *   - El boton toggle del sidebar vive DENTRO del sidebar (punto rojo)
+ *   - UndoBar sigue como snackbar flotante
+ *   - El main no tiene padding propio -- cada modulo decide su padding
  */
 import Sidebar from './Sidebar'
-import Header from './Header'
 import UndoBar from '@/components/shared/UndoBar'
 
 export default function Layout({ children }) {
@@ -12,12 +15,11 @@ export default function Layout({ children }) {
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-        <Header />
-        <UndoBar />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
+      <UndoBar />
     </div>
   )
 }
