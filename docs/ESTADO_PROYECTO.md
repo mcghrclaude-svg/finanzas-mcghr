@@ -88,9 +88,21 @@ URLs:
 | Estructura Vite + Tailwind + Zustand + React Query | COMPLETO |
 | Layout + Sidebar + Header | COMPLETO |
 | Modulo Catalogos | COMPLETO |
-| Modulo Inbox | COMPLETO — pantalla funcional con 3 secciones |
+| Modulo Inbox | COMPLETO — InboxA (default) e InboxB (alternativo) |
 | Dashboard | TODO — placeholder |
 | Resto de modulos | TODO — placeholder |
+
+**Archivos Frontend:**
+
+| Archivo | Estado |
+|---|---|
+| `frontend/src/modules/Inbox/InboxA/index.jsx` | NUEVO — version default. Layout lista+detalle, revision una por una. |
+| `frontend/src/modules/Inbox/InboxB/index.jsx` | NUEVO — version alternativa. Tabla con seleccion multiple y confirmacion en lote. |
+| `frontend/src/modules/Inbox/index.jsx` | ACTUALIZADO — apunta a InboxA por default. |
+| `frontend/src/components/layout/Sidebar.jsx` | ACTUALIZADO — navegacion multinivel en ingles. |
+| `frontend/src/components/layout/Header.jsx` | ACTUALIZADO — toggle con flechas direccionales. |
+| `frontend/src/modules/Dashboard/components/MetricCard.jsx` | ACTUALIZADO — fondo gris suave. |
+| `frontend/src/modules/Catalogos/index.jsx` | ACTUALIZADO — sin campo ID en UI, slug autogenerado, tipo Gobierno en contrapartes. |
 
 ### Capa 4 — PWA Mobile
 
