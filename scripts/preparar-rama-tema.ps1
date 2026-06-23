@@ -1,7 +1,7 @@
 # INSTRUCCIONES DE EJECUCION:
 #   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-#   .\iniciar-chat-tema.ps1 -Tema ux
-#   .\iniciar-chat-tema.ps1 -Tema backend
+#   .\preparar-rama-tema.ps1 -Tema ux
+#   .\preparar-rama-tema.ps1 -Tema backend
 
 param(
     [string]$RepoPath = "",
@@ -51,4 +51,4 @@ Write-Host ""
 Write-Host "Trabaja normalmente en el chat de '$Tema'." -ForegroundColor Cyan
 Write-Host "Al terminar la sesion, corre:" -ForegroundColor Cyan
 Write-Host "  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass" -ForegroundColor White
-Write-Host "  .\chequear-conflictos.ps1 -Tema $Tema" -ForegroundColor White
+Write-Host "  .\scripts\chequear-conflictos.ps1 -Tema $Tema" -ForegroundColor White

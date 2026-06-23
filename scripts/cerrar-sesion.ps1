@@ -232,8 +232,13 @@ if ($staged) {
     Write-Host "   OK   Sin cambios en docs" -ForegroundColor Green
 }
 
+# Contar grupos de advertencias (no lineas individuales)
+$warningGroups = 0
 if ($warnings.Count -gt 0) {
+    $warnings | ForEach-Object { if ($_ -notlike "  *") { $warningGroups++ } }
+}
+if ($warningGroups -gt 0) {
     Write-Host ""
-    Write-Host "   WARN Hay $($warnings.Count) advertencias CITA pendientes de resolver." -ForegroundColor Yellow
+    Write-Host "   WARN Hay $warningGroups advertencia(s) CITA pendientes de resolver." -ForegroundColor Yellow
     Write-Host "        Ver detalle arriba." -ForegroundColor Yellow
 }
