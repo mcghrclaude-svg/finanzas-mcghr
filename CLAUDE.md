@@ -1,179 +1,78 @@
-# Plataforma de Gestión Financiera Familiar — MCGHR
-> Este archivo es leído automáticamente por herramientas de IA (Claude, Codex, Grok, etc.)
-> Contiene el contexto esencial del proyecto. Leerlo completo antes de hacer cualquier cambio.
-> Para continuar el proyecto, leer en orden: este archivo → functional_spec.md → architecture.md → schema_v1.md → testing_strategy.md
+﻿# CLAUDE.md -- Finanzas MCGHR
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-22 21:20
+# NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
----
+## Inicio obligatorio de cada chat
+1. web_fetch de este archivo:
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
+2. web_fetch del HANDOFF del dia:
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260622.md
+3. web_fetch del ADR para contexto de decisiones:
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
+4. web_fetch del CITA para evitar errores conocidos:
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/CITA.md
+NO usar project_knowledge_search -- puede estar desactualizado.
 
-## Qué es este proyecto
+## Reglas de arquitectura (ver ADR.md para detalle y contexto)
+- Base SQLAlchemy: backend/models/base.py (ADR-002)
+- Frontend: Tailwind puro, sin CSS custom (ADR-004)
+- Variables VITE_*: frontend/.env.local, nunca en .env.dev (ADR-005)
+- IDs de catalogos: autogenerados como slug (ADR-006)
+- Modulos nuevos: frontend/src/modules/ no en pages/ (ADR-007)
+- completitud en DB: TEXT 'minimo'|'parcial'|'completo', nunca float (ADR-008)
+- conftest.py: importar todos los modelos antes de create_all (ADR-011)
 
-Plataforma de gestión financiera personal para Hernan (GHR) y Martha (MC). Automatiza la
-recolección de datos financieros desde múltiples fuentes (correos Gmail, Hotmail, PDFs
-bancarios, app mobile), los clasifica con Claude API, los almacena en SQLite, y los expone
-a través de una web app local (FastAPI + React) con dashboard y cola de revisión humana.
+## Reglas de scripts PowerShell (ver CITA.md para detalle)
+- SIEMPRE: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass (CITA-001)
+- NUNCA: ErrorActionPreference = Stop a nivel global (CITA-002)
+- SIEMPRE: @() alrededor de Get-ChildItem antes de .Count (CITA-003)
+- SIEMPRE: default explicito en Read-Host (CITA-002)
+- NUNCA: git rev-parse sin try-catch cuando el script corre fuera del repo (CITA-002)
+- NUNCA: caracteres no-ASCII en codigo o comentarios (CITA-009)
 
-**No es un script puntual — es una plataforma modular diseñada para crecer.**
+## Reglas de proceso
+- Leer archivo real antes de modificarlo -- mostrar output del web_fetch (CITA-004)
+- Verificar PRAGMA table_info antes de modificar modelos de DB (CITA-005)
+- Si un fix falla: diagnostico antes del segundo intento (CITA-010)
+- Commits: listar archivos explicitos, nunca git add -A (CITA-008)
 
----
+## Estado real de modulos frontend (src/modules/)
+| Modulo | Estado | Detalle |
+|--------|--------|---------|
+| Analitica | STUB | 5 lineas |
+| Backup | STUB | 4 lineas |
+| Catalogos | IMPLEMENTADO | 318 lineas |
+| Dashboard | IMPLEMENTADO | 182 lineas |
+| Inbox | IMPLEMENTADO | 21 lineas |
+| Inversiones | STUB | 4 lineas |
+| Obligaciones | STUB | 4 lineas |
+| Presupuesto | STUB | 4 lineas |
+| Transacciones | IMPLEMENTADO | 828 lineas |
 
-## Documentación completa del proyecto
+## Estado real de routers backend (api/v1/routers/)
+| Router | Estado | Detalle |
+|--------|--------|---------|
+| analitica.py | IMPLEMENTADO | 72 lineas |
+| backup.py | IMPLEMENTADO | 92 lineas |
+| catalogos.py | IMPLEMENTADO | 275 lineas |
+| dashboard.py | IMPLEMENTADO | 120 lineas |
+| inbox.py | IMPLEMENTADO | 201 lineas |
+| inversiones.py | IMPLEMENTADO | 98 lineas |
+| obligaciones.py | IMPLEMENTADO | 89 lineas |
+| presupuestos.py | IMPLEMENTADO | 150 lineas |
+| reglas.py | IMPLEMENTADO | 73 lineas |
+| reportes.py | IMPLEMENTADO | 86 lineas |
+| transacciones.py | IMPLEMENTADO | 117 lineas |
+| __init__.py | IMPLEMENTADO | 27 lineas |
 
-| Documento | Contenido |
-|---|---|
-| `docs/functional_spec.md` | Especificación funcional completa — qué hace la app, módulo por módulo |
-| `docs/architecture.md` | Arquitectura técnica — stack, estructura de carpetas, decisiones de diseño |
-| `docs/schema_v1.md` | Documentación del schema de base de datos |
-| `docs/testing_strategy.md` | Estrategia de entornos de prueba, datos dummy, scripts y herramientas |
-| `schema/finanzas_v1_1.sql` | Schema SQL activo (versión 1.1) |
-| `docs/api.md` | Documentación de la API REST (pendiente de generar) |
-
-**Leer siempre la documentación antes de escribir código.**
-
----
-
-## Personas y cuentas
-
-| Persona | Alias en código | Gmail principal | Observaciones |
-|---|---|---|---|
-| Hernan Rizzi | `GHR` | ghrizzi.goog@gmail.com | Cuenta principal de finanzas |
-| Martha (esposa) | `MC` | malu82@gmail.com | Misma estructura que GHR |
-| Sistema | `claude` | MCGHR.claude@gmail.com | Cuenta operativa del proyecto |
-
----
-
-## Bancos y entidades financieras activas
-
-| Entidad | Productos | Titular | Notificaciones |
-|---|---|---|---|
-| Bancolombia | Cuenta Corriente, TC | GHR | Email + SMS (shortcode 891333) |
-| BBVA Colombia | Cuenta Corriente, TC | GHR | Email + SMS (shortcode 855422) |
-| Banco de Occidente | TC Visa Signature LATAM (5749) | GHR | Extracto PDF mensual |
-| Nequi | Cuenta digital | GHR | Solo app móvil, sin email |
-| InteractiveBrokers | Cuenta de inversiones | GHR | Statements mensuales PDF |
-
----
-
-## Arquitectura en una línea
-
-```
-Fuentes (correos, PDFs, mobile) → ETL (finanzas_familia.py + Claude API)
-→ SQLite (schema v1.1) → Backend (FastAPI) → Frontend (React PWA)
-```
-
-Ver `docs/architecture.md` para el diagrama completo y las decisiones de diseño.
-
----
-
-## Stack tecnológico
-
-- **Backend:** Python 3.11 + FastAPI + SQLAlchemy + SQLite
-- **Frontend:** React 18 + Vite + Tailwind CSS + Zustand
-- **ETL:** Python (finanzas_familia.py) + Claude API
-- **Mobile:** PWA responsive instalable en iPhone (Safari y Chrome)
-- **Despliegue:** Docker Compose (PC Windows o Raspberry Pi)
-- **Sincronización mobile:** JSONs via OneDrive Personal
-
----
-
-## Base de datos
-
-Archivo: `OneDrive\Finanzas MCGHR\Generales\finanzas.db`  
-Schema activo: v1.1 — ver `schema/finanzas_v1_1.sql` y `docs/schema_v1.md`
-
-**Regla crítica:** NUNCA escribir datos financieros directamente en la BD ni en el Excel.
-- Solo el ETL (`finanzas_familia.py`) y la API REST del backend escriben en SQLite
-- El Excel se regenera desde SQLite con script dedicado
-- Power BI conecta al Excel, no a SQLite directamente
-
----
-
-## Entornos de prueba
-
-Tres entornos aislados: `dev` (desarrollo diario), `test` (tests automatizados), `staging` (pre-release).
-Nunca se usan datos reales de GHR/MC en entornos de prueba.
-
-```bash
-# Crear y poblar un entorno
-python scripts/env/reset_env.py --env dev --volume minimal
-
-# Correr tests
-pytest tests/unit/ tests/integration/ -v
-```
-
-Ver `docs/testing_strategy.md` para la estrategia completa, scripts y datos dummy.
-
----
-
-## Configuración
-
-Toda la configuración vive en `config_correos.json` (local, nunca en el repo).
-
-**Variables de entorno requeridas** (ver `.env.example`):
-- `ANTHROPIC_API_KEY` — Claude API (console.anthropic.com)
-- `OUTLOOK_APP_PASSWORD` — Contraseña de app Microsoft (account.microsoft.com)
-- `DB_PATH`, `ONEDRIVE_PATH`, `BACKUP_PATH` — rutas del sistema
-
----
-
-## Estado actual del proyecto (Junio 2026)
-
-- [x] Schema v1.1 definido y documentado
-- [x] ETL básico funcionando (`src/finanzas_familia.py`) — WIP, pendiente de commit
-- [x] Skills: lector_correos, desproteger_pdf, auditor_correos
-- [x] Especificación funcional completa (`docs/functional_spec.md`)
-- [x] Arquitectura técnica definida (`docs/architecture.md`)
-- [x] Estrategia de entornos y testing definida (`docs/testing_strategy.md`)
-- [ ] Backend FastAPI — **próximo paso**
-- [ ] Frontend React — pendiente
-- [ ] PWA mobile — pendiente
-- [ ] Backup/restore — pendiente
-- [ ] Entorno dev (se crea con el primer módulo del backend)
-
-**El próximo paso de desarrollo es el backend FastAPI**, comenzando por:
-`/api/v1/transacciones/` y `/api/v1/transacciones/pendientes/`
-
----
-
-## Reglas de desarrollo
-
-1. **Leer los docs antes de escribir código** — la spec funcional y la arquitectura son la fuente de verdad
-2. **Separación estricta UI/lógica** — el frontend nunca toca SQLite directamente
-3. **El ETL es el único escritor del schema** (además de la API REST del backend)
-4. **Sin hardcodeo** — ninguna ruta, credencial o config en el código
-5. **Commits semánticos** — `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
-6. **Sin borrado físico** — los datos financieros solo se inactivan, nunca se borran
-7. **Undo en el frontend** — toda acción del usuario es reversible hasta que graba explícitamente
-8. **Nunca datos reales en pruebas** — tests y dev usan siempre datos dummy del seeder
-9. **Tests antes de merge** — `pytest tests/unit/ tests/integration/` debe pasar en verde
-
----
-
-## Módulos planificados (fases futuras)
-
-| Módulo | Descripción | Fase |
-|---|---|---|
-| Obligaciones | Préstamos, alquiler, servicios públicos, recordatorios | Fase 2 |
-| Inversiones | Acciones IBKR, inmuebles, patrimonio neto | Fase 2 |
-| Analítica Claude | Análisis conversacional sobre datos financieros | Fase 2 |
-| Autenticación | Login por usuario, encriptación de campos sensibles | Fase 3 |
-| Proyecciones | Patrimonio neto a 12/24/60 meses | Fase 3 |
-
----
-
-## Historial de decisiones clave
-
-| Fecha | Decisión | Razón |
-|---|---|---|
-| Mayo 2026 | SQLite como BD principal | Escritura concurrente, portable, sin servidor |
-| Mayo 2026 | IMAP para Hotmail | Conector OAuth M365 no funciona con cuentas personales |
-| Mayo 2026 | Stage area + aprendizaje | Clasificación automática con supervisión humana |
-| Junio 2026 | Schema v1.1 con doble entrada contable | Balance patrimonial real y trazabilidad completa |
-| Junio 2026 | FastAPI sobre Flask | Async nativo, OpenAPI automático, mejor DX |
-| Junio 2026 | React + Zustand para Undo | Estado complejo de sesión, stack Undo/Redo |
-| Junio 2026 | PWA responsive sobre app nativa | Sin App Store, mismo código, menor mantenimiento |
-| Junio 2026 | Flujo mobile via JSON en OneDrive | Sin depender de que la PC esté encendida |
-| Junio 2026 | Backup completo (no incremental) | Simplicidad de restore; el tamaño no lo justifica |
-| Junio 2026 | 3 entornos aislados (dev/test/staging) | Buenas prácticas SDLC, nunca datos reales en pruebas |
-
----
-*Última actualización: Junio 2026 — Plataforma Financiera MCGHR*
+## Ultimos 10 commits
+9c597bb chore: cierre de chat -- gitignore backups + handoff completado
+12604d5 fix: actualizaciones del chat 2026-06-21
+6a01c51 fix: actualizar tests para reflejar contrato real del backend
+516c0c7 feat: UX v3 - sidebar toggle integrado, Transacciones editable, Dashboard badge real
+b41705d feat: sidebar Outlook + Transacciones unifica Inbox
+67bd4f6 fix: issues #23 #24 #25 #27 -- presupuesto_repo usa tramos, tipos minuscula, conteo inbox correcto, fechas ISO
+89e7c63 docs: estado proyecto post Inbox + UX refactor, Issue #26 cerrado
+793bbfa docs: estado proyecto post Inbox + UX refactor, Issue #26 cerrado
+4bdad86 docs: estado proyecto post Inbox + UX refactor, Issue #26 cerrado
+50b07a3 feat: UX refactor sidebar/header/dashboard + modulo Inbox completo
