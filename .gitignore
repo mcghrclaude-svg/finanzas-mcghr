@@ -54,3 +54,5 @@ Thumbs.db
 *.suo
 *.user
 .fix-backup-*/
+frontend/.env.local
+*.bak
