@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-22 21:21
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-22 21:27
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -66,6 +66,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+dcb576f fix: contador CITA + renombrar iniciar-chat-tema a preparar-rama-tema
+05dcc95 docs: auto-update 2026-06-22 21:21
 d95462c chore: instalar workflow scripts + ADR + CITA (2026-06-22 21:21)
 8fe1aa5 docs: auto-update 2026-06-22 21:20
 9c597bb chore: cierre de chat -- gitignore backups + handoff completado
@@ -74,5 +76,3 @@ d95462c chore: instalar workflow scripts + ADR + CITA (2026-06-22 21:21)
 516c0c7 feat: UX v3 - sidebar toggle integrado, Transacciones editable, Dashboard badge real
 b41705d feat: sidebar Outlook + Transacciones unifica Inbox
 67bd4f6 fix: issues #23 #24 #25 #27 -- presupuesto_repo usa tramos, tipos minuscula, conteo inbox correcto, fechas ISO
-89e7c63 docs: estado proyecto post Inbox + UX refactor, Issue #26 cerrado
-793bbfa docs: estado proyecto post Inbox + UX refactor, Issue #26 cerrado
