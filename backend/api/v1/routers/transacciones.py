@@ -1,16 +1,16 @@
 """
 Router: /api/v1/transacciones
-Gestión de transacciones financieras — el módulo central de la app.
+Gestion de transacciones financieras  -- el modulo central de la app.
 
 Endpoints:
     GET    /                    Lista paginada con filtros
-    POST   /                    Crear transacción manual
-    GET    /pendientes          Cola de confirmación (estado=pendiente)
-    GET    /{id}                Detalle de una transacción
-    PATCH  /{id}                Editar campos de una transacción
-    POST   /{id}/confirmar      Confirmar transacción pendiente
-    POST   /{id}/descartar      Descartar transacción pendiente
-    DELETE /{id}                Inactivar transacción (soft delete)
+    POST   /                    Crear transaccion manual
+    GET    /pendientes          Cola de confirmacion (estado=pendiente)
+    GET    /{id}                Detalle de una transaccion
+    PATCH  /{id}                Editar campos de una transaccion
+    POST   /{id}/confirmar      Confirmar transaccion pendiente
+    POST   /{id}/descartar      Descartar transaccion pendiente
+    DELETE /{id}                Inactivar transaccion (soft delete)
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -40,7 +40,7 @@ async def listar_transacciones(
     es_recurrente: bool | None = Query(None),
     estado_reembolso: str | None = Query(None),
 ):
-    """Lista transacciones confirmadas con filtros y paginación por cursor."""
+    """Lista transacciones confirmadas con filtros y paginacion por cursor."""
     # TODO: implementar con TransaccionesService
     return {"items": [], "next_cursor": None, "total": 0}
 
@@ -50,7 +50,7 @@ async def crear_transaccion(
     # body: TransaccionCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    """Crea una transacción manual. Va directo a estado confirmado."""
+    """Crea una transaccion manual. Va directo a estado confirmado."""
     # TODO: implementar con TransaccionesService
     return {}
 
@@ -60,7 +60,7 @@ async def listar_pendientes(
     db: AsyncSession = Depends(get_db),
     limit: int = Query(50, le=200),
 ):
-    """Cola de confirmación — transacciones propuestas por el ETL pendientes de revisión."""
+    """Cola de confirmacion  -- transacciones propuestas por el ETL pendientes de revision."""
     # TODO: implementar con TransaccionesService
     return {"items": [], "total": 0}
 
@@ -70,7 +70,7 @@ async def obtener_transaccion(
     transaccion_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Detalle completo de una transacción incluyendo tramos y documentos vinculados."""
+    """Detalle completo de una transaccion incluyendo tramos y documentos vinculados."""
     # TODO: implementar con TransaccionesService
     raise HTTPException(status_code=404, detail="Transaccion no encontrada")
 
@@ -81,7 +81,7 @@ async def editar_transaccion(
     # body: TransaccionUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    """Edita campos de una transacción. Genera entrada en reglas_clasificacion si hay corrección."""
+    """Edita campos de una transaccion. Genera entrada en reglas_clasificacion si hay correccion."""
     # TODO: implementar con TransaccionesService
     return {}
 
@@ -92,7 +92,7 @@ async def confirmar_transaccion(
     # body: TransaccionUpdate | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    """Confirma una transacción pendiente (con o sin edición previa)."""
+    """Confirma una transaccion pendiente (con o sin edicion previa)."""
     # TODO: implementar con TransaccionesService
     return {}
 
@@ -102,7 +102,7 @@ async def descartar_transaccion(
     transaccion_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Descarta una transacción pendiente — no se registra en el sistema."""
+    """Descarta una transaccion pendiente  -- no se registra en el sistema."""
     # TODO: implementar con TransaccionesService
     return {}
 
@@ -112,6 +112,6 @@ async def inactivar_transaccion(
     transaccion_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Soft delete — marca la transacción como anulada. Nunca borra datos."""
+    """Soft delete  -- marca la transaccion como anulada. Nunca borra datos."""
     # TODO: implementar con TransaccionesService
     return {}

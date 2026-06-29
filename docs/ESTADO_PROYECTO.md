@@ -1,4 +1,4 @@
-# ESTADO_PROYECTO.md — actualizado post-sesion Junio 2026
+# ESTADO_PROYECTO.md  -- actualizado post-sesion Junio 2026
 # Plataforma Financiera MCGHR
 
 **Fecha:** Junio 2026
@@ -11,24 +11,24 @@
 Plataforma de gestion financiera familiar para GHR (Hernan) y MC (Martha).
 Arquitectura de 5 capas:
 
-1. **Capa 0 — Base de datos:** SQLite en OneDrive (`finanzas.db`) con schema
+1. **Capa 0  -- Base de datos:** SQLite en OneDrive (`finanzas.db`) con schema
    de doble entrada contable, multi-moneda. Schema v1.2 aplicado.
-2. **Capa 1 — ETL Claude Desktop:** Tarea programada diaria a las 4am.
+2. **Capa 1  -- ETL Claude Desktop:** Tarea programada diaria a las 4am.
    Procesa correos Gmail, PDFs en OneDrive y JSONs de la PWA.
    Escribe en SQLite via MCP sqlite.
-3. **Capa 2 — Backend FastAPI:** API REST en http://localhost:8000
-4. **Capa 3 — Frontend React:** http://localhost:3000
-5. **Capa 4 — PWA Mobile:** Pendiente (Entrega 4)
+3. **Capa 2  -- Backend FastAPI:** API REST en http://localhost:8000
+4. **Capa 3  -- Frontend React:** http://localhost:3000
+5. **Capa 4  -- PWA Mobile:** Pendiente (Entrega 4)
 
 ---
 
 ## Como arrancar el stack
 
 ```powershell
-# Opcion 1 — Script de arranque (recomendado)
+# Opcion 1  -- Script de arranque (recomendado)
 powershell -ExecutionPolicy Bypass -File "C:\Users\ghriz\finanzas-mcghr\iniciar_finanzas.ps1"
 
-# Opcion 2 — Manual
+# Opcion 2  -- Manual
 # Terminal 1:
 cd C:\Users\ghriz\finanzas-mcghr
 venv\Scripts\activate
@@ -53,71 +53,71 @@ URLs:
 | Item | Estado |
 |---|---|
 | Schema v1.1 (22 tablas + 5 vistas) | COMPLETO |
-| Schema v1.2 (+id_evento, +estado_enriquecimiento) | COMPLETO — aplicado en OneDrive |
+| Schema v1.2 (+id_evento, +estado_enriquecimiento) | COMPLETO  -- aplicado en OneDrive |
 | Seed catalogos (25 cat, 12 cuentas, 22 contrapartes, 2 personas) | COMPLETO |
-| Seed inbox (8 transacciones dummy para dev) | LISTO — ejecutar manualmente |
+| Seed inbox (8 transacciones dummy para dev) | LISTO  -- ejecutar manualmente |
 
-### Capa 1 — ETL (Claude Desktop)
+### Capa 1  -- ETL (Claude Desktop)
 
 | Item | Estado |
 |---|---|
 | Skills Python (lector_correos, desproteger_pdf, auditor) | COMPLETO |
 | MCP server mcp_lector_correos | COMPLETO |
-| Prompt tarea programada Claude Desktop | COMPLETO — docs/ETL_PROMPT_CLAUDE_DESKTOP.md |
-| Tokens OAuth Gmail hernan | PENDIENTE — accion manual |
-| Tokens OAuth Gmail malu | PENDIENTE — accion manual |
-| Tarea programada configurada en Claude Desktop (4am) | PENDIENTE — accion manual |
+| Prompt tarea programada Claude Desktop | COMPLETO  -- docs/ETL_PROMPT_CLAUDE_DESKTOP.md |
+| Tokens OAuth Gmail hernan | PENDIENTE  -- accion manual |
+| Tokens OAuth Gmail malu | PENDIENTE  -- accion manual |
+| Tarea programada configurada en Claude Desktop (4am) | PENDIENTE  -- accion manual |
 
-### Capa 2 — Backend FastAPI
+### Capa 2  -- Backend FastAPI
 
 | Item | Estado | Tests |
 |---|---|---|
-| Core: database, config, exceptions | COMPLETO | — |
-| Modelos SQLAlchemy (catalogo, transaccion, regla, inbox_mobile) | COMPLETO | — |
+| Core: database, config, exceptions | COMPLETO |  -- |
+| Modelos SQLAlchemy (catalogo, transaccion, regla, inbox_mobile) | COMPLETO |  -- |
 | Router catalogos (listar cat/cuentas/contrapartes/personas) | COMPLETO | 5/5 |
 | Router catalogos export PWA | COMPLETO | 1/1 |
 | Router inbox (7 endpoints) | COMPLETO | 13/13 |
-| Resto de routers (transacciones, presupuestos, etc.) | TODO — placeholder | — |
+| Resto de routers (transacciones, presupuestos, etc.) | TODO  -- placeholder |  -- |
 
 **Total tests pasando: 55/55**
 
-### Capa 3 — Frontend React
+### Capa 3  -- Frontend React
 
 | Item | Estado |
 |---|---|
 | Estructura Vite + Tailwind + Zustand + React Query | COMPLETO |
 | Layout + Sidebar + Header | COMPLETO |
 | Modulo Catalogos | COMPLETO |
-| Modulo Inbox | COMPLETO — InboxA (default) e InboxB (alternativo) |
-| Dashboard | TODO — placeholder |
-| Resto de modulos | TODO — placeholder |
+| Modulo Inbox | COMPLETO  -- InboxA (default) e InboxB (alternativo) |
+| Dashboard | TODO  -- placeholder |
+| Resto de modulos | TODO  -- placeholder |
 
 **Archivos Frontend:**
 
 | Archivo | Estado |
 |---|---|
-| `frontend/src/modules/Inbox/InboxA/index.jsx` | NUEVO — version default. Layout lista+detalle, revision una por una. |
-| `frontend/src/modules/Inbox/InboxB/index.jsx` | NUEVO — version alternativa. Tabla con seleccion multiple y confirmacion en lote. |
-| `frontend/src/modules/Inbox/index.jsx` | ACTUALIZADO — apunta a InboxA por default. |
-| `frontend/src/components/layout/Sidebar.jsx` | ACTUALIZADO — navegacion multinivel en ingles. |
-| `frontend/src/components/layout/Header.jsx` | ACTUALIZADO — toggle con flechas direccionales. |
-| `frontend/src/modules/Dashboard/components/MetricCard.jsx` | ACTUALIZADO — fondo gris suave. |
-| `frontend/src/modules/Catalogos/index.jsx` | ACTUALIZADO — sin campo ID en UI, slug autogenerado, tipo Gobierno en contrapartes. |
+| `frontend/src/modules/Inbox/InboxA/index.jsx` | NUEVO  -- version default. Layout lista+detalle, revision una por una. |
+| `frontend/src/modules/Inbox/InboxB/index.jsx` | NUEVO  -- version alternativa. Tabla con seleccion multiple y confirmacion en lote. |
+| `frontend/src/modules/Inbox/index.jsx` | ACTUALIZADO  -- apunta a InboxA por default. |
+| `frontend/src/components/layout/Sidebar.jsx` | ACTUALIZADO  -- navegacion multinivel en ingles. |
+| `frontend/src/components/layout/Header.jsx` | ACTUALIZADO  -- toggle con flechas direccionales. |
+| `frontend/src/modules/Dashboard/components/MetricCard.jsx` | ACTUALIZADO  -- fondo gris suave. |
+| `frontend/src/modules/Catalogos/index.jsx` | ACTUALIZADO  -- sin campo ID en UI, slug autogenerado, tipo Gobierno en contrapartes. |
 
-### Capa 4 — PWA Mobile
+### Capa 4  -- PWA Mobile
 
 | Item | Estado |
 |---|---|
-| Formato JSON OneDrive documentado | COMPLETO — docs/ETL_DISENO_FUNCIONAL.md |
+| Formato JSON OneDrive documentado | COMPLETO  -- docs/ETL_DISENO_FUNCIONAL.md |
 | carpeta OneDrive/PWA/ creada | COMPLETO |
-| catalogos.json generado por backend | COMPLETO — POST /catalogos/export/pwa |
-| Codigo PWA (React instalable en iPhone) | PENDIENTE — Entrega 4 |
+| catalogos.json generado por backend | COMPLETO  -- POST /catalogos/export/pwa |
+| Codigo PWA (React instalable en iPhone) | PENDIENTE  -- Entrega 4 |
 
 ---
 
 ## Roadmap
 
-### Punto 3 — ETL + Inbox
+### Punto 3  -- ETL + Inbox
 
 | Entrega | Descripcion | Estado |
 |---|---|---|
@@ -125,14 +125,14 @@ URLs:
 | 3B | Schema v1.2 + prompt ETL Claude Desktop | COMPLETO |
 | 3C | Frontend Inbox + export catalogos PWA | COMPLETO |
 
-### Punto 4 — PWA Mobile (proximo)
+### Punto 4  -- PWA Mobile (proximo)
 
 | Entrega | Descripcion |
 |---|---|
 | 4A | PWA React: captura rapida de gastos desde iPhone |
 | 4B | Integracion con ETL via OneDrive |
 
-### Punto 5 — Completar routers backend (futuro)
+### Punto 5  -- Completar routers backend (futuro)
 
 Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real.
 
@@ -170,12 +170,12 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 
 | # | Titulo | Prioridad |
 |---|---|---|
-| #2 | Tokens OAuth Gmail hernan y malu | ALTA — bloqueante para ETL |
+| #2 | Tokens OAuth Gmail hernan y malu | ALTA  -- bloqueante para ETL |
 | #4 | Configurar autoforward iPhone Martha | MEDIA |
 | #5 | Regenerar token GitHub | URGENTE |
 | #8 | Configurar tarea programada ETL Claude Desktop | ALTA |
 | #9 | Implementar routers backend pendientes | MEDIA |
-| #10 | PWA Mobile — Entrega 4 | BAJA |
+| #10 | PWA Mobile  -- Entrega 4 | BAJA |
 
 ---
 
@@ -183,9 +183,9 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 
 | Archivo | Ubicacion en PC | Razon |
 |---|---|---|
-| `config_correos.json` | `C:\Users\ghriz\.claude\` | Credenciales — en .gitignore |
+| `config_correos.json` | `C:\Users\ghriz\.claude\` | Credenciales  -- en .gitignore |
 | Tokens OAuth Gmail | `C:\Users\ghriz\.gmail-mcp\tokens\` | Tokens sensibles |
-| `finanzas.db` | OneDrive | DB con datos reales — en .gitignore |
+| `finanzas.db` | OneDrive | DB con datos reales  -- en .gitignore |
 | `.env` / `.env.prod` | raiz del repo local | Variables con valores reales |
 
 ---
@@ -198,10 +198,10 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 | `docs/ETL_PROMPT_CLAUDE_DESKTOP.md` | Prompt completo de la tarea programada del ETL |
 | `docs/ETL_CONFIGURACION_CLAUDE_DESKTOP.md` | Como configurar la tarea en Claude Desktop |
 | `docs/DISENO_3A_INBOX_BACKEND.md` | Endpoints inbox, logica, aprendizaje |
-| `docs/DISENO_3B_ETL_PROMPT.md` | Schema v1.2, diseño del prompt |
+| `docs/DISENO_3B_ETL_PROMPT.md` | Schema v1.2, diseno del prompt |
 | `docs/DISENO_3C_FRONTEND_INBOX_PWA.md` | Frontend Inbox, export catalogos, formato PWA |
 | `docs/INSTRUCCIONES_POST_INSTALACION.md` | Pasos manuales pendientes con instrucciones detalladas |
 
 ---
 
-*Ultima actualizacion: Junio 2026 — Plataforma Financiera MCGHR*
+*Ultima actualizacion: Junio 2026  -- Plataforma Financiera MCGHR*

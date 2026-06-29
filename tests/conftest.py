@@ -28,8 +28,8 @@ settings.claude_provider = "mock"
 settings.mail_provider = "mock"
 
 # CRITICO: importar todos los modelos para que Base.metadata los registre.
-# La Base real esta en backend.models.base — NO en backend.core.database.
-import backend.models  # noqa: F401  — side-effect: registra todos los modelos
+# La Base real esta en backend.models.base  -- NO en backend.core.database.
+import backend.models  # noqa: F401   -- side-effect: registra todos los modelos
 from backend.models.base import Base
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
