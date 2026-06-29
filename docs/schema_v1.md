@@ -1,23 +1,23 @@
-# Schema Finanzas MCGHR — v1
+﻿# Schema Finanzas MCGHR -- v1
 ## Base de datos SQLite con doble entrada contable, multi-moneda, patrimonio neto
 
-Aprobado: Mayo 2026  
-Estado: Pendiente implementacion SQL
+Aprobado: Mayo 2026
+Estado: Implementado -- schema real verificado con PRAGMA table_info (Junio 2026)
 
 ---
 
-## Principios de diseño
+## Principios de diseno
 
 - **Doble entrada contable:** cada movimiento genera debitos y creditos. La suma siempre balancea.
 - **Multi-moneda:** cada cuenta tiene su moneda base. Los tramos registran tipo de cambio exacto.
-- **Multi-tramo:** una transferencia puede tener N legs (ej: IBKR → Citi → Bancolombia = 3 tramos).
+- **Multi-tramo:** una transferencia puede tener N legs (ej: IBKR -> Citi -> Bancolombia = 3 tramos).
 - **Patrimonio neto:** posiciones calculadas desde asientos + valuaciones de mercado para activos.
 - **Etiquetas universales:** cualquier entidad del sistema puede ser taggeada con hashtags libres.
-- **Timestamps con timezone:** ISO 8601 con offset explícito para campos con hora. DATE simple para fechas sin hora.
+- **Timestamps con timezone:** ISO 8601 con offset explicito para campos con hora. DATE simple para fechas sin hora.
 
 ---
 
-## Mapa de tablas — 6 grupos
+## Mapa de tablas -- 6 grupos
 
 ```
 GRUPO 1: CATALOGOS
@@ -57,7 +57,7 @@ SOPORTE
 
 ---
 
-## GRUPO 1 — Catalogos
+## GRUPO 1 -- Catalogos
 
 ### monedas
 ```
@@ -79,12 +79,13 @@ tipo            TEXT           checking | savings | credit_card | investment
 subtipo         TEXT           Libre. Ejemplos: "TC Visa", "Cuenta corriente", "USDT spot"
 banco           TEXT           Ejemplos: "Bancolombia", "IBKR", "Binance", "BBVA Argentina"
 pais            TEXT           Ejemplos: "CO", "US", "AR"
-moneda_base     TEXT FK→monedas
-titular         TEXT FK→personas
+moneda_base     TEXT FK->monedas
+titular         TEXT FK->personas
 numero_cuenta   TEXT           Ultimos 4 digitos o identificador
 activa          INTEGER        0/1
-es_activo       INTEGER        0/1 — cuenta de activos (acciones, crypto, RSU)
-es_pasivo       INTEGER        0/1 — cuenta de deuda (TC, credito)
+es_activo       INTEGER        0/1 -- cuenta de activos (acciones, crypto, RSU)
+es_pasivo       INTEGER        0/1 -- cuenta de deuda (TC, credito)
+es_corporativa  INTEGER        0/1 -- cuenta de empresa, no personal
 notas           TEXT
 ```
 
@@ -98,7 +99,7 @@ Jerarquia de 3 niveles maximo.
 id              TEXT PK        Ejemplos: "ALIM", "ALIM_REST", "ALIM_REST_DEL"
 nombre          TEXT           Ejemplo: "Delivery"
 nivel           INTEGER        1, 2 o 3
-id_padre        TEXT FK→categorias   NULL si nivel 1
+id_padre        TEXT FK->categorias   NULL si nivel 1
 activa          INTEGER        0/1
 ```
 
@@ -129,7 +130,7 @@ Solo personas fisicas que participan en "quien pago / para quien".
 ```
 id              TEXT PK        Ejemplos: "GHR", "MC", "HIJO1"
 nombre          TEXT           Ejemplo: "Hernan Rizzi"
-es_titular      INTEGER        0/1 — si tiene cuentas propias en el sistema
+es_titular      INTEGER        0/1 -- si tiene cuentas propias en el sistema
 activa          INTEGER        0/1
 ```
 
@@ -157,14 +158,14 @@ fecha_creacion  TEXT           DATE
 
 ---
 
-## GRUPO 2 — Presupuesto
+## GRUPO 2 -- Presupuesto
 
 ### presupuestos
 ```
 id              INTEGER PK autoincrement
 anio            INTEGER        Ejemplo: 2026
 mes             INTEGER        Ejemplo: 6
-id_categoria    TEXT FK→categorias
+id_categoria    TEXT FK->categorias
 monto_cop       REAL           Presupuesto en COP
 monto_usd       REAL           Opcional, para categorias en USD
 notas           TEXT
@@ -175,16 +176,16 @@ Ejemplo: presupuesto de alimentacion general + presupuesto de alimentacion con e
 
 ---
 
-## GRUPO 3 — Obligaciones
+## GRUPO 3 -- Obligaciones
 
 ### obligaciones
 ```
 id              TEXT PK        Ejemplo: "CRED_BC_AUTO_2024"
 nombre          TEXT           Ejemplo: "Credito auto Bancolombia"
 tipo            TEXT           mortgage | personal | auto | credit_card | other
-id_cuenta       TEXT FK→cuentas
+id_cuenta       TEXT FK->cuentas
 capital_original REAL
-moneda          TEXT FK→monedas
+moneda          TEXT FK->monedas
 tasa_interes    REAL           Porcentaje anual
 fecha_inicio    TEXT           DATE
 fecha_fin       TEXT           DATE
@@ -196,7 +197,7 @@ notas           TEXT
 ### cuotas_obligacion
 ```
 id              INTEGER PK autoincrement
-id_obligacion   TEXT FK→obligaciones
+id_obligacion   TEXT FK->obligaciones
 numero_cuota    INTEGER
 fecha_vencimiento TEXT         DATE
 monto_total     REAL
@@ -205,36 +206,42 @@ interes         REAL
 seguro          REAL
 otros_cargos    REAL
 fecha_pago      TEXT           ISO 8601 con offset. NULL si no pagada.
-id_transaccion  TEXT FK→transacciones
+id_transaccion  TEXT FK->transacciones
 estado          TEXT           pendiente | pagado | vencido
 ```
 
 ---
 
-## GRUPO 4 — Movimientos (nucleo contable)
+## GRUPO 4 -- Movimientos (nucleo contable)
 
 ### transacciones
 Cabecera del evento economico. Puede tener multiples tramos.
 
 ```
 id              TEXT PK        UUID o hash
-fecha           TEXT           DATE — fecha del evento (no del procesamiento)
+fecha           TEXT           DATE -- fecha del evento (no del procesamiento)
 fecha_hora      TEXT           ISO 8601 con offset. Ejemplo: "2026-06-15T16:00:00-05:00"
 tipo            TEXT           gasto | ingreso | transferencia | ajuste
                                | inversion | devolucion
 descripcion     TEXT           Ejemplo: "Almuerzo Andres Carne de Res"
-id_categoria    TEXT FK→categorias    NULL para transferencias puras
-id_categoria2   TEXT FK→categorias    Segunda categoria opcional
-id_contraparte  TEXT FK→contrapartes
-quien_pago      TEXT FK→personas
+id_categoria    TEXT FK->categorias    NULL para transferencias puras
+id_categoria2   TEXT FK->categorias    Segunda categoria opcional
+id_contraparte  TEXT FK->contrapartes
+quien_pago      TEXT FK->personas
 para_quien      TEXT           "GHR" | "MC" | "ambos" | "HIJO1"
+id_persona      TEXT FK->personas      Persona beneficiaria del gasto
 es_recurrente   INTEGER        0/1
 id_recurrencia  TEXT           Agrupa pagos recurrentes del mismo tipo
 estado          TEXT           confirmado | pendiente | rechazado | anulado
 confianza       REAL           0.0-1.0
 revisado_humano INTEGER        0/1
-fuente          TEXT           "gmail_hernan" | "sms_bc" | "manual" | "foto_factura"
+completitud     TEXT           minimo | parcial | completo (ADR-008: nunca REAL)
+fuente          TEXT           Canal de lectura: "gmail_hernan" | "sms_bc" | "manual" | "foto_factura"
+                               NOTA: fuente y origen son columnas distintas (ver origen abajo)
+origen          TEXT           Canal de ingreso al sistema: "etl_claude" | "manual_web" | "api"
 id_correo       TEXT           ID del correo fuente en Gmail
+id_evento       TEXT           Agrupa eventos del mismo hecho economico (ADR-012)
+estado_enriquecimiento TEXT    inicial | enriquecido | completo
 notas           TEXT
 fecha_procesado TEXT           ISO 8601 con offset
 ```
@@ -242,17 +249,17 @@ fecha_procesado TEXT           ISO 8601 con offset
 ### tramos
 ```
 id              INTEGER PK autoincrement
-id_transaccion  TEXT FK→transacciones
+id_transaccion  TEXT FK->transacciones
 numero_orden    INTEGER        1, 2, 3... orden en la cadena
-id_cuenta_origen    TEXT FK→cuentas   NULL si es ingreso externo
-id_cuenta_destino   TEXT FK→cuentas   NULL si es gasto externo
+id_cuenta_origen    TEXT FK->cuentas   NULL si es ingreso externo
+id_cuenta_destino   TEXT FK->cuentas   NULL si es gasto externo
 monto_origen    REAL
-moneda_origen   TEXT FK→monedas
+moneda_origen   TEXT FK->monedas
 monto_destino   REAL
-moneda_destino  TEXT FK→monedas
+moneda_destino  TEXT FK->monedas
 tipo_cambio     REAL           monto_destino / monto_origen
 comision        REAL
-moneda_comision TEXT FK→monedas
+moneda_comision TEXT FK->monedas
 fecha_tramo     TEXT           ISO 8601 con offset
 descripcion     TEXT
 estado          TEXT           confirmado | pendiente | rechazado
@@ -261,11 +268,11 @@ estado          TEXT           confirmado | pendiente | rechazado
 ### asientos
 ```
 id              INTEGER PK autoincrement
-id_tramo        INTEGER FK→tramos
-id_cuenta       TEXT FK→cuentas
+id_tramo        INTEGER FK->tramos
+id_cuenta       TEXT FK->cuentas
 tipo            TEXT           debito | credito
 monto           REAL           Siempre positivo
-moneda          TEXT FK→monedas
+moneda          TEXT FK->monedas
 fecha           TEXT           ISO 8601 con offset
 ```
 
@@ -273,15 +280,15 @@ Regla invariante: para cada tramo, suma de debitos = suma de creditos.
 
 ---
 
-## GRUPO 5 — Activos y patrimonio
+## GRUPO 5 -- Activos y patrimonio
 
 ### posiciones
 Vista materializada. Se recalcula desde asientos. No es fuente de verdad.
 
 ```
-id_cuenta           TEXT PK FK→cuentas
+id_cuenta           TEXT PK FK->cuentas
 saldo               REAL
-moneda              TEXT FK→monedas
+moneda              TEXT FK->monedas
 cantidad_activo     REAL           Para acciones/crypto: unidades en cartera
 precio_promedio     REAL           Precio promedio de compra
 fecha_vesting       TEXT           DATE. Solo para rsu_unvested.
@@ -291,7 +298,7 @@ ultima_actualizacion TEXT          ISO 8601 con offset
 ### valuaciones
 ```
 id              INTEGER PK autoincrement
-id_cuenta       TEXT FK→cuentas
+id_cuenta       TEXT FK->cuentas
 fecha           TEXT           DATE
 precio_usd      REAL
 precio_cop      REAL
@@ -300,7 +307,7 @@ fuente          TEXT           "manual" | "correo_IBKR" | "binance_statement"
 
 ---
 
-## GRUPO 6 — Documentos y vinculos
+## GRUPO 6 -- Documentos y vinculos
 
 ### documentos
 ```
@@ -324,7 +331,7 @@ notas           TEXT
 Tabla universal. Permite taggear cualquier entidad del sistema.
 
 ```
-id_etiqueta     INTEGER FK→etiquetas
+id_etiqueta     INTEGER FK->etiquetas
 entidad_tipo    TEXT           "transaccion" | "presupuesto" | "obligacion"
                                | "posicion" | "documento" | "cuenta"
 entidad_id      TEXT           ID de la entidad
@@ -334,8 +341,8 @@ PRIMARY KEY (id_etiqueta, entidad_tipo, entidad_id)
 ### vinculos
 ```
 id              INTEGER PK autoincrement
-id_documento    TEXT FK→documentos
-id_transaccion  TEXT FK→transacciones
+id_documento    TEXT FK->documentos
+id_transaccion  TEXT FK->transacciones
 tipo_vinculo    TEXT           "comprobante" | "extracto" | "factura" | "sms"
 confianza       REAL
 fecha_vinculo   TEXT           ISO 8601 con offset
@@ -363,9 +370,9 @@ id              INTEGER PK autoincrement
 patron_remitente TEXT
 patron_asunto   TEXT
 patron_contenido TEXT
-id_categoria    TEXT FK→categorias
-id_cuenta       TEXT FK→cuentas
-id_contraparte  TEXT FK→contrapartes
+id_categoria    TEXT FK->categorias
+id_cuenta       TEXT FK->cuentas
+id_contraparte  TEXT FK->contrapartes
 confianza_base  REAL
 usos            INTEGER
 fecha_creacion  TEXT           DATE
@@ -400,6 +407,9 @@ notas           TEXT
 | Timestamps | ISO 8601 con offset | Correcto entre Colombia y Argentina |
 | Posiciones | Vista materializada desde asientos | Auditoria recalculable |
 | Presupuesto | Variable por categoria con etiquetas | General + por proyecto/viaje |
+| completitud | TEXT 'minimo'/'parcial'/'completo' | ADR-008: nunca REAL/float |
+| fuente vs origen | Columnas distintas en transacciones | fuente = canal de lectura, origen = canal de ingreso |
+| id_evento | TEXT nullable en transacciones | ADR-012: correlacion de eventos ETL |
 
 ---
 
@@ -409,3 +419,27 @@ notas           TEXT
 - [ ] Definir datos iniciales del catalogo (cuentas, monedas, personas, contrapartes)
 - [ ] Disenar prompt de sesion para procesamiento de correos en Claude Desktop
 - [ ] Implementar app web local Flask para revision humana (Fase 2)
+
+---
+
+## Tablas planificadas / pendientes de implementar
+
+Estas tablas estan disenadas pero NO existen todavia en la DB.
+No usar en codigo hasta que se creen con su migracion correspondiente.
+
+### items_transaccion (PENDIENTE)
+Desglose de items de una factura por categoria.
+Permite registrar que una compra en supermercado tuvo 30% alimentos y 70% limpieza.
+
+```
+id              INTEGER PK autoincrement
+id_transaccion  TEXT FK->transacciones
+descripcion     TEXT
+id_categoria    TEXT FK->categorias
+monto           REAL
+moneda          TEXT FK->monedas
+porcentaje      REAL           Alternativa a monto fijo
+notas           TEXT
+```
+
+Estado: pendiente de diseno final y aprobacion.
