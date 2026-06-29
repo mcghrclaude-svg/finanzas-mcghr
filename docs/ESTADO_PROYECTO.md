@@ -79,7 +79,7 @@ URLs:
 | Router inbox (7 endpoints) | COMPLETO | 13/13 |
 | Resto de routers (transacciones, presupuestos, etc.) | TODO — placeholder | — |
 
-**Total tests pasando: 18/18**
+**Total tests pasando: 55/55**
 
 ### Capa 3 — Frontend React
 

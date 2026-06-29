@@ -13,7 +13,7 @@ Endpoints:
     DELETE /{id}                Inactivar transacción (soft delete)
 """
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
@@ -72,7 +72,7 @@ async def obtener_transaccion(
 ):
     """Detalle completo de una transacción incluyendo tramos y documentos vinculados."""
     # TODO: implementar con TransaccionesService
-    return {}
+    raise HTTPException(status_code=404, detail="Transaccion no encontrada")
 
 
 @router.patch("/{transaccion_id}")
