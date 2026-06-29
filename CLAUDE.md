@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-22 21:27
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 15:53
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260622.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260629.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -66,6 +66,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+0009836 fix: alinear schemas y docs con DB real -- completitud str, id_evento, estado_enriquecimiento, origen en TransaccionRead; columnas faltantes en schema_v1.md; seccion tablas planificadas
+6109ca3 docs: auto-update 2026-06-22 21:27
 dcb576f fix: contador CITA + renombrar iniciar-chat-tema a preparar-rama-tema
 05dcc95 docs: auto-update 2026-06-22 21:21
 d95462c chore: instalar workflow scripts + ADR + CITA (2026-06-22 21:21)
@@ -74,5 +76,3 @@ d95462c chore: instalar workflow scripts + ADR + CITA (2026-06-22 21:21)
 12604d5 fix: actualizaciones del chat 2026-06-21
 6a01c51 fix: actualizar tests para reflejar contrato real del backend
 516c0c7 feat: UX v3 - sidebar toggle integrado, Transacciones editable, Dashboard badge real
-b41705d feat: sidebar Outlook + Transacciones unifica Inbox
-67bd4f6 fix: issues #23 #24 #25 #27 -- presupuesto_repo usa tramos, tipos minuscula, conteo inbox correcto, fechas ISO
