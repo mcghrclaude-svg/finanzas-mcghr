@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 22:10
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 22:14
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+0d1a98e docs: agregar CITA-013 -- conflictos de merge por hook autogenerador en branches paralelas
+c562008 docs: auto-update 2026-06-29 22:10
 543bae8 merge: chat-sync-mcp-lector-correos -- CLAUDE.md y HANDOFF se regeneran en proximo commit
 fa785ff docs: auto-update 2026-06-29 22:07
 5af3809 docs: crear PENDIENTES.md -- deuda tecnica tamano_bytes (PEN-001)
@@ -82,5 +84,3 @@ fa785ff docs: auto-update 2026-06-29 22:07
 c740faa docs: auto-update 2026-06-29 22:03
 ac47098 docs: agregar pendiente tamanyo_bytes en HANDOFF (deuda tecnica CITA-009)
 f9cd73b docs: auto-update 2026-06-29 21:58
-80ec82e sync: propagar mejoras de .claude\skills a mcp_lector_correos/server.py (CITA-012)
-bf3a7ed docs: auto-update 2026-06-29 21:33
