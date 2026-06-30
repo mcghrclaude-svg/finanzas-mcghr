@@ -39,3 +39,27 @@ alimentar el motor de correlacion en corridas futuras -- analogo a como
 las correcciones de categoria alimentan reglas_clasificacion. Disenar junto
 con la pantalla de Inbox; probablemente vive como accion secundaria sobre
 cada transaccion en la cola de revision.
+
+---
+
+## PEN-003 -- ETL necesita modo de ejecucion con rango de fechas para dev/testing
+
+**Detectado:** 2026-06-29, sesion chat-etl-desarrollo
+**Prioridad:** media (bloquea testing reproducible del ETL en desarrollo)
+
+El ETL hoy solo soporta modo incremental: procesa desde la ultima corrida
+usando correos_procesados y documentos como marca de agua. Falta un modo
+alternativo, solo para entornos de desarrollo, donde se pueda invocar con
+un rango de fechas explicito (ej: "procesa correos entre el 1 y el 7 de
+junio") para hacer pruebas acotadas y reproducibles sin esperar data nueva
+ni reprocesar todo el historico.
+
+Implicancias a resolver cuando se aborde:
+- El modo por rango de fechas NUNCA debe correr contra la DB de produccion.
+  Si no respeta la logica de dedup, puede reprocesar eventos ya registrados
+  y crear duplicados en finanzas.db.
+- Requiere un parametro o flag explicito en el prompt de Cowork (ademas
+  del modo incremental por defecto), para que la distincion sea intencional
+  y no accidental.
+- Posiblemente necesita una DB de dev limpia con datos de seed representativos
+  en lugar de depender de correos reales de Gmail.
