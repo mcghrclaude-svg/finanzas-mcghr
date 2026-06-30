@@ -1,5 +1,5 @@
 """
-InboxRepository — acceso a datos para el modulo Inbox.
+InboxRepository -- acceso a datos para el modulo Inbox.
 Corregido para usar tipos nativos (float, str) en lugar de Decimal,
 alineado con la DB real donde confianza=REAL y completitud=TEXT.
 """
@@ -14,7 +14,7 @@ from sqlalchemy import select, func, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from backend.models.transaccion import Transaccion
+from backend.models.transaccion import Transaccion, Tramo
 from backend.models.catalogo import Categoria, Contraparte, Cuenta
 from backend.models.regla import ReglaClasificacion
 
@@ -25,7 +25,7 @@ class InboxRepository:
 
     async def listar(
         self,
-        estado: str = "pendiente",
+        estado: Optional[str] = "pendiente",
         origen: Optional[str] = None,
         cursor: Optional[str] = None,
         limit: int = 50,
@@ -35,13 +35,16 @@ class InboxRepository:
             .options(
                 selectinload(Transaccion.categoria),
                 selectinload(Transaccion.contraparte),
-                selectinload(Transaccion.tramos),
+                selectinload(Transaccion.tramos).selectinload(Tramo.cuenta_origen),
+                selectinload(Transaccion.tramos).selectinload(Tramo.cuenta_destino),
             )
-            .where(Transaccion.estado == estado)
         )
 
-        if estado == "pendiente":
-            q = q.where(Transaccion.revisado_humano == 0)
+        # estado=None significa sin filtro (mostrar todos los estados)
+        if estado is not None:
+            q = q.where(Transaccion.estado == estado)
+            if estado == "pendiente":
+                q = q.where(Transaccion.revisado_humano == 0)
 
         if origen:
             q = q.where(Transaccion.origen == origen)
@@ -102,7 +105,8 @@ class InboxRepository:
             .options(
                 selectinload(Transaccion.categoria),
                 selectinload(Transaccion.contraparte),
-                selectinload(Transaccion.tramos),
+                selectinload(Transaccion.tramos).selectinload(Tramo.cuenta_origen),
+                selectinload(Transaccion.tramos).selectinload(Tramo.cuenta_destino),
             )
             .where(Transaccion.id == tx_id)
         )

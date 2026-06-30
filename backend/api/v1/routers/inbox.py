@@ -10,14 +10,17 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import update
 
 from backend.core.database import get_db
+from backend.models.transaccion import Tramo
 from backend.services.inbox_service import InboxService
 from backend.schemas.inbox import (
     InboxListResponse,
     InboxItemSummary,
     InboxItemRead,
     InboxItemPatch,
+    TramoOut,
     ConfirmarRequest,
     ConfirmarResponse,
     ConfirmarLoteRequest,
@@ -51,7 +54,9 @@ async def listar_inbox(
     db: AsyncSession = Depends(get_db),
 ):
     service = InboxService(db)
-    resultado = await service.listar(estado=estado, origen=origen,
+    # estado='all' significa sin filtro de estado (muestra confirmadas y pendientes)
+    estado_filtro = None if estado == "all" else estado
+    resultado = await service.listar(estado=estado_filtro, origen=origen,
                                      cursor=cursor, limit=limit)
     items_out = [_tx_to_summary(tx) for tx in resultado["items"]]
     return InboxListResponse(
@@ -99,8 +104,27 @@ async def editar_inbox_item(
     db: AsyncSession = Depends(get_db),
 ):
     service = InboxService(db)
+
+    # Separar el campo del tramo del resto
     campos = body.model_dump(exclude_none=True)
+    id_cuenta_tramo1 = campos.pop("id_cuenta_origen_tramo1", None)
+
+    # Editar la transaccion
     tx = await service.editar(inbox_id, campos)
+
+    # Si viene id_cuenta_origen_tramo1 y la transaccion tiene exactamente un tramo,
+    # actualizar ese tramo. Si tiene mas de un tramo, ignorar (multi-tramo no se
+    # edita desde el panel de inbox).
+    if id_cuenta_tramo1 and tx.tramos and len(tx.tramos) == 1:
+        await db.execute(
+            update(Tramo)
+            .where(Tramo.id == tx.tramos[0].id)
+            .values(id_cuenta_origen=id_cuenta_tramo1)
+        )
+        await db.flush()
+        # Recargar para que el response refleje el cambio
+        tx = await service.obtener(inbox_id)
+
     return _tx_to_read(tx)
 
 
@@ -157,6 +181,21 @@ def _moneda_tx(tx):
     return "COP"
 
 
+def _tramo_to_out(t) -> TramoOut:
+    return TramoOut(
+        id=t.id,
+        numero_orden=t.numero_orden or 1,
+        id_cuenta_origen=t.id_cuenta_origen,
+        nombre_cuenta_origen=t.cuenta_origen.nombre if t.cuenta_origen else None,
+        id_cuenta_destino=t.id_cuenta_destino,
+        nombre_cuenta_destino=t.cuenta_destino.nombre if t.cuenta_destino else None,
+        monto_origen=t.monto_origen,
+        moneda_origen=t.moneda_origen,
+        monto_destino=t.monto_destino,
+        moneda_destino=t.moneda_destino,
+    )
+
+
 def _tx_to_summary(tx) -> InboxItemSummary:
     return InboxItemSummary(
         id=tx.id,
@@ -170,7 +209,7 @@ def _tx_to_summary(tx) -> InboxItemSummary:
         id_contraparte=tx.id_contraparte,
         nombre_contraparte=tx.contraparte.nombre if tx.contraparte else None,
         confianza=float(tx.confianza) if tx.confianza is not None else None,
-        completitud=tx.completitud,        # STRING: minimo|parcial|completo
+        completitud=tx.completitud,
         estado=tx.estado,
         creado_en=tx.creado_en,
     )
@@ -185,17 +224,22 @@ def _tx_to_read(tx) -> InboxItemRead:
         moneda=_moneda_tx(tx),
         descripcion=tx.descripcion,
         tipo=tx.tipo,
+        quien_pago=tx.quien_pago,
+        para_quien=tx.para_quien,
+        es_recurrente=bool(tx.es_recurrente),
         id_categoria=tx.id_categoria,
         nombre_categoria=tx.categoria.nombre if tx.categoria else None,
         id_contraparte=tx.id_contraparte,
         nombre_contraparte=tx.contraparte.nombre if tx.contraparte else None,
         confianza=float(tx.confianza) if tx.confianza is not None else None,
-        completitud=tx.completitud,        # STRING: minimo|parcial|completo
+        completitud=tx.completitud,
         estado=tx.estado,
         es_reembolsable=bool(tx.es_reembolsable),
+        estado_reembolso=tx.estado_reembolso,
         id_persona=tx.id_persona,
         id_correo=tx.id_correo,
         notas=tx.notas,
+        tramos=[_tramo_to_out(t) for t in (tx.tramos or [])],
         creado_en=tx.creado_en,
         actualizado_en=tx.actualizado_en,
     )

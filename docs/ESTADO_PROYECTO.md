@@ -1,7 +1,7 @@
 # ESTADO_PROYECTO.md  -- actualizado post-sesion Junio 2026
 # Plataforma Financiera MCGHR
 
-**Fecha:** Junio 2026
+**Fecha:** 29 Junio 2026
 **Proposito:** Documento de handoff para retomar el proyecto en claude.ai con contexto completo.
 
 ---
@@ -31,8 +31,7 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\ghriz\finanzas-mcghr\iniciar_
 # Opcion 2  -- Manual
 # Terminal 1:
 cd C:\Users\ghriz\finanzas-mcghr
-venv\Scripts\activate
-uvicorn backend.main:app --reload --port 8000
+venv\Scripts\python.exe -m uvicorn backend.main:app --reload --env-file .env.dev
 
 # Terminal 2:
 cd C:\Users\ghriz\finanzas-mcghr\frontend
@@ -74,9 +73,11 @@ URLs:
 |---|---|---|
 | Core: database, config, exceptions | COMPLETO |  -- |
 | Modelos SQLAlchemy (catalogo, transaccion, regla, inbox_mobile) | COMPLETO |  -- |
-| Router catalogos (listar cat/cuentas/contrapartes/personas) | COMPLETO | 5/5 |
+| Router catalogos -- todos los endpoints ABM implementados | COMPLETO | 5/5 |
 | Router catalogos export PWA | COMPLETO | 1/1 |
-| Router inbox (7 endpoints) | COMPLETO | 13/13 |
+| Router inbox (7 endpoints) + soporte estado=all | COMPLETO | 13/13 |
+| Schema inbox -- InboxItemPatch ampliado, TramoOut, InboxItemRead completo | COMPLETO |  -- |
+| Repository inbox -- selectinload Tramo.cuenta_origen/destino, estado=None sin filtro | COMPLETO |  -- |
 | Resto de routers (transacciones, presupuestos, etc.) | TODO  -- placeholder |  -- |
 
 **Total tests pasando: 55/55**
@@ -87,22 +88,45 @@ URLs:
 |---|---|
 | Estructura Vite + Tailwind + Zustand + React Query | COMPLETO |
 | Layout + Sidebar + Header | COMPLETO |
-| Modulo Catalogos | COMPLETO |
-| Modulo Inbox | COMPLETO  -- InboxA (default) e InboxB (alternativo) |
+| Modulo Catalogos -- ABM funcional (fix endpoints backend) | COMPLETO |
+| Modulo Transacciones v6 | COMPLETO  -- ver detalle abajo |
 | Dashboard | TODO  -- placeholder |
 | Resto de modulos | TODO  -- placeholder |
+
+**Modulo Transacciones v6 -- detalle:**
+
+| Feature | Estado |
+|---|---|
+| Lista izquierda con ancho ajustable por drag | COMPLETO |
+| Panel detalle grid 4 columnas sin scroll | COMPLETO |
+| Campos editables: descripcion, fecha, tipo, quien_pago, es_recurrente, counterpart, category, paid_with, es_reembolsable, estado_reembolso, notas | COMPLETO |
+| AutocompleteSelect (typeahead) en Category, Counterpart y Paid With | COMPLETO |
+| Paid With vinculado a id_cuenta_origen del tramo 1 | COMPLETO |
+| Toolbar: filtro All Sources | COMPLETO |
+| Toolbar: filtro All People (filtra por quien_pago) | COMPLETO |
+| Toolbar: filtro fecha desde/hasta | COMPLETO |
+| Toolbar: sort by date/amount asc/desc | COMPLETO |
+| Toolbar: boton Clear filters | COMPLETO |
+| Toggle All/Pending -- fix: All muestra todos los estados | COMPLETO |
+| Attachment: preview compacto con boton abrir en nueva ventana | COMPLETO |
+| Campos ocultos (no en UI): para_quien, id_correo | DECISION  -- ocultos por ahora |
 
 **Archivos Frontend:**
 
 | Archivo | Estado |
 |---|---|
-| `frontend/src/modules/Inbox/InboxA/index.jsx` | NUEVO  -- version default. Layout lista+detalle, revision una por una. |
-| `frontend/src/modules/Inbox/InboxB/index.jsx` | NUEVO  -- version alternativa. Tabla con seleccion multiple y confirmacion en lote. |
-| `frontend/src/modules/Inbox/index.jsx` | ACTUALIZADO  -- apunta a InboxA por default. |
-| `frontend/src/components/layout/Sidebar.jsx` | ACTUALIZADO  -- navegacion multinivel en ingles. |
-| `frontend/src/components/layout/Header.jsx` | ACTUALIZADO  -- toggle con flechas direccionales. |
-| `frontend/src/modules/Dashboard/components/MetricCard.jsx` | ACTUALIZADO  -- fondo gris suave. |
-| `frontend/src/modules/Catalogos/index.jsx` | ACTUALIZADO  -- sin campo ID en UI, slug autogenerado, tipo Gobierno en contrapartes. |
+| `frontend/src/modules/Transacciones/index.jsx` | ACTUALIZADO  -- v6, ver detalle arriba |
+| `frontend/src/modules/Catalogos/index.jsx` | SIN CAMBIOS  -- funciona con fix de backend |
+
+**Archivos Backend modificados en sesion 2026-06-29:**
+
+| Archivo | Cambio |
+|---|---|
+| `backend/api/v1/routers/catalogos.py` | Fix: todos los endpoints POST/PATCH/DELETE implementados (antes eran stubs vacios) |
+| `backend/api/v1/routers/inbox.py` | Fix: estado=all no filtra por estado; expone tramos con cuenta_origen/destino |
+| `backend/schemas/inbox.py` | Ampliado: TramoOut, InboxItemRead con tramos y campos nuevos, InboxItemPatch con todos los campos editables |
+| `backend/repositories/inbox_repository.py` | Fix: selectinload de cuentas en tramos; listar() acepta estado=None |
+| `docs/CITA.md` | Actualizado: CITA-009 agrega excepcion para texto visible en UI (botones, iconos JSX) |
 
 ### Capa 4  -- PWA Mobile
 
@@ -124,6 +148,7 @@ URLs:
 | 3A | Backend inbox: service, repo, router, tests | COMPLETO |
 | 3B | Schema v1.2 + prompt ETL Claude Desktop | COMPLETO |
 | 3C | Frontend Inbox + export catalogos PWA | COMPLETO |
+| 3D | UX Transacciones v6 + fix catalogos ABM | COMPLETO  -- sesion 2026-06-29 |
 
 ### Punto 4  -- PWA Mobile (proximo)
 
@@ -142,7 +167,7 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 
 | Decision | Resultado | Razon |
 |---|---|---|
-| Motor del ETL | Claude Desktop tarea programada /schedule (no script Python) | Sin costo adicional API, razonamiento sofisticado, scheduler nativo |
+| Motor del ETL | Claude Desktop tarea programada (no script Python) | Sin costo adicional API, razonamiento sofisticado, scheduler nativo |
 | Schedule ETL | Diario a las 4am | Peticion del usuario |
 | ETL escribe en DB | Directo a SQLite via MCP sqlite | Independiente del backend |
 | Aprendizaje ETL | Lee reglas_clasificacion + ultimas 50 tx confirmadas como contexto | Mas preciso que solo regex |
@@ -151,6 +176,10 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 | Catalogos para PWA | Backend exporta JSON a OneDrive, PWA lo lee desde ahi | Sin llamadas API desde el celular |
 | PWA comunicacion | JSONs en OneDrive, sin API calls | Sin servidor adicional |
 | Script arranque | iniciar_finanzas.ps1 en raiz del repo | Un click desde barra de tareas |
+| Paid With en inbox | Vinculado a id_cuenta_origen del tramo 1. Multi-tramo: aviso readonly | Mayoria de gastos tiene 1 tramo |
+| para_quien en UI | Oculto del formulario de detalle | Decision de UX -- no se usa por ahora |
+| id_correo en UI | Oculto del formulario de detalle | Campo interno, no relevante para el usuario |
+| Simbolos Unicode en UI | Permitidos en texto visible (botones, iconos JSX). Ver CITA-009 | ASCII solo para logica, comentarios y nombres |
 
 ---
 
@@ -204,4 +233,4 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 
 ---
 
-*Ultima actualizacion: Junio 2026  -- Plataforma Financiera MCGHR*
+*Ultima actualizacion: 29 Junio 2026  -- Sesion UX Transacciones + Fix Catalogos ABM*

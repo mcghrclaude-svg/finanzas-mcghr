@@ -21,8 +21,10 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,7 +35,54 @@ from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona
 router = APIRouter()
 
 
-# ── Categorias ────────────────────────────────────────────────────────────────
+# -- Schemas Pydantic --------------------------------------------------
+
+class CategoriaCreate(BaseModel):
+    id: str
+    nombre: str
+    nivel: int = 1
+    id_padre: str | None = None
+    tipo_patron_gasto: str = "variable_frecuente"
+
+class CategoriaUpdate(BaseModel):
+    nombre: str | None = None
+    tipo_patron_gasto: str | None = None
+
+class CuentaCreate(BaseModel):
+    id: str
+    nombre: str
+    tipo: str | None = None
+    banco: str | None = None
+    moneda: str = "COP"
+    es_corporativa: bool = False
+
+class CuentaUpdate(BaseModel):
+    nombre: str | None = None
+    tipo: str | None = None
+    banco: str | None = None
+    moneda: str | None = None
+    es_corporativa: bool | None = None
+
+class ContraparteCreate(BaseModel):
+    id: str
+    nombre: str
+    tipo: str | None = None
+
+class ContraparteUpdate(BaseModel):
+    nombre: str | None = None
+    tipo: str | None = None
+
+class PersonaCreate(BaseModel):
+    id: str
+    nombre: str
+    alias: str | None = None
+
+class PersonaUpdate(BaseModel):
+    nombre: str | None = None
+    alias: str | None = None
+
+
+# -- Categorias --------------------------------------------------------
 
 @router.get("/categorias")
 async def listar_categorias(
@@ -66,24 +115,58 @@ async def listar_categorias(
 
 
 @router.post("/categorias", status_code=201)
-async def crear_categoria(db: AsyncSession = Depends(get_db)):
-    # TODO: implementar con schema Pydantic
-    return {}
+async def crear_categoria(
+    body: CategoriaCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    existing = await db.get(Categoria, body.id)
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Category '{body.id}' already exists")
+    nueva = Categoria(
+        id=body.id,
+        nombre=body.nombre,
+        nivel=body.nivel,
+        id_padre=body.id_padre,
+        tipo_patron_gasto=body.tipo_patron_gasto,
+        activa=True,
+    )
+    db.add(nueva)
+    await db.commit()
+    await db.refresh(nueva)
+    return {"id": nueva.id, "nombre": nueva.nombre}
 
 
 @router.patch("/categorias/{categoria_id}")
-async def editar_categoria(categoria_id: str, db: AsyncSession = Depends(get_db)):
-    # TODO: implementar
-    return {}
+async def editar_categoria(
+    categoria_id: str,
+    body: CategoriaUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    cat = await db.get(Categoria, categoria_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    campos = body.model_dump(exclude_none=True)
+    for k, v in campos.items():
+        setattr(cat, k, v)
+    await db.commit()
+    await db.refresh(cat)
+    return {"id": cat.id, "nombre": cat.nombre}
 
 
 @router.delete("/categorias/{categoria_id}", status_code=204)
-async def inactivar_categoria(categoria_id: str, db: AsyncSession = Depends(get_db)):
-    # TODO: soft delete
+async def inactivar_categoria(
+    categoria_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    cat = await db.get(Categoria, categoria_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    cat.activa = not cat.activa
+    await db.commit()
     return None
 
 
-# ── Cuentas ───────────────────────────────────────────────────────────────────
+# -- Cuentas -----------------------------------------------------------
 
 @router.get("/cuentas")
 async def listar_cuentas(
@@ -114,21 +197,59 @@ async def listar_cuentas(
 
 
 @router.post("/cuentas", status_code=201)
-async def crear_cuenta(db: AsyncSession = Depends(get_db)):
-    return {}
+async def crear_cuenta(
+    body: CuentaCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    existing = await db.get(Cuenta, body.id)
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Account '{body.id}' already exists")
+    nueva = Cuenta(
+        id=body.id,
+        nombre=body.nombre,
+        tipo=body.tipo,
+        banco=body.banco,
+        moneda=body.moneda,
+        es_corporativa=body.es_corporativa,
+        activa=True,
+    )
+    db.add(nueva)
+    await db.commit()
+    await db.refresh(nueva)
+    return {"id": nueva.id, "nombre": nueva.nombre}
 
 
 @router.patch("/cuentas/{cuenta_id}")
-async def editar_cuenta(cuenta_id: str, db: AsyncSession = Depends(get_db)):
-    return {}
+async def editar_cuenta(
+    cuenta_id: str,
+    body: CuentaUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    cuenta = await db.get(Cuenta, cuenta_id)
+    if not cuenta:
+        raise HTTPException(status_code=404, detail="Account not found")
+    campos = body.model_dump(exclude_none=True)
+    for k, v in campos.items():
+        setattr(cuenta, k, v)
+    await db.commit()
+    await db.refresh(cuenta)
+    return {"id": cuenta.id, "nombre": cuenta.nombre}
 
 
 @router.delete("/cuentas/{cuenta_id}", status_code=204)
-async def inactivar_cuenta(cuenta_id: str, db: AsyncSession = Depends(get_db)):
+async def inactivar_cuenta(
+    cuenta_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    cuenta = await db.get(Cuenta, cuenta_id)
+    if not cuenta:
+        raise HTTPException(status_code=404, detail="Account not found")
+    cuenta.activa = not cuenta.activa
+    await db.commit()
     return None
 
 
-# ── Contrapartes ──────────────────────────────────────────────────────────────
+# -- Contrapartes ------------------------------------------------------
 
 @router.get("/contrapartes")
 async def listar_contrapartes(
@@ -153,25 +274,60 @@ async def listar_contrapartes(
 
 
 @router.post("/contrapartes", status_code=201)
-async def crear_contraparte(db: AsyncSession = Depends(get_db)):
-    return {}
+async def crear_contraparte(
+    body: ContraparteCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    existing = await db.get(Contraparte, body.id)
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Entity '{body.id}' already exists")
+    nueva = Contraparte(
+        id=body.id,
+        nombre=body.nombre,
+        tipo=body.tipo,
+        activa=True,
+    )
+    db.add(nueva)
+    await db.commit()
+    await db.refresh(nueva)
+    return {"id": nueva.id, "nombre": nueva.nombre}
 
 
 @router.patch("/contrapartes/{contraparte_id}")
-async def editar_contraparte(contraparte_id: str, db: AsyncSession = Depends(get_db)):
-    return {}
+async def editar_contraparte(
+    contraparte_id: str,
+    body: ContraparteUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    cp = await db.get(Contraparte, contraparte_id)
+    if not cp:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    campos = body.model_dump(exclude_none=True)
+    for k, v in campos.items():
+        setattr(cp, k, v)
+    await db.commit()
+    await db.refresh(cp)
+    return {"id": cp.id, "nombre": cp.nombre}
 
 
 @router.delete("/contrapartes/{contraparte_id}", status_code=204)
-async def inactivar_contraparte(contraparte_id: str, db: AsyncSession = Depends(get_db)):
+async def inactivar_contraparte(
+    contraparte_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    cp = await db.get(Contraparte, contraparte_id)
+    if not cp:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    cp.activa = not cp.activa
+    await db.commit()
     return None
 
 
-# ── Personas ──────────────────────────────────────────────────────────────────
+# -- Personas ----------------------------------------------------------
 
 @router.get("/personas")
 async def listar_personas(db: AsyncSession = Depends(get_db)):
-    q = select(Persona).where(Persona.activa == True).order_by(Persona.nombre)  # noqa: E712
+    q = select(Persona).order_by(Persona.nombre)
     result = await db.execute(q)
     personas = result.scalars().all()
     return {
@@ -183,27 +339,63 @@ async def listar_personas(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/personas", status_code=201)
-async def crear_persona(db: AsyncSession = Depends(get_db)):
-    return {}
+async def crear_persona(
+    body: PersonaCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    existing = await db.get(Persona, body.id)
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Person '{body.id}' already exists")
+    nueva = Persona(
+        id=body.id,
+        nombre=body.nombre,
+        alias=body.alias,
+        activa=True,
+    )
+    db.add(nueva)
+    await db.commit()
+    await db.refresh(nueva)
+    return {"id": nueva.id, "nombre": nueva.nombre}
 
 
 @router.patch("/personas/{persona_id}")
-async def editar_persona(persona_id: str, db: AsyncSession = Depends(get_db)):
-    return {}
+async def editar_persona(
+    persona_id: str,
+    body: PersonaUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    persona = await db.get(Persona, persona_id)
+    if not persona:
+        raise HTTPException(status_code=404, detail="Person not found")
+    campos = body.model_dump(exclude_none=True)
+    for k, v in campos.items():
+        setattr(persona, k, v)
+    await db.commit()
+    await db.refresh(persona)
+    return {"id": persona.id, "nombre": persona.nombre}
 
 
-# ── Export PWA ────────────────────────────────────────────────────────────────
+@router.delete("/personas/{persona_id}", status_code=204)
+async def inactivar_persona(
+    persona_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    persona = await db.get(Persona, persona_id)
+    if not persona:
+        raise HTTPException(status_code=404, detail="Person not found")
+    persona.activa = not persona.activa
+    await db.commit()
+    return None
+
+
+# -- Export PWA --------------------------------------------------------
 
 @router.post("/export/pwa")
 async def exportar_catalogos_pwa(db: AsyncSession = Depends(get_db)):
     """
     Genera catalogos.json con categorias, contrapartes y cuentas activas.
     Lo escribe en OneDrive/PWA/ para que la app mobile lo lea.
-
-    Llamar cada vez que se modifica el catalogo, o manualmente desde
-    la pantalla de Catalogos con el boton "Actualizar datos del celular".
     """
-    # Leer datos
     cats_result = await db.execute(
         select(Categoria)
         .where(Categoria.activa == True)  # noqa: E712
@@ -225,7 +417,6 @@ async def exportar_catalogos_pwa(db: AsyncSession = Depends(get_db)):
     )
     cuentas = cuentas_result.scalars().all()
 
-    # Armar JSON
     payload = {
         "version": "1.0",
         "generado_en": datetime.now(timezone.utc).isoformat(),
@@ -249,7 +440,6 @@ async def exportar_catalogos_pwa(db: AsyncSession = Depends(get_db)):
         ],
     }
 
-    # Escribir en OneDrive
     onedrive = Path(settings.onedrive_path)
     pwa_dir = onedrive / "PWA"
     try:
