@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 16:49
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 20:08
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -47,16 +47,16 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
-| Transacciones | IMPLEMENTADO | 828 lineas |
+| Transacciones | IMPLEMENTADO | 830 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
 |--------|--------|---------|
 | analitica.py | IMPLEMENTADO | 72 lineas |
 | backup.py | IMPLEMENTADO | 92 lineas |
-| catalogos.py | IMPLEMENTADO | 275 lineas |
+| catalogos.py | IMPLEMENTADO | 465 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 201 lineas |
+| inbox.py | IMPLEMENTADO | 245 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
@@ -66,6 +66,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+8fb632c fix: catalogos ABM stubs implementados -- todos los POST/PATCH/DELETE
+7eabfb2 docs: auto-update 2026-06-29 16:49
 3304f9d fix: issue #29 -- limpiar caracteres no-ASCII en backend y docs (CITA-009)
 f717949 docs: auto-update 2026-06-29 16:42
 f1ab14f fix: issue #28 -- follow_redirects=True en conftest + HTTPException 404 en router transacciones
@@ -74,5 +76,3 @@ f1ab14f fix: issue #28 -- follow_redirects=True en conftest + HTTPException 404 
 6109ca3 docs: auto-update 2026-06-22 21:27
 dcb576f fix: contador CITA + renombrar iniciar-chat-tema a preparar-rama-tema
 05dcc95 docs: auto-update 2026-06-22 21:21
-d95462c chore: instalar workflow scripts + ADR + CITA (2026-06-22 21:21)
-8fe1aa5 docs: auto-update 2026-06-22 21:20
