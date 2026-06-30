@@ -6,6 +6,22 @@ Corres automaticamente todos los dias a las 4am como tarea programada.
 No tenes interaccion con el usuario -- actuas de forma completamente autonoma.
 
 ==========================================================================
+MODO DE EJECUCION
+==========================================================================
+
+MODO: incremental
+FECHA_DESDE: (vacio -- solo en modo rango)
+FECHA_HASTA: (vacio -- solo en modo rango)
+
+Para correr en modo rango, reemplazar las tres lineas anteriores con:
+  MODO: rango
+  FECHA_DESDE: YYYY-MM-DD
+  FECHA_HASTA: YYYY-MM-DD
+
+Escenarios validos para modo rango: testing en dev, carga inicial en
+produccion (sin corridas previas), reproceso post-restore de DB.
+
+==========================================================================
 HERRAMIENTAS DISPONIBLES Y SU USO
 ==========================================================================
 
@@ -50,10 +66,21 @@ VALUES (datetime('now'), 0, 0, 0, '{}', 'ETL automatico iniciado');
 
 Guarda el ID del log para actualizarlo al final.
 
-Luego carga el contexto necesario para clasificar:
+Luego determina la ventana de busqueda segun el MODO declarado arriba:
 
--- Ultima corrida (para saber desde donde buscar correos nuevos)
-SELECT MAX(fecha_inicio) FROM log_ejecuciones WHERE notas LIKE '%ETL automatico%';
+Si MODO = incremental:
+  SELECT MAX(fecha_inicio) FROM log_ejecuciones WHERE notas LIKE '%ETL automatico%';
+  Si el resultado es NULL (primera corrida): fecha_busqueda = hace 7 dias.
+  Si tiene valor: fecha_busqueda = ese valor.
+  fecha_hasta_busqueda = hoy.
+
+Si MODO = rango:
+  fecha_busqueda = FECHA_DESDE declarada arriba.
+  fecha_hasta_busqueda = FECHA_HASTA declarada arriba.
+
+Guardar fecha_busqueda y fecha_hasta_busqueda -- se usan en paso 1a y paso 2.
+
+Luego carga el contexto necesario para clasificar:
 
 -- Reglas de clasificacion activas (las del humano tienen mayor prioridad)
 SELECT id, patron, id_categoria, id_contraparte, tipo_transaccion, peso, fuente
@@ -90,8 +117,12 @@ Para cada cuenta (hernan, malu):
     - cuenta: "hernan" (o "malu")
     - query: "from:(bancolombia OR bbva OR occidente OR nequi OR rappi OR
       uber OR netflix OR spotify OR disney OR claro OR epm OR amazon)
-      newer_than:2d"
-    - Si es la primera corrida del dia, usa newer_than:2d para no perder nada.
+      after:[fecha_busqueda] before:[fecha_hasta_busqueda]"
+    - Formato de fecha para Gmail: YYYY/MM/DD
+      (ej: after:2026/06/01 before:2026/06/30)
+    - La dedup por correos_procesados (paso 1b) actua como segunda linea
+      de defensa: aunque la ventana sea amplia, correos ya procesados
+      se saltean sin ejecutar ningun razonamiento.
 
 1b. Para cada correo encontrado:
     - Verificar que no fue procesado ya:
@@ -154,9 +185,15 @@ Para cada cuenta (hernan, malu):
     -> Generar id_evento nuevo: "EVT_" + primeros 16 chars de uuid4()
     -> Ir al caso "nuevo" en paso 1g
 
-1f. Calcular completitud (0.0 a 1.0):
-    0.25 por cada uno de estos campos presentes: fecha, monto, id_categoria, id_cuenta
-    Suma maxima: 1.0
+1f. Calcular completitud (TEXT segun ADR-008):
+    Score interno (variable de trabajo, nunca se escribe en la DB):
+      0.25 por cada campo presente: fecha, monto, id_categoria, id_cuenta
+      Suma maxima: 1.0
+    Mapeo a TEXT:
+      score < 0.75        -> 'minimo'   (0, 1 o 2 campos presentes)
+      0.75 <= score < 1.0 -> 'parcial'  (3 campos presentes)
+      score = 1.0         -> 'completo' (los 4 campos presentes)
+    Usar el valor TEXT resultante en todos los INSERT y UPDATE que siguen.
 
 1g. Insertar o actualizar en la DB:
 
@@ -168,7 +205,7 @@ Para cada cuenta (hernan, malu):
     VALUES
         ('[uuid]', '[fecha]', '[tipo]', '[descripcion]',
          'pendiente',
-         [confianza], 0, [completitud],
+         [confianza], 0, '[completitud_texto]',
          '[id_categoria]', '[id_contraparte]',
          'gmail_hernan', '[id_correo_gmail]', 'email',
          '[id_evento]', 'inicial',
@@ -187,7 +224,7 @@ Para cada cuenta (hernan, malu):
         id_contraparte = COALESCE('[nueva_contraparte]', id_contraparte),
         descripcion = COALESCE('[descripcion_mas_completa]', descripcion),
         confianza = MAX(confianza, [nueva_confianza]),
-        completitud = [nueva_completitud],
+        completitud = '[nueva_completitud_texto]',
         estado_enriquecimiento = 'enriquecido',
         actualizado_en = datetime('now')
     WHERE id_evento = '[id_evento]';
@@ -259,7 +296,7 @@ Listar archivos JSON nuevos en:
 
 Para cada JSON:
 3a. Verificar que no fue procesado:
-    SELECT 1 FROM inbox_mobile WHERE nombre_archivo = '[nombre_json]';
+    SELECT 1 FROM archivos_mobile_procesados WHERE nombre_archivo = '[nombre_json]';
 
 3b. Leer el JSON. Puede ser tipo "foto_factura".
 
@@ -272,12 +309,14 @@ Para cada JSON:
 
 3e. Crear transaccion en la DB siguiendo el mismo proceso del Paso 1e-1g.
 
-3f. Registrar en inbox_mobile:
-    INSERT OR IGNORE INTO inbox_mobile
-        (nombre_archivo, tipo, fecha_creacion, fecha_procesado, estado, id_entidad_creada)
+3f. Registrar en archivos_mobile_procesados:
+    INSERT OR IGNORE INTO archivos_mobile_procesados
+        (nombre_archivo, dispositivo, fecha_archivo, tipo,
+         fecha_procesado, resultado, id_transaccion_creada)
     VALUES
-        ('[nombre.json]', 'foto_factura', '[fecha_creacion_del_json]',
-         datetime('now'), 'procesado', '[tx_id]');
+        ('[nombre.json]', '[iphone_ghr o iphone_mc]',
+         '[fecha_creacion del JSON]', '[tipo del JSON]',
+         datetime('now'), 'ok', '[tx_id]');
 
 3g. Vincular la foto de factura (si el JSON tenia archivo_foto):
     INSERT OR IGNORE INTO documentos
