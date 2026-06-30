@@ -1,4 +1,4 @@
-# INSTRUCCIONES DE EJECUCION:
+﻿# INSTRUCCIONES DE EJECUCION:
 #   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 #   .\cerrar-sesion.ps1
 # (normalmente no hace falta correrlo a mano -- el hook lo invoca automaticamente)
@@ -173,6 +173,14 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 - Si un fix falla: diagnostico antes del segundo intento (CITA-010)
 - Commits: listar archivos explicitos, nunca git add -A (CITA-008)
 
+## Entornos -- Claude Code y Claude Desktop
+- DB desarrollo: data/dev/finanzas_dev.db -- usar MCP sqlite_dev
+- DB produccion: OneDrive/Finanzas MCGHR/Generales/finanzas.db -- NO escribir en sesiones de desarrollo
+- Filesystem desarrollo: MCP filesystem_dev (C:\Users\ghriz\finanzas-mcghr)
+- Filesystem produccion: MCP filesystem (OneDrive) -- NO tocar en sesiones de desarrollo
+- Branch: nunca commitear directo en main -- usar branch por tema (ADR-010)
+- Claude Code lee este archivo automaticamente al iniciar sesion en el repo
+
 ## Estado real de modulos frontend (src/modules/)
 | Modulo | Estado | Detalle |
 |--------|--------|---------|
@@ -242,3 +250,4 @@ if ($warningGroups -gt 0) {
     Write-Host "   WARN Hay $warningGroups advertencia(s) CITA pendientes de resolver." -ForegroundColor Yellow
     Write-Host "        Ver detalle arriba." -ForegroundColor Yellow
 }
+
