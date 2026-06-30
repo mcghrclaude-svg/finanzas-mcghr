@@ -357,3 +357,63 @@ si la transaccion todavia espera mas datos de otros canales.
 - Un gasto con TC no genera movimiento de caja hasta que se paga el extracto
 
 **Evidencia:** Chat ETL sesion junio 2026, schema/finanzas_v1_2.sql
+
+---
+
+## ADR-013 -- Separacion de entornos dev/prod en Claude Desktop via MCP servers nombrados
+
+**Fecha:** 2026-06-29
+**Estado:** ACTIVA
+**Origen:** CONSENSO (analisis de arquitectura para mover desarrollo de Claude.ai a Claude Desktop)
+
+**Contexto:**
+El flujo de desarrollo en Claude.ai requeria que Hernan copiara archivos manualmente
+desde su PC al chat, porque web_fetch solo puede acceder a URLs que ya aparecieron
+en la conversacion (no puede construir URLs nuevas a raw.githubusercontent.com ni a
+la API de GitHub sin ese requisito previo). Esto generaba friccion y riesgo de
+trabajar con contexto desactualizado si habia cambios no commiteados en la PC.
+
+Claude Desktop ya tenia MCP servers configurados (filesystem, sqlite, github) pero
+apuntaban exclusivamente a produccion (OneDrive\Finanzas MCGHR y finanzas.db real),
+sin separacion para desarrollo. Ademas se identificaron tres contextos distintos
+dentro de Claude Desktop con proposito y alcance diferentes: Chat (consultas puntuales,
+sin persistencia de proyecto), Cowork (trabajo agentico largo y tareas programadas,
+con Proyectos persistentes), y Code (desarrollo de software, con sesiones por carpeta
+de repo, git nativo, y posibilidad de worktrees).
+
+**Decision:**
+- El ETL y la operacion diaria (Gmail, PDFs, consultas) usan Cowork, con un proyecto
+  dedicado "MCGHR Operacion" apuntando a OneDrive y finanzas.db (produccion).
+- El desarrollo de software usa la pestana Code, apuntando directo al repo en
+  C:\Users\ghriz\finanzas-mcghr, trabajando con branches igual que en el flujo anterior.
+- La separacion de entornos se logra con MCP servers nombrados de forma explicita:
+  filesystem_dev / sqlite_dev (desarrollo) vs filesystem / sqlite (produccion, sin sufijo).
+  Ambos pares coexisten en el mismo claude_desktop_config.json; la proteccion no es
+  a nivel de permisos de archivo sino de instrucciones explicitas en CLAUDE.md y en
+  cada prompt de sesion, igual que ya se hacia con web_fetch vs project_knowledge_search.
+- CLAUDE.md ahora incluye una seccion "Entornos" que Code lee automaticamente al
+  iniciar sesion sobre el repo (no requiere Custom Instructions duplicadas).
+
+**Alternativas descartadas:**
+- DB de produccion en modo solo lectura a nivel de filesystem: descartado porque
+  rompe ADR-003 (el ETL necesita escritura en sqlite de produccion)
+- Dos proyectos de Claude Desktop separados (uno para ETL, otro para desarrollo):
+  descartado porque Proyectos solo existe en Cowork, no en Code, y el ETL ya
+  funciona como tarea programada sin necesitar reestructurar nada
+
+**Consecuencias:**
+- claude_desktop_config.json tiene 4 MCP de filesystem/sqlite (2 dev + 2 prod)
+  en lugar de 2; cualquier sesion debe declarar cual usa
+- El proyecto "Finanzas Familia" original en Cowork queda en desuso/archivado;
+  no se reutiliza para desarrollo porque tenia archivos de contexto estaticos
+  (copias subidas a mano) que generaban el mismo problema de desactualizacion
+  que se buscaba resolver
+- Pendiente de decision futura: activar worktrees en Code permitiria sesiones
+  verdaderamente paralelas (ej. chat-backend y chat-ux simultaneos en carpetas
+  fisicas distintas), pero requeriria MCP servers filesystem_dev por worktree
+  y posiblemente reemplazar el modelo de ADR-010 (una sola carpeta, branch activa
+  por vez). No se implementa ahora -- evaluar si surge necesidad real de paralelismo
+  simultaneo (hoy el paralelismo es secuencial entre sesiones, no simultaneo)
+
+**Evidencia:** Chat "estrategia de acceso a archivos del repo", sesion 2026-06-29
+
