@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 22:31
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 22:47
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+8b9bf41 docs: agregar PEN-002 -- UX para correccion manual de correlaciones ETL
+84abf06 docs: auto-update 2026-06-29 22:31
 4f72629 docs: fix CITA-009 -- eliminar caracteres no-ASCII en docs ETL
 4af595c docs: auto-update 2026-06-29 22:14
 0d1a98e docs: agregar CITA-013 -- conflictos de merge por hook autogenerador en branches paralelas
@@ -82,5 +84,3 @@ c562008 docs: auto-update 2026-06-29 22:10
 fa785ff docs: auto-update 2026-06-29 22:07
 5af3809 docs: crear PENDIENTES.md -- deuda tecnica tamano_bytes (PEN-001)
 48b6c28 docs: auto-update 2026-06-29 22:04
-69c864c docs: agregar seccion pendientes al HANDOFF -- deuda tecnica tamano_bytes
-c740faa docs: auto-update 2026-06-29 22:03
