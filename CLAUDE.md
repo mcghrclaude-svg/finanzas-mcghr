@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 23:06
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-30 11:39
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260629.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260630.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+6a8b256 docs: modos de ejecucion ETL + propuesta de catalogo + PEN-003/PEN-004
+639c9ee docs: auto-update 2026-06-29 23:06
 5808858 docs: agregar PEN-003 -- ETL modo ejecucion con rango de fechas para dev
 871d1d1 docs: auto-update 2026-06-29 23:01
 1c1447c feat: migracion v1.3 -- correos_procesados y log_ejecuciones
@@ -82,5 +84,3 @@ b416b05 docs: actualizar ETL con 3 cambios de diseno acordados
 5451cc9 docs: auto-update 2026-06-29 22:47
 8b9bf41 docs: agregar PEN-002 -- UX para correccion manual de correlaciones ETL
 84abf06 docs: auto-update 2026-06-29 22:31
-4f72629 docs: fix CITA-009 -- eliminar caracteres no-ASCII en docs ETL
-4af595c docs: auto-update 2026-06-29 22:14
