@@ -292,5 +292,65 @@ El seed crea 8 transacciones pendientes con distintas caracteristicas:
 
 ---
 
+## Funcionalidad futura: correccion manual de correlaciones (PEN-002)
+
+**Estado:** no implementado. Disenar e implementar en sesion dedicada.
+**Referencia:** docs/PENDIENTES.md -- PEN-002
+
+El ETL correlaciona eventos automaticamente (ver ETL_DISENO_FUNCIONAL.md,
+seccion "Mecanismo: ancla deterministica + busqueda por rango"). Dos casos
+que el ETL no puede resolver solo:
+
+1. **Eventos que deberian estar agrupados pero no lo estan:** el ETL creo
+   dos transacciones separadas que en realidad son el mismo hecho economico
+   (ej: una notificacion de Bancolombia y una foto de factura que el humano
+   sabe que corresponden al mismo gasto, pero el ETL no los correlaciono
+   porque el monto o la fecha diferian mas de lo tolerado).
+
+2. **Eventos agrupados que deberian estar separados:** el ETL asigno el mismo
+   `id_evento` a dos transacciones que en realidad son hechos distintos
+   (ej: dos compras similares el mismo dia al mismo comercio, confundidas
+   por la busqueda de rango).
+
+### Interaccion esperada
+
+Desde el detalle de una transaccion en el inbox, el humano puede:
+
+- **Agrupar:** buscar otra transaccion pendiente y declararla el mismo hecho.
+  El sistema asigna el mismo `id_evento` a ambas, marca una como
+  `estado_enriquecimiento = 'enriquecido'` y fusiona los datos disponibles.
+
+- **Desagrupar:** desde una transaccion con `id_evento` compartido, separar
+  uno de los eventos. El sistema genera un `id_evento` nuevo para el evento
+  separado y revierte el enriquecimiento aplicado.
+
+### Aprendizaje
+
+Cada correccion manual registra el patron que la disparo (remitente, monto,
+diferencia de fecha) para alimentar el motor de correlacion del ETL en
+corridas futuras -- analogo a como las correcciones de categoria alimentan
+`reglas_clasificacion`. El mecanismo concreto de persistencia de ese
+aprendizaje queda por disenar.
+
+### Implicancias de implementacion
+
+**Backend:**
+- Dos endpoints nuevos: POST /inbox/{id}/agrupar-con/{id_otro} y
+  POST /inbox/{id}/desagrupar.
+- El servicio debe recalcular completitud y estado_enriquecimiento de
+  ambas transacciones despues de la operacion.
+- La fusion de datos (cual descripcion/categoria prevalece) necesita
+  una regla explicita -- probablemente el evento con mayor confianza
+  o el mas reciente.
+
+**Frontend:**
+- Accion secundaria en el detalle de cada transaccion del inbox.
+- Busqueda/seleccion de la transaccion a agrupar (filtrada por titular
+  y rango de fecha cercana para reducir el universo de opciones).
+- Confirmacion antes de ejecutar (la operacion es reversible pero
+  requiere un paso adicional desagrupar si fue un error).
+
+---
+
 *Documento generado Junio 2026 -- Plataforma Financiera MCGHR*
 *Leer junto con: docs/ETL_DISENO_FUNCIONAL.md, docs/DISENO_3B_ETL_PROMPT.md*
