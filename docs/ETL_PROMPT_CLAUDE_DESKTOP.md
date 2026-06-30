@@ -330,7 +330,8 @@ UPDATE log_ejecuciones SET
     fecha_fin = datetime('now'),
     correos_leidos = [total_correos_procesados],
     transacciones_nuevas = [total_tx_nuevas],
-    documentos_nuevos = [total_pdfs_procesados],
+    transacciones_enriquecidas = [total_tx_enriquecidas],
+    documentos_nuevos = [total_pdfs_y_fotos_procesados],
     notas = 'ETL automatico completado. Correos: [N]. TX nuevas: [N]. TX enriquecidas: [N]. Errores: [N].'
 WHERE id = [id_del_log_del_paso_0];
 
