@@ -1,9 +1,9 @@
-# ETL — Diseño Funcional
+# ETL -- Diseno Funcional
 ## Plataforma Financiera MCGHR
 
 **Fecha:** Junio 2026
-**Estado:** Aprobado — pendiente implementacion
-**Contexto:** Punto 3 del roadmap — ingesta automatica de datos financieros
+**Estado:** Aprobado -- pendiente implementacion
+**Contexto:** Punto 3 del roadmap -- ingesta automatica de datos financieros
 
 ---
 
@@ -20,9 +20,9 @@ en la PC para leer fuentes, razonar sobre los datos, y escribir en la DB.
 **Motor de ejecucion:** Claude Desktop con tarea programada via /schedule
 **Schedule:** Todos los dias a las 4:00 AM
 **MCPs que usa:**
-- `mcp__sqlite__*` — leer y escribir en finanzas.db (OneDrive)
-- `mcp__mcp_lector_correos__*` — leer correos Gmail de hernan y malu
-- `mcp__filesystem__*` — leer PDFs y JSONs de OneDrive, escribir archivos
+- `mcp__sqlite__*` -- leer y escribir en finanzas.db (OneDrive)
+- `mcp__mcp_lector_correos__*` -- leer correos Gmail de hernan y malu
+- `mcp__filesystem__*` -- leer PDFs y JSONs de OneDrive, escribir archivos
 
 ---
 
@@ -54,7 +54,7 @@ Carpeta monitoreada: `OneDrive\Finanzas MCGHR\Inbox\`
 
 Dos tipos de JSON que puede recibir:
 
-**Tipo A — Solo foto:**
+**Tipo A -- Solo foto:**
 ```json
 {
   "tipo": "foto_factura",
@@ -67,7 +67,7 @@ Dos tipos de JSON que puede recibir:
 }
 ```
 
-**Tipo B — Foto + catalogacion del humano:**
+**Tipo B -- Foto + catalogacion del humano:**
 ```json
 {
   "tipo": "foto_factura",
@@ -86,14 +86,14 @@ Dos tipos de JSON que puede recibir:
 ```
 
 En el Tipo B, los campos marcados con `confirmado_humano: true` se tratan
-como firmes — el ETL los usa como ancla y no los sobreescribe con su analisis.
+como firmes -- el ETL los usa como ancla y no los sobreescribe con su analisis.
 
 ---
 
 ## Flujo de procesamiento
 
 ```
-4:00 AM — Arranca tarea programada Claude Desktop
+4:00 AM -- Arranca tarea programada Claude Desktop
     |
     +-- PASO 1: Leer estado actual
     |   Lee correos_procesados y inbox_mobile de la DB
@@ -149,11 +149,11 @@ El mismo hecho economico puede llegar al ETL por multiples canales en momentos
 distintos. El ETL debe reconocer que son el mismo hecho y no duplicarlos.
 
 ### Ejemplo concreto
-1. Martes 10:00 — llega correo de Bancolombia: "Compra con TC por COP 45.000
+1. Martes 10:00 -- llega correo de Bancolombia: "Compra con TC por COP 45.000
    en RAPPI"
-2. Martes 10:05 — llega correo de Rappi: factura adjunta con detalle de la
+2. Martes 10:05 -- llega correo de Rappi: factura adjunta con detalle de la
    orden, total COP 45.000
-3. Fin de mes — extracto TC Bancolombia tiene la linea: "RAPPI COP 45.000"
+3. Fin de mes -- extracto TC Bancolombia tiene la linea: "RAPPI COP 45.000"
 
 Los tres eventos describen un unico gasto. El ETL los debe unificar en una
 sola transaccion enriquecida progresivamente.
@@ -188,30 +188,30 @@ Campo `estado_enriquecimiento` en `transacciones`:
 |---|---|
 | `inicial` | Solo tiene datos del primer evento (notificacion basica) |
 | `enriquecido` | Tiene factura o detalle adicional, pero puede llegar mas |
-| `completo` | Tiene extracto — el ciclo contable esta cerrado |
+| `completo` | Tiene extracto -- el ciclo contable esta cerrado |
 
 ### Casos de correlacion
 
-**Caso 1 — Notificacion + Factura (mismo dia)**
+**Caso 1 -- Notificacion + Factura (mismo dia)**
 El ETL ve un correo de Bancolombia con monto 45.000 y TC. Genera id_evento.
 Luego ve la factura de Rappi por 45.000. Busca transacciones con mismo
 id_evento. Encuentra la de Bancolombia. La enriquece con la categoria
 (ALIM-RAPPI) y los items del pedido. Estado pasa a `enriquecido`.
 
-**Caso 2 — Gasto no notificado, aparece en extracto**
+**Caso 2 -- Gasto no notificado, aparece en extracto**
 El extracto de fin de mes tiene una linea que no estaba en la DB.
 El ETL la crea como transaccion nueva con `estado_enriquecimiento = completo`
 (porque vino del extracto, que es la fuente mas confiable).
 
-**Caso 3 — Extracto confirma gasto ya registrado**
+**Caso 3 -- Extracto confirma gasto ya registrado**
 El extracto tiene una linea que correlaciona con una transaccion existente.
 El ETL actualiza `estado_enriquecimiento = completo` y confirma que el
 medio de pago y monto son correctos. No crea transaccion nueva.
 
-**Caso 4 — Pago del extracto TC**
+**Caso 4 -- Pago del extracto TC**
 El pago del extracto de TC es una transferencia de CC a TC.
 El ETL lo registra como `tipo = transferencia` entre las dos cuentas.
-Este es el momento en que el gasto "sale de caja" — hasta este punto
+Este es el momento en que el gasto "sale de caja" -- hasta este punto
 solo existia como deuda con el banco.
 
 ---
@@ -220,21 +220,21 @@ solo existia como deuda con el banco.
 
 Antes de clasificar cada evento, el ETL lee de la DB:
 
-1. **Reglas de clasificacion activas** — patrones regex con categoria y
+1. **Reglas de clasificacion activas** -- patrones regex con categoria y
    contraparte asignados. Las reglas creadas por el humano tienen prioridad
    sobre las del sistema.
 
-2. **Ultimas 50 transacciones confirmadas** — ejemplos reales de como el
+2. **Ultimas 50 transacciones confirmadas** -- ejemplos reales de como el
    humano clasifico eventos similares en el pasado. Estos se incluyen en
    el prompt de Claude Desktop como "few-shot examples".
 
-3. **Catalogo completo** — lista de categorias, contrapartes y cuentas
+3. **Catalogo completo** -- lista de categorias, contrapartes y cuentas
    disponibles para que Claude asigne IDs validos, no texto libre.
 
 La clasificacion es un razonamiento de Claude Desktop, no un algoritmo
 deterministico. Puede incluir logica del estilo: "este comercio lo clasifiqui
 antes como ALIM-REST, pero el monto es 450.000 que es inusualmente alto para
-un restaurante, podria ser una cena de negocios — asigno confianza 0.70".
+un restaurante, podria ser una cena de negocios -- asigno confianza 0.70".
 
 ### Calculo de confianza
 
@@ -321,10 +321,10 @@ Estos cambios van en `schema/finanzas_v1_2.sql` como migracion incremental.
   regla exacta del humano)
 - No modifica correos en Gmail (nunca marca como leido)
 - No borra archivos de OneDrive
-- No toca la DB de dev — solo escribe en la DB de produccion en OneDrive
-- No llama a Claude API — usa Claude Desktop como motor de razonamiento
+- No toca la DB de dev -- solo escribe en la DB de produccion en OneDrive
+- No llama a Claude API -- usa Claude Desktop como motor de razonamiento
 
 ---
 
-*Documento generado Junio 2026 — Plataforma Financiera MCGHR*
+*Documento generado Junio 2026 -- Plataforma Financiera MCGHR*
 *Leer junto con: docs/architecture.md, docs/schema_v1.md, docs/DISENO_3A_INBOX_BACKEND.md*

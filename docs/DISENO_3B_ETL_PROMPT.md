@@ -1,16 +1,16 @@
-# ETL Prompt y Schema v1.2 — Diseño Funcional (Entrega 3B)
+# ETL Prompt y Schema v1.2 -- Diseno Funcional (Entrega 3B)
 ## Plataforma Financiera MCGHR
 
 **Fecha:** Junio 2026
-**Estado:** Aprobado — pendiente implementacion
-**Entrega:** 3B — segunda de tres entregas del Punto 3
+**Estado:** Aprobado -- pendiente implementacion
+**Entrega:** 3B -- segunda de tres entregas del Punto 3
 **Depende de:** Entrega 3A completada y validada
 
 ---
 
 ## Que incluye esta entrega
 
-1. Migracion SQL `schema/finanzas_v1_2.sql` — nuevos campos para correlacion
+1. Migracion SQL `schema/finanzas_v1_2.sql` -- nuevos campos para correlacion
 2. Actualizacion del modelo SQLAlchemy `backend/models/transaccion.py`
 3. Prompt de la tarea programada de Claude Desktop (el "ETL real")
 4. Documento de instrucciones para configurar la tarea en Claude Desktop
@@ -62,25 +62,25 @@ en Claude Desktop como tarea programada con schedule diario a las 4:00 AM.
 
 El prompt tiene cinco secciones:
 
-**Seccion 1 — Identidad y contexto**
+**Seccion 1 -- Identidad y contexto**
 Le dice a Claude Desktop que rol tiene, que herramientas puede usar,
 y que reglas debe respetar (no marcar correos como leidos, no borrar archivos,
 escribir solo en la DB de produccion en OneDrive).
 
-**Seccion 2 — Paso a paso del procesamiento**
+**Seccion 2 -- Paso a paso del procesamiento**
 Instrucciones detalladas de cada paso: como leer correos, como identificar
 si son financieros, como extraer datos, como correlacionar eventos, como
 escribir en la DB.
 
-**Seccion 3 — Criterios de clasificacion**
+**Seccion 3 -- Criterios de clasificacion**
 Explica como usar el catalogo y las reglas existentes. Como calcular
 confianza. Cuando crear transaccion confirmada vs pendiente.
 
-**Seccion 4 — Formato de escritura en DB**
+**Seccion 4 -- Formato de escritura en DB**
 Los INSERT exactos que debe ejecutar via MCP sqlite, con todos los campos
 requeridos.
 
-**Seccion 5 — Resumen final**
+**Seccion 5 -- Resumen final**
 Que escribir en log_ejecuciones al terminar.
 
 ### Borrador del prompt (a refinar en implementacion)
@@ -103,7 +103,7 @@ REGLAS CRITICAS:
 - Si hay duda entre crear transaccion nueva o enriquecer una existente,
   busca por id_evento antes de insertar
 
-PASO 1 — CONTEXTO INICIAL
+PASO 1 -- CONTEXTO INICIAL
 Ejecuta estas queries para entender el estado actual:
 
   SELECT MAX(fecha_procesado) FROM correos_procesados;
@@ -126,7 +126,7 @@ Ejecuta estas queries para entender el estado actual:
   -- Estos son ejemplos reales de como GHR/MC clasificaron transacciones antes.
   -- Usalos como referencia para clasificar los eventos nuevos.
 
-PASO 2 — CORREOS GMAIL
+PASO 2 -- CORREOS GMAIL
 Busca correos financieros nuevos en ambas cuentas...
 [continua en implementacion]
 ```
@@ -164,5 +164,5 @@ Lo que si se valida manualmente antes de activar el schedule:
 
 ---
 
-*Documento generado Junio 2026 — Plataforma Financiera MCGHR*
+*Documento generado Junio 2026 -- Plataforma Financiera MCGHR*
 *Leer junto con: docs/ETL_DISENO_FUNCIONAL.md, docs/DISENO_3A_INBOX_BACKEND.md*

@@ -30,9 +30,9 @@ REGLAS CRITICAS -- NUNCA VIOLARLAS
 1. NUNCA marques correos como leidos en Gmail.
 2. NUNCA borres archivos de OneDrive.
 3. NUNCA escribas en otra DB que no sea la de produccion en OneDrive.
-4. Antes de insertar una transaccion, buscá si ya existe una con el mismo
+4. Antes de insertar una transaccion, busca si ya existe una con el mismo
    id_evento para no duplicar.
-5. Si un paso falla, loguea el error en log_ejecuciones y continuá con
+5. Si un paso falla, loguea el error en log_ejecuciones y continua con
    el siguiente item -- nunca abortes toda la ejecucion por un error puntual.
 6. Solo escribi transacciones con estado="pendiente" y revisado_humano=0
    EXCEPTO cuando confianza >= 0.85 Y existe regla del humano que matchea,
@@ -219,7 +219,7 @@ Para cada JSON:
 3c. Si tiene foto adjunta (archivo_foto en el JSON):
     Leer la imagen desde OneDrive y extraer datos como si fuera una factura.
 
-3d. Si el humano ya catalogó campos (confirmado_humano=true):
+3d. Si el humano ya catalogo campos (confirmado_humano=true):
     Usar esos campos como firmes -- NO los sobreescribas con tu analisis.
     Solo completar los campos que faltan.
 

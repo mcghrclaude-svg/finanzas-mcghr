@@ -1,9 +1,9 @@
-# Inbox Backend — Diseño Funcional (Entrega 3A)
+# Inbox Backend -- Diseno Funcional (Entrega 3A)
 ## Plataforma Financiera MCGHR
 
 **Fecha:** Junio 2026
-**Estado:** Aprobado — pendiente implementacion
-**Entrega:** 3A — primera de tres entregas del Punto 3
+**Estado:** Aprobado -- pendiente implementacion
+**Entrega:** 3A -- primera de tres entregas del Punto 3
 
 ---
 
@@ -59,12 +59,12 @@ Usuario confirma / edita / descarta cada item
 Lista transacciones pendientes de revision.
 
 **Query params:**
-- `estado` (default: `pendiente`) — pendiente | confirmada | anulada
-- `origen` — email | pdf | mobile | manual
-- `cursor` — paginacion
+- `estado` (default: `pendiente`) -- pendiente | confirmada | anulada
+- `origen` -- email | pdf | mobile | manual
+- `cursor` -- paginacion
 - `limit` (default: 50, max: 200)
 
-**Orden:** completitud ASC — las mas incompletas primero (requieren mas atencion)
+**Orden:** completitud ASC -- las mas incompletas primero (requieren mas atencion)
 
 **Response:**
 ```json
@@ -123,9 +123,9 @@ Contadores para el badge de notificacion del Dashboard.
 Detalle completo de un item, incluyendo datos raw del ETL.
 
 **Response:** igual que el item de la lista, mas:
-- `raw_data` — datos originales del correo/PDF parseados por el ETL
-- `regla_aplicada` — si el ETL uso una regla para clasificar, cual fue
-- `documentos_vinculados` — facturas o PDFs asociados a esta transaccion
+- `raw_data` -- datos originales del correo/PDF parseados por el ETL
+- `regla_aplicada` -- si el ETL uso una regla para clasificar, cual fue
+- `documentos_vinculados` -- facturas o PDFs asociados a esta transaccion
 
 ---
 
@@ -210,7 +210,7 @@ cuando hay muchos items de alta confianza.
 
 ---
 
-## Logica de negocio — reglas de aprendizaje
+## Logica de negocio -- reglas de aprendizaje
 
 Cuando el humano confirma con una categoria diferente a la propuesta:
 
@@ -252,9 +252,9 @@ El seed crea 8 transacciones pendientes con distintas caracteristicas:
 
 | # | Origen | Confianza | Descripcion |
 |---|---|---|---|
-| 1 | email | 0.92 | Cobro Netflix — regla exacta matchea |
-| 2 | email | 0.78 | Rappi — comercio conocido, monto normal |
-| 3 | email | 0.55 | Transferencia bancaria — destino desconocido |
+| 1 | email | 0.92 | Cobro Netflix -- regla exacta matchea |
+| 2 | email | 0.78 | Rappi -- comercio conocido, monto normal |
+| 3 | email | 0.55 | Transferencia bancaria -- destino desconocido |
 | 4 | pdf | 0.85 | Linea de extracto Bancolombia TC |
 | 5 | pdf | 0.45 | Linea de extracto con descripcion ambigua |
 | 6 | mobile | 1.00 | Foto con catalogacion del humano (datos firmes) |
@@ -292,5 +292,5 @@ El seed crea 8 transacciones pendientes con distintas caracteristicas:
 
 ---
 
-*Documento generado Junio 2026 — Plataforma Financiera MCGHR*
+*Documento generado Junio 2026 -- Plataforma Financiera MCGHR*
 *Leer junto con: docs/ETL_DISENO_FUNCIONAL.md, docs/DISENO_3B_ETL_PROMPT.md*
