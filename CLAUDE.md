@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 21:09
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 21:26
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+3189ec2 docs: agregar ADR-013 -- separacion de entornos dev/prod en Claude Desktop
+af9735c docs: auto-update 2026-06-29 21:09
 8fed15f fix: separar comentarios de codigo en los 3 puntos restantes (continuacion fix sintaxis)
 aceb060 fix: separar comentario de separador del codigo de la funcion (fix sintaxis)
 2d02008 fix: reemplazar separadores no-ASCII en cerrar-sesion.ps1 (CITA-009)
@@ -82,5 +84,3 @@ aceb060 fix: separar comentario de separador del codigo de la funcion (fix sinta
 080da66 docs: auto-update 2026-06-29 20:23
 f53d551 docs: agregar instrucciones de inicio para sesiones Claude Code
 ebf62d2 docs: auto-update 2026-06-29 20:08
-8fb632c fix: catalogos ABM stubs implementados -- todos los POST/PATCH/DELETE
-7eabfb2 docs: auto-update 2026-06-29 16:49
