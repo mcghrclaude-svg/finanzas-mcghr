@@ -90,6 +90,42 @@ como firmes -- el ETL los usa como ancla y no los sobreescribe con su analisis.
 
 ---
 
+## Modos de ejecucion
+
+El ETL soporta dos modos. El modo se indica al invocar la tarea en Cowork.
+
+### Modo incremental (default)
+
+El ETL lee `MAX(fecha_inicio) FROM log_ejecuciones` para saber desde cuando
+buscar correos y documentos nuevos. La dedup por `message_id` y nombre de
+archivo en `correos_procesados` / `documentos` actua como segunda linea de
+defensa: aunque la fecha desde sea imprecisa, un correo ya registrado no
+se vuelve a procesar.
+
+Este es el modo de las corridas automaticas diarias a las 4am.
+
+### Modo rango (explicito)
+
+Se invoca con `fecha_desde` y `fecha_hasta` explicitas. El ETL busca correos
+y documentos dentro de ese rango en lugar de usar la ultima corrida.
+La dedup sigue activa: si un correo ya esta en `correos_procesados`, no se
+duplica aunque caiga dentro del rango.
+
+Tres escenarios validos para este modo:
+
+| Escenario | Por que se usa |
+|---|---|
+| Testing en desarrollo | Pruebas reproducibles sobre un periodo conocido |
+| Carga inicial en produccion | No existe corrida previa en log_ejecuciones |
+| Reproceso post-restore de DB | Re-ingestar el periodo posterior al backup |
+
+En el escenario post-restore: si el backup incluia entradas en
+`correos_procesados`, esos correos no se reprocesaran (correcto -- ya
+estaban en la DB antes del restore). Solo se procesan los correos del
+periodo no cubierto por el backup.
+
+---
+
 ## Flujo de procesamiento
 
 ```
@@ -347,6 +383,39 @@ ALTER TABLE transacciones ADD COLUMN
 ```
 
 Estos cambios van en `schema/finanzas_v1_2.sql` como migracion incremental.
+
+---
+
+## Propuesta de entidades nuevas del catalogo
+
+Cuando el ETL encuentra en un correo, PDF o foto una entidad que no existe
+en el catalogo (una contraparte desconocida, un medio de pago no registrado,
+una categoria que no matchea ninguna existente, una persona nueva), no deja
+la FK nula silenciosamente ni inventa un ID. La propone para revision humana.
+
+Aplica a todas las entidades del catalogo:
+- `contrapartes` -- comercios o entidades nunca vistas
+- `cuentas` -- medios de pago o cuentas bancarias nuevas
+- `categorias` -- si el ETL cree que el gasto no encaja en ninguna existente
+- `personas` -- titular o beneficiario no registrado
+
+### Comportamiento del ETL
+
+1. Detecta que la entidad no existe en el catalogo activo.
+2. La inserta en la tabla correspondiente con un estado `'potencial'`
+   (pendiente de definir en schema -- ver PEN-004).
+3. Crea la transaccion referenciando esa entidad potencial.
+4. La transaccion queda en estado `pendiente` como siempre, pero con
+   un flag adicional que indica que tiene entidades sin confirmar.
+
+### Comportamiento esperado de la UX (pendiente -- ver PEN-004)
+
+El inbox debe mostrar visualmente que la transaccion tiene una entidad
+propuesta. El humano puede confirmar la entidad (activarla en el catalogo)
+o descartarla (dejar la FK nula) como parte del flujo de revision.
+
+La implementacion concreta del schema y de los endpoints queda diferida
+a PEN-004, que cubre las tres capas: schema, backend y UX.
 
 ---
 

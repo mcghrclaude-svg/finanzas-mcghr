@@ -42,24 +42,73 @@ cada transaccion en la cola de revision.
 
 ---
 
-## PEN-003 -- ETL necesita modo de ejecucion con rango de fechas para dev/testing
+## PEN-003 -- ETL necesita modo de ejecucion con rango de fechas explicito
 
 **Detectado:** 2026-06-29, sesion chat-etl-desarrollo
-**Prioridad:** media (bloquea testing reproducible del ETL en desarrollo)
+**Prioridad:** media (bloquea testing reproducible y carga inicial en produccion)
 
-El ETL hoy solo soporta modo incremental: procesa desde la ultima corrida
-usando correos_procesados y documentos como marca de agua. Falta un modo
-alternativo, solo para entornos de desarrollo, donde se pueda invocar con
-un rango de fechas explicito (ej: "procesa correos entre el 1 y el 7 de
-junio") para hacer pruebas acotadas y reproducibles sin esperar data nueva
-ni reprocesar todo el historico.
+El ETL hoy solo soporta modo incremental: usa MAX(fecha_inicio) de
+log_ejecuciones como marca de agua, y correos_procesados/documentos como
+segunda linea de defensa contra duplicados. Falta un modo con rango de
+fechas explicito (fecha_desde, fecha_hasta) para tres escenarios:
+
+1. Testing en desarrollo: pruebas acotadas y reproducibles sobre un periodo
+   conocido, sin esperar data nueva ni reprocesar todo el historico.
+2. Carga inicial en produccion: la primera vez que el ETL corre, no hay
+   corridas previas en log_ejecuciones. El rango permite procesar el
+   historico de correos desde una fecha definida.
+3. Reproceso post-restore: si se restaura la DB desde un backup, los
+   eventos posteriores al backup deben reprocesarse. El rango permite
+   delimitar exactamente que periodo re-ingestar.
+
+En modo rango, la dedup por message_id/nombre_archivo sigue activa como
+proteccion. Si un correo ya esta en correos_procesados (porque el restore
+incluia esa entrada), no se duplica. Si no esta (porque el evento es
+posterior al backup), se procesa normalmente.
 
 Implicancias a resolver cuando se aborde:
-- El modo por rango de fechas NUNCA debe correr contra la DB de produccion.
-  Si no respeta la logica de dedup, puede reprocesar eventos ya registrados
-  y crear duplicados en finanzas.db.
-- Requiere un parametro o flag explicito en el prompt de Cowork (ademas
-  del modo incremental por defecto), para que la distincion sea intencional
-  y no accidental.
-- Posiblemente necesita una DB de dev limpia con datos de seed representativos
-  en lugar de depender de correos reales de Gmail.
+- Requiere parametro explicito en el prompt de Cowork: modo (incremental
+  o rango) + fecha_desde + fecha_hasta opcionales.
+- El modo incremental sigue siendo el default para corridas automaticas.
+- En el escenario post-restore, hay que decidir si limpiar o no
+  correos_procesados para el rango afectado antes de reprocesar.
+
+---
+
+## PEN-004 -- ETL propone entidades nuevas del catalogo; UX y backend deben soportarlo
+
+**Detectado:** 2026-06-29, sesion chat-etl-desarrollo
+**Prioridad:** alta (sin esto el ETL deja FKs nulas silenciosamente cuando
+encuentra contrapartes, categorias, cuentas o personas desconocidas)
+
+Cuando el ETL detecta una entidad del catalogo que no existe (una contraparte
+nueva, un medio de pago nuevo, una categoria que no matchea ninguna existente,
+una persona no registrada), debe proponerla en lugar de dejar la FK nula o
+inventar un ID inexistente. El humano confirma o descarta desde la app web.
+
+Aplica a todas las entidades del catalogo: contrapartes, categorias,
+cuentas/medios de pago, personas.
+
+Implicancias a resolver en tres capas:
+
+**Schema / ETL:**
+Definir como se persiste una entidad "en potencial". Opciones:
+- Agregar campo estado ('activo'|'potencial'|'rechazado') a cada tabla de
+  catalogo; el ETL inserta con estado='potencial'.
+- O una tabla separada propuestas_catalogo con tipo + datos + estado.
+La transaccion queda con la FK apuntando a la entidad potencial, o con
+la FK nula y el nombre propuesto en notas -- definir al implementar.
+
+**Backend:**
+Las queries que hoy asumen que la FK apunta a una entidad activa deben
+manejar el estado 'potencial'. El endpoint GET /inbox no debe filtrar
+transacciones con entidades potenciales -- al contrario, deben aparecer
+con un flag visible que indique que hay una propuesta pendiente.
+
+**UX:**
+- El inbox debe indicar claramente cuando una transaccion tiene entidades
+  propuestas sin confirmar.
+- Flujo para confirmar (activar en catalogo) o descartar (FK nula) cada
+  propuesta, independiente o en el mismo paso que la transaccion.
+- Evaluar si hace falta una seccion "catalogo en revision" separada del
+  inbox, para gestionar propuestas acumuladas de multiples transacciones.
