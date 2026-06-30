@@ -112,3 +112,43 @@ con un flag visible que indique que hay una propuesta pendiente.
   propuesta, independiente o en el mismo paso que la transaccion.
 - Evaluar si hace falta una seccion "catalogo en revision" separada del
   inbox, para gestionar propuestas acumuladas de multiples transacciones.
+
+---
+
+## PEN-005 -- Pantalla de administracion del entorno de dev en la UX
+
+**Detectado:** 2026-06-30, sesion chat-etl-desarrollo
+**Prioridad:** media (no bloquea el ETL, pero es necesaria para testing
+sistematico en dev; se usa en conjunto con PEN-003 modo rango)
+
+Una pantalla accesible solo en entorno de desarrollo (no visible en prod)
+que permita gestionar la DB de dev para testing del ETL. Operaciones
+requeridas, cada una con sus parametros configurables desde la UI:
+
+1. **Reset parcial:** vaciar transacciones, correos_procesados,
+   archivos_mobile_procesados, vinculos, documentos, log_ejecuciones
+   -- sin tocar el catalogo (categorias, contrapartes, cuentas, personas)
+
+2. **Reset total:** vaciar todas las tablas incluyendo el catalogo
+   -- con confirmacion explicita, es destructivo
+
+3. **Backup:** generar un snapshot de la DB dev con nombre y fecha
+   -- guardar en una carpeta configurable
+
+4. **Restore:** seleccionar un snapshot previo y restaurarlo
+   -- con confirmacion explicita antes de pisar la DB actual
+
+5. **Inspeccion de corridas:** ver log_ejecuciones con filtro por fecha,
+   ver correos_procesados y archivos_mobile_procesados de una corrida
+   especifica, ver transacciones creadas en esa corrida
+
+6. **Seed controlado:** cargar un conjunto de transacciones de prueba
+   conocidas para validar correlacion y clasificacion
+
+Consideraciones:
+- Solo visible cuando VITE_ENV=development o equivalente
+- Cada operacion destructiva requiere confirmacion explicita en la UI
+- El backend necesita endpoints dedicados para estas operaciones
+  (no exponer en produccion)
+- Relacionado con PEN-003 (modo rango del ETL) -- las dos features
+  se usan juntas para testing
