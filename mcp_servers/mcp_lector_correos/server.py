@@ -263,18 +263,31 @@ def buscar_correos(
     Args:
         cuenta:          Nombre de cuenta Gmail: 'hernan', 'malu' o 'claude'.
         query:           Criterio de busqueda en sintaxis Gmail.
+                         Ejemplos: 'from:alertas@bancolombia.com.co',
+                         'subject:extracto', 'from:rappi has:attachment'.
+                         String vacio retorna todos los correos del periodo.
         dias:            Dias hacia atras desde hoy. Ignorado si fecha_desde esta presente.
-        fecha_desde:     Fecha de inicio en formato YYYY-MM-DD.
-        fecha_hasta:     Fecha de fin en formato YYYY-MM-DD.
+        fecha_desde:     Fecha de inicio en formato YYYY-MM-DD. Anula 'dias'.
+        fecha_hasta:     Fecha de fin en formato YYYY-MM-DD. None significa hoy.
         max_resultados:  Maximo de correos a retornar. Techo absoluto: 200.
+                         Si hay mas, el campo 'truncado' sera true.
 
     Returns:
-        JSON con cuenta, total_encontrados, retornados, truncado, correos.
+        JSON con campos:
+        - cuenta (str): nombre de la cuenta consultada
+        - total_encontrados (int): total real de correos que cumplen el criterio
+        - retornados (int): cuantos se incluyen en esta respuesta
+        - truncado (bool): true si hay mas correos que max_resultados
+        - correos (list): lista de objetos con id, asunto, remitente, fecha,
+          snippet, tiene_adjuntos, nombres_adjuntos
+        En caso de error: {"error": "...", "mensaje": "..."}
     """
+    # Validar cuenta
     backend, error_cuenta = _obtener_backend(cuenta)
     if error_cuenta:
         return _err("cuenta_no_encontrada", error_cuenta)
 
+    # Validar fechas
     dt_desde, err = _parsear_fecha_param(fecha_desde, "fecha_desde")
     if err:
         return _err("parametro_invalido", err)
@@ -282,9 +295,11 @@ def buscar_correos(
     if err:
         return _err("parametro_invalido", err)
 
+    # Aplicar techo
     max_resultados = max(1, min(max_resultados, MAX_RESULTADOS_TECHO))
 
     try:
+        # Paso 1: obtener IDs (sin descargar cuerpos)
         def _buscar():
             backend.conectar()
             fecha_base = dt_desde
@@ -294,10 +309,13 @@ def buscar_correos(
             return backend.buscar_ids(query, fecha_base, dt_hasta)
 
         ids = _con_reintento(_buscar)
+
         total_encontrados = len(ids)
         truncado = total_encontrados > max_resultados
         ids_a_procesar = ids[:max_resultados]
 
+        # Paso 2: para cada ID, obtener solo metadatos livianos
+        # Usamos format="metadata" para no descargar el cuerpo completo
         correos_resultado = []
         for id_msg in ids_a_procesar:
             try:
@@ -309,10 +327,13 @@ def buscar_correos(
                     return msg
 
                 msg = _con_reintento(_get_meta)
+
                 headers = {
                     h["name"].lower(): h["value"]
                     for h in msg["payload"].get("headers", [])
                 }
+
+                # Detectar adjuntos sin descargarlos
                 partes = msg["payload"].get("parts", [])
                 nombres_adjuntos = [
                     p.get("filename", "")
@@ -321,6 +342,7 @@ def buscar_correos(
                 ]
                 tiene_adjuntos = len(nombres_adjuntos) > 0
 
+                # Parsear fecha del header
                 from lector_correos import _decodificar_header, _parsear_fecha
                 fecha_str = ""
                 try:
@@ -338,8 +360,10 @@ def buscar_correos(
                     "tiene_adjuntos":   tiene_adjuntos,
                     "nombres_adjuntos": nombres_adjuntos,
                 })
+
             except Exception as e:
                 log.warning(f"  Error obteniendo metadatos de {id_msg}: {e}")
+                # Se omite este correo del resultado pero no se falla todo
 
         return json.dumps({
             "cuenta":            cuenta,
@@ -366,7 +390,9 @@ def leer_correo(
     id_correo: str,
 ) -> str:
     """
-    Obtiene el contenido completo de un correo especifico.
+    Obtiene el contenido completo de un correo especifico: texto plano y
+    metadatos de adjuntos (nombre, tipo MIME, tamano). No descarga datos
+    binarios de adjuntos -- usar descargar_adjunto para eso.
     Nunca marca el correo como leido.
 
     Args:
@@ -374,7 +400,10 @@ def leer_correo(
         id_correo: ID del correo tal como fue retornado por buscar_correos.
 
     Returns:
-        JSON con id, asunto, remitente, destinatario, fecha, texto_plano, adjuntos.
+        JSON con campos: id, asunto, remitente, destinatario, fecha,
+        cuenta_nombre, cuenta_email, texto_plano, adjuntos (lista de
+        {nombre, tipo_mime, tamano_bytes}).
+        En caso de error: {"error": "...", "mensaje": "..."}
     """
     backend, error_cuenta = _obtener_backend(cuenta)
     if error_cuenta:
@@ -386,6 +415,8 @@ def leer_correo(
     try:
         def _obtener():
             backend.conectar()
+            # incluir_adjuntos=True para obtener metadatos de adjuntos,
+            # pero el servidor NO retorna los bytes -- los descarta.
             return backend.obtener_correo(id_correo.strip(), incluir_adjuntos=True)
 
         correo = _con_reintento(_obtener)
@@ -393,6 +424,7 @@ def leer_correo(
         if correo is None:
             return _err("correo_no_encontrado", f"No se encontro el correo con id '{id_correo}'")
 
+        # Serializar adjuntos sin incluir los bytes (campo .datos)
         adjuntos_meta = [
             {
                 "nombre":       a.nombre,
@@ -435,21 +467,29 @@ def descargar_adjunto(
 ) -> str:
     """
     Descarga un adjunto de un correo Gmail y lo guarda en disco.
+    Crea la carpeta de destino si no existe. Sobreescribe si ya existe el archivo.
 
     Args:
-        cuenta:                 Nombre de cuenta Gmail.
-        id_correo:              ID del correo.
-        nombre_adjunto:         Nombre exacto del adjunto.
-        carpeta_destino:        Ruta completa de la carpeta donde guardar.
-        nombre_archivo_destino: Nombre final del archivo (opcional).
+        cuenta:                 Nombre de cuenta Gmail: 'hernan', 'malu' o 'claude'.
+        id_correo:              ID del correo (de buscar_correos o leer_correo).
+        nombre_adjunto:         Nombre exacto del adjunto tal como aparece en
+                                leer_correo > adjuntos > nombre.
+        carpeta_destino:        Ruta completa de la carpeta donde guardar el archivo.
+                                Ejemplos:
+                                'C:\\Users\\ghriz\\OneDrive\\Finanzas MCGHR\\Generales\\Stage'
+                                'C:\\Users\\ghriz\\OneDrive\\Finanzas MCGHR\\GHR\\Extractos\\Bancolombia\\TarjetaCredito'
+        nombre_archivo_destino: Nombre con el que se grabara el archivo. Opcional.
+                                Si se omite, se usa el nombre original del adjunto.
 
     Returns:
-        JSON con ok, ruta_guardado, nombre, tamano_bytes.
+        JSON con campos: ok (bool), ruta_guardado, nombre, tamano_bytes.
+        En caso de error: {"ok": false, "error": "...", "mensaje": "..."}
     """
     backend, error_cuenta = _obtener_backend(cuenta)
     if error_cuenta:
         return json.dumps({"ok": False, "error": "cuenta_no_encontrada", "mensaje": error_cuenta})
 
+    # Validar parametros obligatorios
     for param, valor in [
         ("id_correo", id_correo),
         ("nombre_adjunto", nombre_adjunto),
@@ -467,6 +507,7 @@ def descargar_adjunto(
     ruta_final = carpeta / nombre_final
 
     try:
+        # Obtener el correo completo con adjuntos (incluye bytes)
         def _obtener():
             backend.conectar()
             return backend.obtener_correo(id_correo.strip(), incluir_adjuntos=True)
@@ -480,6 +521,7 @@ def descargar_adjunto(
                 "mensaje": f"No se encontro el correo con id '{id_correo}'",
             })
 
+        # Buscar el adjunto por nombre
         adjunto_encontrado: Optional[Adjunto] = None
         for a in correo.adjuntos:
             if a.nombre == nombre_adjunto:
@@ -497,8 +539,10 @@ def descargar_adjunto(
                 ),
             })
 
+        # Guardar en disco
         carpeta.mkdir(parents=True, exist_ok=True)
         ruta_final.write_bytes(adjunto_encontrado.datos)
+
         log.info(f"  Adjunto guardado: {ruta_final} ({adjunto_encontrado.tamaño_bytes:,} bytes)")
 
         return json.dumps({
@@ -509,12 +553,24 @@ def descargar_adjunto(
         }, ensure_ascii=False)
 
     except PermissionError as e:
-        return json.dumps({"ok": False, "error": "permiso_denegado", "mensaje": str(e)})
+        return json.dumps({
+            "ok": False,
+            "error": "permiso_denegado",
+            "mensaje": f"Sin permiso para escribir en '{carpeta_destino}': {e}",
+        })
     except _ERRORES_RED as e:
-        return json.dumps({"ok": False, "error": "error_red", "mensaje": str(e)})
+        return json.dumps({
+            "ok": False,
+            "error": "error_red",
+            "mensaje": f"Error de conectividad tras {REINTENTOS} intentos: {e}",
+        })
     except Exception as e:
-        log.exception("descargar_adjunto: error inesperado")
-        return json.dumps({"ok": False, "error": "error_interno", "mensaje": str(e)})
+        log.exception(f"descargar_adjunto: error inesperado")
+        return json.dumps({
+            "ok": False,
+            "error": "error_interno",
+            "mensaje": str(e),
+        })
 
 
 # ===========================================================================
