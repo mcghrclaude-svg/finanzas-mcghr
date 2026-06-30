@@ -47,8 +47,7 @@ if ($lastMsg -like "docs: auto-update*") { exit 0 }
 
 Write-Host ">> Auditando repo y actualizando docs..." -ForegroundColor Cyan
 
-# ── Auditoria de modulos ────────────────────────────────────────────────
-function Get-EstadoArchivo {
+# -- Auditoria de modulos --------------------------------------------------function Get-EstadoArchivo {
     param($path)
     if (-not (Test-Path $path)) { return $null }
     $lines = @(Get-Content $path -ErrorAction SilentlyContinue)
@@ -89,8 +88,7 @@ if (Test-Path $routersPath) {
 $ultimosCommits = (git log --oneline -10 2>$null) -join "`n"
 $fecha = Get-Date -Format "yyyy-MM-dd HH:mm"
 
-# ── Verificaciones CITA (nivel 2-HOOK) ─────────────────────────────────
-$warnings = @()
+# -- Verificaciones CITA (nivel 2-HOOK) ------------------------------------$warnings = @()
 
 # CITA-006: Variables VITE_* en .env.dev
 $envDev = Join-Path $RepoPath ".env.dev"
@@ -132,8 +130,7 @@ if ($warnings.Count -gt 0) {
     Write-Host ""
 }
 
-# ── Regenerar CLAUDE.md ─────────────────────────────────────────────────
-$claudeMdPath = Join-Path $RepoPath "CLAUDE.md"
+# -- Regenerar CLAUDE.md ---------------------------------------------------$claudeMdPath = Join-Path $RepoPath "CLAUDE.md"
 $claudeMd = @"
 # CLAUDE.md -- Finanzas MCGHR
 # Generado automaticamente por cerrar-sesion.ps1 -- $fecha
@@ -198,8 +195,7 @@ $ultimosCommits
 Set-Content -Path $claudeMdPath -Value $claudeMd -Encoding utf8
 Write-Host "   OK   CLAUDE.md regenerado" -ForegroundColor Green
 
-# ── Generar HANDOFF del dia ─────────────────────────────────────────────
-$handoffDir = Join-Path $RepoPath "docs"
+# -- Generar HANDOFF del dia -----------------------------------------------$handoffDir = Join-Path $RepoPath "docs"
 if (-not (Test-Path $handoffDir)) { New-Item -ItemType Directory -Path $handoffDir | Out-Null }
 $handoffPath = Join-Path $handoffDir ("HANDOFF_" + (Get-Date -Format "yyyyMMdd") + ".md")
 
@@ -229,8 +225,7 @@ CITA:       https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/mai
 Set-Content -Path $handoffPath -Value $handoff -Encoding utf8
 Write-Host "   OK   Handoff actualizado: docs/HANDOFF_$(Get-Date -Format 'yyyyMMdd').md" -ForegroundColor Green
 
-# ── Commitear solo los docs generados ──────────────────────────────────
-git add CLAUDE.md docs/HANDOFF_*.md 2>$null
+# -- Commitear solo los docs generados -------------------------------------git add CLAUDE.md docs/HANDOFF_*.md 2>$null
 $staged = git diff --cached --name-only 2>$null
 if ($staged) {
     git commit -m "docs: auto-update $fecha" --quiet 2>$null
@@ -250,4 +245,5 @@ if ($warningGroups -gt 0) {
     Write-Host "   WARN Hay $warningGroups advertencia(s) CITA pendientes de resolver." -ForegroundColor Yellow
     Write-Host "        Ver detalle arriba." -ForegroundColor Yellow
 }
+
 
