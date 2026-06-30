@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 21:26
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 21:33
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+3695a62 chore: eliminar Dashboard legacy de pages/ (ADR-007, CITA-007)
+9318d75 docs: auto-update 2026-06-29 21:26
 3189ec2 docs: agregar ADR-013 -- separacion de entornos dev/prod en Claude Desktop
 af9735c docs: auto-update 2026-06-29 21:09
 8fed15f fix: separar comentarios de codigo en los 3 puntos restantes (continuacion fix sintaxis)
@@ -82,5 +84,3 @@ aceb060 fix: separar comentario de separador del codigo de la funcion (fix sinta
 1a1ac4f docs: auto-update 2026-06-29 21:02
 0f5642b chore: agregar seccion entornos Claude Code al template de CLAUDE.md
 080da66 docs: auto-update 2026-06-29 20:23
-f53d551 docs: agregar instrucciones de inicio para sesiones Claude Code
-ebf62d2 docs: auto-update 2026-06-29 20:08
