@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 22:07
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 22:10
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -74,13 +74,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+543bae8 merge: chat-sync-mcp-lector-correos -- CLAUDE.md y HANDOFF se regeneran en proximo commit
+fa785ff docs: auto-update 2026-06-29 22:07
 5af3809 docs: crear PENDIENTES.md -- deuda tecnica tamano_bytes (PEN-001)
+48b6c28 docs: auto-update 2026-06-29 22:04
+69c864c docs: agregar seccion pendientes al HANDOFF -- deuda tecnica tamano_bytes
+c740faa docs: auto-update 2026-06-29 22:03
+ac47098 docs: agregar pendiente tamanyo_bytes en HANDOFF (deuda tecnica CITA-009)
+f9cd73b docs: auto-update 2026-06-29 21:58
+80ec82e sync: propagar mejoras de .claude\skills a mcp_lector_correos/server.py (CITA-012)
 bf3a7ed docs: auto-update 2026-06-29 21:33
-3695a62 chore: eliminar Dashboard legacy de pages/ (ADR-007, CITA-007)
-9318d75 docs: auto-update 2026-06-29 21:26
-3189ec2 docs: agregar ADR-013 -- separacion de entornos dev/prod en Claude Desktop
-af9735c docs: auto-update 2026-06-29 21:09
-8fed15f fix: separar comentarios de codigo en los 3 puntos restantes (continuacion fix sintaxis)
-aceb060 fix: separar comentario de separador del codigo de la funcion (fix sintaxis)
-2d02008 fix: reemplazar separadores no-ASCII en cerrar-sesion.ps1 (CITA-009)
-1a1ac4f docs: auto-update 2026-06-29 21:02
