@@ -47,7 +47,9 @@ if ($lastMsg -like "docs: auto-update*") { exit 0 }
 
 Write-Host ">> Auditando repo y actualizando docs..." -ForegroundColor Cyan
 
-# -- Auditoria de modulos --------------------------------------------------function Get-EstadoArchivo {
+
+
+function Get-EstadoArchivo {
     param($path)
     if (-not (Test-Path $path)) { return $null }
     $lines = @(Get-Content $path -ErrorAction SilentlyContinue)
@@ -245,5 +247,6 @@ if ($warningGroups -gt 0) {
     Write-Host "   WARN Hay $warningGroups advertencia(s) CITA pendientes de resolver." -ForegroundColor Yellow
     Write-Host "        Ver detalle arriba." -ForegroundColor Yellow
 }
+
 
 
