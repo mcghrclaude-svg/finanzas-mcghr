@@ -23,3 +23,19 @@
 3. Verificar que no haya otras referencias con grep antes de commitear
 4. Propagar el cambio tambien a C:\Users\ghriz\.claude\skills\lector_correos\lector_correos.py
    (copia en uso por Claude Desktop)
+
+---
+
+## PEN-002 -- UX para correccion manual de correlaciones ETL
+
+**Detectado:** 2026-06-29, sesion chat-etl-desarrollo
+**Prioridad:** media (no bloquea el ETL, mejora la calidad del aprendizaje a largo plazo)
+
+Pantalla en la app web que permita al humano agrupar eventos que el ETL no
+correlaciono (ej: un correo de Bancolombia y una foto de factura que son el
+mismo gasto) y separar eventos que el ETL correlaciono mal. Cuando el humano
+hace una correccion, el sistema registra el patron que la disparo para
+alimentar el motor de correlacion en corridas futuras -- analogo a como
+las correcciones de categoria alimentan reglas_clasificacion. Disenar junto
+con la pantalla de Inbox; probablemente vive como accion secundaria sobre
+cada transaccion en la cola de revision.
