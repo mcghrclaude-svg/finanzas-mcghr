@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 20:08
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 20:23
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -66,6 +66,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+f53d551 docs: agregar instrucciones de inicio para sesiones Claude Code
+ebf62d2 docs: auto-update 2026-06-29 20:08
 8fb632c fix: catalogos ABM stubs implementados -- todos los POST/PATCH/DELETE
 7eabfb2 docs: auto-update 2026-06-29 16:49
 3304f9d fix: issue #29 -- limpiar caracteres no-ASCII en backend y docs (CITA-009)
@@ -74,5 +76,3 @@ f1ab14f fix: issue #28 -- follow_redirects=True en conftest + HTTPException 404 
 5bd205e docs: auto-update 2026-06-29 15:53
 0009836 fix: alinear schemas y docs con DB real -- completitud str, id_evento, estado_enriquecimiento, origen en TransaccionRead; columnas faltantes en schema_v1.md; seccion tablas planificadas
 6109ca3 docs: auto-update 2026-06-22 21:27
-dcb576f fix: contador CITA + renombrar iniciar-chat-tema a preparar-rama-tema
-05dcc95 docs: auto-update 2026-06-22 21:21
