@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-30 17:59
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-30 18:20
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+d2e5907 docs: agregar PEN-005 -- pantalla de administracion del entorno dev
+b795342 docs: auto-update 2026-06-30 17:59
 4b5e30f feat: ETL prompt v2 + migracion v1.4b
 1e0e994 docs: auto-update 2026-06-30 17:47
 113ba9e feat: migracion v1.4 -- tabla vinculos + CHECK/DEFAULT en completitud
@@ -82,5 +84,3 @@ d53d84b docs: documentar PEN-002 en DISENO_3A_INBOX_BACKEND -- correccion manual
 36d9c44 docs: auto-update 2026-06-30 11:39
 6a8b256 docs: modos de ejecucion ETL + propuesta de catalogo + PEN-003/PEN-004
 639c9ee docs: auto-update 2026-06-29 23:06
-5808858 docs: agregar PEN-003 -- ETL modo ejecucion con rango de fechas para dev
-871d1d1 docs: auto-update 2026-06-29 23:01
