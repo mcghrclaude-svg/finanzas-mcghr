@@ -158,27 +158,39 @@ distintos. El ETL debe reconocer que son el mismo hecho y no duplicarlos.
 Los tres eventos describen un unico gasto. El ETL los debe unificar en una
 sola transaccion enriquecida progresivamente.
 
-### Mecanismo: id_evento
+### Mecanismo: ancla deterministica + busqueda por rango
 
-Cada transaccion tiene un campo `id_evento` (TEXT) generado por el ETL.
-Es un hash determinista calculado con:
-- Monto (redondeado a entero)
-- Cuenta (id_cuenta)
-- Fecha (con tolerancia de +/- 3 dias)
-- Titular (GHR o MC)
+La correlacion funciona en dos capas separadas con responsabilidades distintas.
 
-Si dos eventos producen el mismo `id_evento`, son el mismo hecho economico.
+**Capa 1 -- Deduplicacion de fuente (deterministica)**
+Cada fuente tiene un ID natural que no cambia entre corridas:
+- Correos Gmail: el `message_id` asignado por Gmail
+- PDFs en OneDrive: el nombre del archivo (unico por banco y periodo)
+- JSONs de la PWA: el nombre del archivo (unico por timestamp)
 
-**Algoritmo de correlacion:**
-```
-hash_base = sha256(
-    str(round(monto)) +
-    id_cuenta +
-    fecha_normalizada +  # YYYY-MM-DD, tolerancia +/-3 dias
-    titular
-)[:16]
-id_evento = "EVT_" + hash_base
-```
+Antes de procesar cualquier evento, el ETL verifica si ese ID ya fue
+registrado en `correos_procesados` (correos) o `documentos` (PDFs/fotos).
+Si ya existe, lo saltea sin ejecutar ningun razonamiento. Esto garantiza
+idempotencia: aunque el ETL corra dos veces sobre los mismos datos, no
+crea duplicados.
+
+**Capa 2 -- Correlacion entre fuentes (razonamiento LLM)**
+Solo para eventos genuinamente nuevos (que pasaron la Capa 1), el ETL
+busca si el hecho economico ya existe en la DB por un canal distinto.
+Consulta transacciones con:
+- Mismo titular
+- Fecha dentro de +/- 3 dias
+- Monto dentro de +/- 1%
+
+Si hay candidatos, razona si alguno es el mismo hecho (ej: la notificacion
+del banco y la factura de Rappi del mismo monto el mismo dia). Si decide
+que si es el mismo, enriquece la transaccion existente y le asigna
+un `id_evento` compartido. Si no hay match, crea una nueva con un
+`id_evento` fresco.
+
+El campo `id_evento` sigue existiendo en `transacciones` como ancla
+que agrupa eventos del mismo hecho, pero ya no es un hash pre-calculado
+-- es asignado por el ETL cuando decide que dos eventos son el mismo.
 
 ### Estado de enriquecimiento
 
@@ -193,9 +205,12 @@ Campo `estado_enriquecimiento` en `transacciones`:
 ### Casos de correlacion
 
 **Caso 1 -- Notificacion + Factura (mismo dia)**
-El ETL ve un correo de Bancolombia con monto 45.000 y TC. Genera id_evento.
-Luego ve la factura de Rappi por 45.000. Busca transacciones con mismo
-id_evento. Encuentra la de Bancolombia. La enriquece con la categoria
+El ETL procesa el correo de Bancolombia (message_id nuevo: lo registra
+y crea la transaccion). Luego procesa el correo de Rappi con la factura
+adjunta (message_id nuevo tambien). Busca candidatos en la DB: misma
+fecha, mismo monto 45.000, mismo titular GHR. Encuentra la transaccion
+de Bancolombia. Razona: "RAPPI en Bancolombia + factura de Rappi por el
+mismo monto el mismo dia = mismo hecho". Enriquece con la categoria
 (ALIM-RAPPI) y los items del pedido. Estado pasa a `enriquecido`.
 
 **Caso 2 -- Gasto no notificado, aparece en extracto**
@@ -248,11 +263,13 @@ un restaurante, podria ser una cena de negocios -- asigno confianza 0.70".
 
 ### Destino segun confianza
 
-| Confianza | Estado transaccion | Revisado humano |
-|---|---|---|
-| >= 0.85 y regla exacta | `confirmada` | 1 (no va a la cola) |
-| 0.60 - 0.84 | `pendiente` | 0 (va a la cola con sugerencia) |
-| < 0.60 | `pendiente` | 0 (va a la cola sin categoria) |
+Toda transaccion va siempre a `pendiente` con `revisado_humano = 0`,
+sin excepcion. El humano confirma todo manualmente desde el inbox.
+
+La confianza sirve para dos cosas: ordenar la cola (mayor confianza
+primero, para que el humano llegue rapido a los casos faciles) y
+mostrar visualmente que tan seguro esta el ETL de su clasificacion.
+No determina el estado final de ninguna transaccion.
 
 ---
 
@@ -268,6 +285,24 @@ contexto. El ETL la ve en la lista de reglas activas y la aplica.
 Las reglas del humano tienen siempre mas peso que las del sistema.
 El campo `usos` en `reglas_clasificacion` sube con cada aplicacion exitosa,
 lo que permite identificar las reglas mas confiables.
+
+---
+
+## Vinculacion de documentos
+
+Todo documento relacionado con una transaccion se vincula en la tabla
+`vinculos` con su tipo explicito. El ETL crea vinculos en tres situaciones:
+
+| Documento | Origen | tipo_vinculo |
+|---|---|---|
+| PDF adjunto en correo (factura) | Gmail | `factura` |
+| Foto de factura del celular | PWA JSON | `factura` |
+| PDF de extracto TC/CC | OneDrive/Extractos | `extracto` |
+| PDF statement IBKR | OneDrive/Extractos | `extracto` |
+
+Cada vinculo referencia el `id` del documento en `documentos` y el `id`
+de la transaccion en `transacciones`. Un extracto puede vincular multiples
+transacciones (una por linea de movimiento).
 
 ---
 
@@ -317,8 +352,8 @@ Estos cambios van en `schema/finanzas_v1_2.sql` como migracion incremental.
 
 ## Lo que el ETL NO hace
 
-- No confirma transacciones automaticamente (salvo confianza >= 0.85 con
-  regla exacta del humano)
+- No confirma transacciones automaticamente -- todo queda en pendiente
+  para revision humana, sin excepcion independientemente de la confianza
 - No modifica correos en Gmail (nunca marca como leido)
 - No borra archivos de OneDrive
 - No toca la DB de dev -- solo escribe en la DB de produccion en OneDrive

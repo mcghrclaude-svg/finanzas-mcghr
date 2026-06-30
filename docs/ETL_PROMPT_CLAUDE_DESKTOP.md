@@ -34,9 +34,9 @@ REGLAS CRITICAS -- NUNCA VIOLARLAS
    id_evento para no duplicar.
 5. Si un paso falla, loguea el error en log_ejecuciones y continua con
    el siguiente item -- nunca abortes toda la ejecucion por un error puntual.
-6. Solo escribi transacciones con estado="pendiente" y revisado_humano=0
-   EXCEPTO cuando confianza >= 0.85 Y existe regla del humano que matchea,
-   en ese caso usa estado="confirmado" y revisado_humano=1.
+6. Toda transaccion va SIEMPRE con estado="pendiente" y revisado_humano=0,
+   sin excepcion. El humano confirma todo desde el inbox. La confianza
+   sirve para ordenar la cola, no para determinar el estado.
 
 ==========================================================================
 PASO 0 -- INICIO Y CONTEXTO
@@ -123,15 +123,36 @@ Para cada cuenta (hernan, malu):
       * Comercio desconocido o datos incompletos: 0.40-0.59
       * Datos muy incompletos: < 0.40
 
-1e. Calcular id_evento:
-    hash_input = str(round(monto)) + "_" + id_cuenta + "_" + fecha_YYYYMMDD + "_" + titular
-    id_evento = "EVT_" + primeros_16_chars_de_sha256(hash_input)
+1e. Buscar si el hecho economico ya existe en la DB (correlacion):
+    El message_id del correo ya garantiza que este CORREO es nuevo
+    (verificado en 1b). Pero el hecho economico puede existir ya en la
+    DB porque llego antes por otro canal (ej: la factura de Rappi).
 
-    Buscar si ya existe:
-    SELECT id, estado_enriquecimiento FROM transacciones WHERE id_evento = '[id_evento]';
+    Buscar candidatos con la query de rango:
+    SELECT t.id, t.id_evento, t.descripcion, t.estado_enriquecimiento,
+           tr.monto_origen, tr.moneda_origen
+    FROM transacciones t
+    LEFT JOIN tramos tr ON t.id = tr.id_transaccion AND tr.numero_orden = 1
+    WHERE t.revisado_humano = 0
+      AND t.quien_pago = '[titular_GHR_o_MC]'
+      AND t.fecha BETWEEN date('[fecha_evento]', '-3 days')
+                      AND date('[fecha_evento]', '+3 days')
+      AND tr.monto_origen BETWEEN [monto] * 0.99 AND [monto] * 1.01;
 
-    Si existe -> enriquecer (actualizar campos faltantes, estado_enriquecimiento='enriquecido')
-    Si no existe -> crear transaccion nueva
+    Si hay candidatos: razona si alguno es el mismo hecho economico.
+    Criterios: mismo monto (+/-1%), misma fecha (+/-3 dias), mismo titular,
+    descripcion compatible (ej: "RAPPI" en banco + factura de Rappi).
+
+    Si decide que SI es el mismo hecho:
+    -> Si el candidato ya tiene id_evento: usar ese mismo id_evento
+    -> Si no tiene: generar uno nuevo y asignarlo al candidato tambien:
+         UPDATE transacciones SET id_evento = '[nuevo_id_evento]'
+         WHERE id = '[candidato_id]';
+    -> Ir al caso "enriquecimiento" en paso 1g
+
+    Si no hay candidatos o ninguno coincide:
+    -> Generar id_evento nuevo: "EVT_" + primeros 16 chars de uuid4()
+    -> Ir al caso "nuevo" en paso 1g
 
 1f. Calcular completitud (0.0 a 1.0):
     0.25 por cada uno de estos campos presentes: fecha, monto, id_categoria, id_cuenta
@@ -146,8 +167,8 @@ Para cada cuenta (hernan, malu):
          origen, id_evento, estado_enriquecimiento, creado_en, actualizado_en)
     VALUES
         ('[uuid]', '[fecha]', '[tipo]', '[descripcion]',
-         '[confirmado si confianza>=0.85 y regla humano, sino pendiente]',
-         [confianza], [0 o 1], [completitud],
+         'pendiente',
+         [confianza], 0, [completitud],
          '[id_categoria]', '[id_contraparte]',
          'gmail_hernan', '[id_correo_gmail]', 'email',
          '[id_evento]', 'inicial',
@@ -177,6 +198,22 @@ Para cada cuenta (hernan, malu):
     VALUES
         ('[id]', '[cuenta]', '[fecha]', '[asunto]', '[remitente]', datetime('now'), 'ok');
 
+1i. Vincular documentos adjuntos del correo (si los hay):
+    Si el correo tenia PDF adjunto y fue descargado a Stage/:
+
+    INSERT OR IGNORE INTO documentos
+        (id, nombre_original, ruta_local, tipo, fuente, id_correo, estado, fecha_descarga)
+    VALUES
+        ('[hash_md5_del_archivo]', '[nombre_pdf]',
+         'C:\Users\ghriz\OneDrive\Finanzas MCGHR\Stage\[nombre_pdf]',
+         'factura', '[gmail_hernan o gmail_malu]', '[id_correo]',
+         'vinculado', datetime('now'));
+
+    INSERT OR IGNORE INTO vinculos
+        (id_documento, id_transaccion, tipo_vinculo, confianza, fecha_vinculo, creado_por)
+    VALUES
+        ('[hash_md5_del_archivo]', '[tx_id]', 'factura', [confianza], datetime('now'), 'claude');
+
 ==========================================================================
 PASO 2 -- PDFs EN ONEDRIVE
 ==========================================================================
@@ -193,15 +230,25 @@ Para cada PDF encontrado:
 
 2c. Extraer lineas de movimientos. Para cada linea:
     - Fecha, descripcion, monto, tipo (debito/credito)
-    - Calcular id_evento y buscar si ya existe esa transaccion
-    - Si existe: actualizar estado_enriquecimiento='completo' (el extracto es la fuente definitiva)
-    - Si no existe: crear transaccion nueva
+    - Buscar candidatos por rango (mismo proceso que paso 1e):
+        misma fecha +/-3 dias, mismo monto +/-1%, mismo titular
+    - Razonar si alguno es el mismo hecho economico
+    - Si existe: actualizar estado_enriquecimiento='completo'
+      (el extracto es la fuente mas definitiva del ciclo)
+    - Si no existe: crear transaccion nueva con estado_enriquecimiento='completo'
 
-2d. Registrar el documento:
+2d. Registrar el documento y vincularlo a cada transaccion del extracto:
     INSERT OR IGNORE INTO documentos
-        (id, nombre_original, ruta_local, tipo, estado, fecha_descarga)
+        (id, nombre_original, ruta_local, tipo, fuente, estado, fecha_descarga)
     VALUES
-        ('[hash_nombre]', '[nombre]', '[ruta_onedrive]', 'extracto', 'procesado', datetime('now'));
+        ('[hash_md5]', '[nombre]', '[ruta_onedrive]', 'extracto',
+         'automatico', 'vinculado', datetime('now'));
+
+    Por cada transaccion creada o enriquecida desde este extracto:
+    INSERT OR IGNORE INTO vinculos
+        (id_documento, id_transaccion, tipo_vinculo, confianza, fecha_vinculo, creado_por)
+    VALUES
+        ('[hash_md5]', '[tx_id]', 'extracto', 0.95, datetime('now'), 'claude');
 
 ==========================================================================
 PASO 3 -- JSONs DE LA PWA (INBOX MOBILE)
@@ -231,6 +278,19 @@ Para cada JSON:
     VALUES
         ('[nombre.json]', 'foto_factura', '[fecha_creacion_del_json]',
          datetime('now'), 'procesado', '[tx_id]');
+
+3g. Vincular la foto de factura (si el JSON tenia archivo_foto):
+    INSERT OR IGNORE INTO documentos
+        (id, nombre_original, ruta_local, tipo, fuente, estado, fecha_descarga)
+    VALUES
+        ('[hash_md5_foto]', '[nombre_foto.jpg]',
+         'C:\Users\ghriz\OneDrive\Finanzas MCGHR\Inbox\[nombre_foto.jpg]',
+         'foto_factura', '[iphone_ghr o iphone_mc]', 'vinculado', datetime('now'));
+
+    INSERT OR IGNORE INTO vinculos
+        (id_documento, id_transaccion, tipo_vinculo, confianza, fecha_vinculo, creado_por)
+    VALUES
+        ('[hash_md5_foto]', '[tx_id]', 'factura', [confianza], datetime('now'), 'claude');
 
 ==========================================================================
 PASO 4 -- EXPORTAR CATALOGOS PARA LA PWA
