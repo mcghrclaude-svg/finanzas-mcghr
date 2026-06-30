@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 20:23
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-29 21:02
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -36,6 +36,14 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 - Si un fix falla: diagnostico antes del segundo intento (CITA-010)
 - Commits: listar archivos explicitos, nunca git add -A (CITA-008)
 
+## Entornos -- Claude Code y Claude Desktop
+- DB desarrollo: data/dev/finanzas_dev.db -- usar MCP sqlite_dev
+- DB produccion: OneDrive/Finanzas MCGHR/Generales/finanzas.db -- NO escribir en sesiones de desarrollo
+- Filesystem desarrollo: MCP filesystem_dev (C:\Users\ghriz\finanzas-mcghr)
+- Filesystem produccion: MCP filesystem (OneDrive) -- NO tocar en sesiones de desarrollo
+- Branch: nunca commitear directo en main -- usar branch por tema (ADR-010)
+- Claude Code lee este archivo automaticamente al iniciar sesion en el repo
+
 ## Estado real de modulos frontend (src/modules/)
 | Modulo | Estado | Detalle |
 |--------|--------|---------|
@@ -66,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+0f5642b chore: agregar seccion entornos Claude Code al template de CLAUDE.md
+080da66 docs: auto-update 2026-06-29 20:23
 f53d551 docs: agregar instrucciones de inicio para sesiones Claude Code
 ebf62d2 docs: auto-update 2026-06-29 20:08
 8fb632c fix: catalogos ABM stubs implementados -- todos los POST/PATCH/DELETE
@@ -74,5 +84,3 @@ ebf62d2 docs: auto-update 2026-06-29 20:08
 f717949 docs: auto-update 2026-06-29 16:42
 f1ab14f fix: issue #28 -- follow_redirects=True en conftest + HTTPException 404 en router transacciones
 5bd205e docs: auto-update 2026-06-29 15:53
-0009836 fix: alinear schemas y docs con DB real -- completitud str, id_evento, estado_enriquecimiento, origen en TransaccionRead; columnas faltantes en schema_v1.md; seccion tablas planificadas
-6109ca3 docs: auto-update 2026-06-22 21:27
