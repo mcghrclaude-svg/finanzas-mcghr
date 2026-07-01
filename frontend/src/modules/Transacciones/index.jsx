@@ -69,13 +69,15 @@ const FILTROS_INICIAL = {
 
 // -- API ---------------------------------------------------------------
 const api = {
-  listar:          (p) => client.get('/inbox/', { params: p }).then(r => r.data),
-  confirmar:       (id) => client.post(`/inbox/${id}/confirmar`).then(r => r.data),
-  descartar:       (id) => client.post(`/inbox/${id}/descartar`).then(r => r.data),
-  editar:          (id, data) => client.patch(`/inbox/${id}`, data).then(r => r.data),
-  getCategorias:   () => client.get('/catalogos/categorias?solo_activas=true').then(r => r.data),
-  getContrapartes: () => client.get('/catalogos/contrapartes?solo_activas=true').then(r => r.data),
-  getCuentas:      () => client.get('/catalogos/cuentas?solo_activas=true').then(r => r.data),
+  listar:               (p) => client.get('/inbox/', { params: p }).then(r => r.data),
+  confirmar:            (id) => client.post(`/inbox/${id}/confirmar`).then(r => r.data),
+  descartar:            (id) => client.post(`/inbox/${id}/descartar`).then(r => r.data),
+  editar:               (id, data) => client.patch(`/inbox/${id}`, data).then(r => r.data),
+  getCategorias:        () => client.get('/catalogos/categorias?solo_activas=true').then(r => r.data),
+  getContrapartes:      () => client.get('/catalogos/contrapartes?solo_activas=true').then(r => r.data),
+  getCuentas:           () => client.get('/catalogos/cuentas?solo_activas=true').then(r => r.data),
+  getEPs:               (id) => client.get(`/inbox/${id}/entidades-potenciales`).then(r => r.data),
+  confirmarEP:          (trxId, epId) => client.post(`/inbox/${trxId}/entidades-potenciales/${epId}/confirmar`).then(r => r.data),
 }
 
 // -- Helpers -----------------------------------------------------------
@@ -222,12 +224,12 @@ function FilePreview({ item }) {
 }
 
 // -- Field helper ------------------------------------------------------
-function Field({ label, children, cols = 1 }) {
+function Field({ label, children, cols = 1, hasPending = false }) {
   const spanClass = cols === 4 ? 'col-span-4' : cols === 3 ? 'col-span-3' : cols === 2 ? 'col-span-2' : ''
   return (
     <div className={spanClass}>
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-        {label}
+      <label className={`block text-xs font-semibold uppercase tracking-wider mb-0.5 ${hasPending ? 'text-red-600' : 'text-gray-400'}`}>
+        {label}{hasPending && ' ⚠'}
       </label>
       {children}
     </div>
@@ -246,6 +248,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   const [vals,   setVals]   = useState({})
   const [dirty,  setDirty]  = useState(false)
   const [saving, setSaving] = useState(false)
+  const [eps,    setEps]    = useState([])
 
   useEffect(() => {
     if (!item) return
@@ -264,7 +267,26 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
       id_cuenta_origen_tramo1: tramo1?.id_cuenta_origen     ?? null,
     })
     setDirty(false)
+    api.getEPs(item.id).then(d => setEps(d.items ?? [])).catch(() => setEps([]))
   }, [item?.id])
+
+  // Filtra IDs sinteticos (__ep_N__) antes de enviar al backend
+  function valsParaGuardar() {
+    return Object.fromEntries(
+      Object.entries(vals).filter(([, v]) => !String(v ?? '').startsWith('__ep_'))
+    )
+  }
+
+  async function handleConfirmarEP(ep, fieldKey) {
+    try {
+      const res = await api.confirmarEP(item.id, ep.id)
+      set(fieldKey, res.nuevo_id)
+      setEps(prev => prev.filter(e => e.id !== ep.id))
+      toast.success(`Created: ${res.nuevo_id}`)
+    } catch (e) {
+      toast.error(e.response?.data?.detail ?? e.message)
+    }
+  }
 
   function set(key, value) {
     setVals(prev => ({ ...prev, [key]: value }))
@@ -274,7 +296,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   async function handleSaveAndConfirm() {
     setSaving(true)
     try {
-      if (dirty) await onEditar(item.id, vals)
+      if (dirty) await onEditar(item.id, valsParaGuardar())
       await onConfirmar(item.id)
     } finally {
       setSaving(false)
@@ -292,6 +314,16 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   const catOpts    = (Array.isArray(categorias)  ? categorias  : []).map(c => ({ id: c.id, label: c.nombre }))
   const cpOpts     = (Array.isArray(contrapartes) ? contrapartes : []).map(c => ({ id: c.id, label: c.nombre }))
   const cuentaOpts = (Array.isArray(cuentas)      ? cuentas     : []).map(c => ({ id: c.id, label: c.nombre }))
+
+  // Entidades potenciales pendientes para esta transaccion
+  const epCp  = eps.find(e => e.tipo === 'contraparte')
+  const epCat = eps.find(e => e.tipo === 'categoria')
+  const epCta = eps.find(e => e.tipo === 'cuenta')
+
+  // Inyecta la propuesta como opcion en el dropdown (con marcador __ep_)
+  const cpOptsConProp  = epCp  ? [...cpOpts,     { id: `__ep_${epCp.id}`,  label: `${epCp.valor_propuesto} (proposed)` }]  : cpOpts
+  const catOptsConProp = epCat ? [...catOpts,     { id: `__ep_${epCat.id}`, label: `${epCat.valor_propuesto} (proposed)` }] : catOpts
+  const ctaOptsConProp = epCta ? [...cuentaOpts,  { id: `__ep_${epCta.id}`, label: `${epCta.valor_propuesto} (proposed)` }] : cuentaOpts
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -359,21 +391,41 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
           </Field>
 
           {/* Fila 3: Counterpart (2 cols) | Paid With | Es Recurrente */}
-          <Field label="Counterpart" cols={2}>
-            <AutocompleteSelect
-              value={vals.id_contraparte}
-              onChange={v => set('id_contraparte', v)}
-              options={cpOpts}
-              placeholder="Search entity..."
-            />
+          <Field label="Counterpart" cols={2} hasPending={!!epCp}>
+            <div className="flex gap-1">
+              <div className="flex-1">
+                <AutocompleteSelect
+                  value={vals.id_contraparte}
+                  onChange={v => set('id_contraparte', v)}
+                  options={cpOptsConProp}
+                  placeholder="Search entity..."
+                />
+              </div>
+              {epCp && (
+                <button onClick={() => handleConfirmarEP(epCp, 'id_contraparte')} title={`Confirm: ${epCp.valor_propuesto}`}
+                  className="flex-shrink-0 w-[34px] h-[34px] flex items-center justify-center rounded-lg border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-colors">
+                  ✓
+                </button>
+              )}
+            </div>
           </Field>
-          <Field label="Paid With" title={cuentaOpts.find(o => o.id === vals.id_cuenta_origen_tramo1)?.label}>
-            <AutocompleteSelect
-              value={vals.id_cuenta_origen_tramo1}
-              onChange={v => set('id_cuenta_origen_tramo1', v)}
-              options={cuentaOpts}
-              placeholder="Select account..."
-            />
+          <Field label="Paid With" hasPending={!!epCta}>
+            <div className="flex gap-1">
+              <div className="flex-1">
+                <AutocompleteSelect
+                  value={vals.id_cuenta_origen_tramo1}
+                  onChange={v => set('id_cuenta_origen_tramo1', v)}
+                  options={ctaOptsConProp}
+                  placeholder="Select account..."
+                />
+              </div>
+              {epCta && (
+                <button onClick={() => handleConfirmarEP(epCta, 'id_cuenta_origen_tramo1')} title={`Confirm: ${epCta.valor_propuesto}`}
+                  className="flex-shrink-0 w-[34px] h-[34px] flex items-center justify-center rounded-lg border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-colors">
+                  ✓
+                </button>
+              )}
+            </div>
           </Field>
           <Field label="Es Recurrente">
             <div className={CHECK}>
@@ -396,13 +448,23 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
           )}
 
           {/* Fila 4: Category (2 cols) | Es Reembolsable | Estado Reembolso */}
-          <Field label="Category" cols={2}>
-            <AutocompleteSelect
-              value={vals.id_categoria}
-              onChange={v => set('id_categoria', v)}
-              options={catOpts}
-              placeholder="Search category..."
-            />
+          <Field label="Category" cols={2} hasPending={!!epCat}>
+            <div className="flex gap-1">
+              <div className="flex-1">
+                <AutocompleteSelect
+                  value={vals.id_categoria}
+                  onChange={v => set('id_categoria', v)}
+                  options={catOptsConProp}
+                  placeholder="Search category..."
+                />
+              </div>
+              {epCat && (
+                <button onClick={() => handleConfirmarEP(epCat, 'id_categoria')} title={`Confirm: ${epCat.valor_propuesto}`}
+                  className="flex-shrink-0 w-[34px] h-[34px] flex items-center justify-center rounded-lg border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-colors">
+                  ✓
+                </button>
+              )}
+            </div>
           </Field>
           <Field label="Es Reembolsable">
             <div className={CHECK}>
