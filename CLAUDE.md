@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-30 19:31
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-01 08:49
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260630.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260701.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -55,7 +55,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
-| Transacciones | IMPLEMENTADO | 892 lineas |
+| Transacciones | IMPLEMENTADO | 889 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -64,7 +64,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | backup.py | IMPLEMENTADO | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 554 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 345 lineas |
+| inbox.py | IMPLEMENTADO | 377 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+bc959a0 feat: transacciones -- attachments reales desde tabla vinculos (TAREA 4)
+1a15044 docs: auto-update 2026-06-30 19:31
 6b88043 feat: transacciones -- indicadores de entidades potenciales en el detalle (PEN-004)
 7151dfe docs: auto-update 2026-06-30 19:25
 4383873 feat: catalogo -- pestana Pending para entidades propuestas por ETL (PEN-004)
@@ -82,5 +84,3 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 56c55cb docs: auto-update 2026-06-30 18:20
 d2e5907 docs: agregar PEN-005 -- pantalla de administracion del entorno dev
 b795342 docs: auto-update 2026-06-30 17:59
-4b5e30f feat: ETL prompt v2 + migracion v1.4b
-1e0e994 docs: auto-update 2026-06-30 17:47
