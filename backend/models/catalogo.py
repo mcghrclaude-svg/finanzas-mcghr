@@ -3,7 +3,7 @@ Modelos: Categoria, Cuenta, Contraparte, Persona
 Datos maestros del sistema.
 """
 
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, Text, ForeignKey
 from backend.models.base import Base
 
 
@@ -62,3 +62,16 @@ class Persona(Base):
     nombre = Column(String, nullable=False)
     alias = Column(String)  # GHR | MC
     activa = Column(Boolean, default=True)
+
+
+class EntidadPotencial(Base):
+    """Entidades propuestas por el ETL que aun no existen en el catalogo."""
+    __tablename__ = "entidades_potenciales"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tipo = Column(String, nullable=False)        # contraparte | cuenta | categoria
+    valor_propuesto = Column(Text, nullable=False)
+    id_transaccion = Column(String, ForeignKey("transacciones.id"), nullable=False)
+    estado = Column(String, nullable=False, default="pendiente")  # pendiente | confirmado | descartado
+    creado_en = Column(String, nullable=False)
+    resuelto_en = Column(String)

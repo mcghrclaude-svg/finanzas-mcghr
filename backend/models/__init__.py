@@ -2,7 +2,7 @@
 Centraliza imports de modelos para que Alembic y create_all los detecten.
 """
 from backend.models.base import Base  # noqa: F401
-from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona  # noqa: F401
+from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona, EntidadPotencial  # noqa: F401
 from backend.models.transaccion import Transaccion, Tramo, Asiento  # noqa: F401
 from backend.models.presupuesto import Presupuesto  # noqa: F401
 from backend.models.obligacion import Obligacion  # noqa: F401
