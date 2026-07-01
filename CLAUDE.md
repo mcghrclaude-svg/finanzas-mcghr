@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-30 19:25
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-06-30 19:31
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -55,7 +55,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
-| Transacciones | IMPLEMENTADO | 830 lineas |
+| Transacciones | IMPLEMENTADO | 892 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -64,7 +64,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | backup.py | IMPLEMENTADO | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 554 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 245 lineas |
+| inbox.py | IMPLEMENTADO | 345 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
@@ -74,6 +74,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 27 lineas |
 
 ## Ultimos 10 commits
+6b88043 feat: transacciones -- indicadores de entidades potenciales en el detalle (PEN-004)
+7151dfe docs: auto-update 2026-06-30 19:25
 4383873 feat: catalogo -- pestana Pending para entidades propuestas por ETL (PEN-004)
 119feff docs: auto-update 2026-06-30 19:11
 1e2e98d feat: migracion v1.5 -- tabla entidades_potenciales
@@ -82,5 +84,3 @@ d2e5907 docs: agregar PEN-005 -- pantalla de administracion del entorno dev
 b795342 docs: auto-update 2026-06-30 17:59
 4b5e30f feat: ETL prompt v2 + migracion v1.4b
 1e0e994 docs: auto-update 2026-06-30 17:47
-113ba9e feat: migracion v1.4 -- tabla vinculos + CHECK/DEFAULT en completitud
-f0f4490 docs: auto-update 2026-06-30 11:48
