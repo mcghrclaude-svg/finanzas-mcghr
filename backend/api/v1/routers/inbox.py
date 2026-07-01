@@ -19,6 +19,8 @@ from sqlalchemy import select, update
 from backend.core.database import get_db
 from backend.models.transaccion import Transaccion, Tramo
 from backend.models.catalogo import Categoria, Cuenta, Contraparte, EntidadPotencial
+from backend.models.documento import Documento
+from backend.models.vinculo import Vinculo
 from backend.services.inbox_service import InboxService
 from backend.schemas.inbox import (
     InboxListResponse,
@@ -162,6 +164,36 @@ async def descartar_inbox_item(
 ):
     service = InboxService(db)
     return await service.descartar(inbox_id)
+
+
+# ---------------------------------------------------------------------------
+# GET /inbox/{inbox_id}/vinculos
+# ---------------------------------------------------------------------------
+
+@router.get("/{inbox_id}/vinculos")
+async def listar_vinculos_transaccion(inbox_id: str, db: AsyncSession = Depends(get_db)):
+    q = (
+        select(Vinculo, Documento.nombre_archivo, Documento.ruta, Documento.tipo_mime)
+        .join(Documento, Vinculo.id_documento == Documento.id)
+        .where(Vinculo.id_transaccion == inbox_id)
+        .order_by(Vinculo.fecha_vinculo.desc())
+    )
+    rows = (await db.execute(q)).all()
+    return {
+        "items": [
+            {
+                "id": v.id,
+                "id_documento": v.id_documento,
+                "tipo_vinculo": v.tipo_vinculo,
+                "confianza": v.confianza,
+                "fecha_vinculo": v.fecha_vinculo,
+                "nombre_archivo": nombre_archivo,
+                "ruta": ruta,
+                "tipo_mime": tipo_mime,
+            }
+            for v, nombre_archivo, ruta, tipo_mime in rows
+        ]
+    }
 
 
 # ---------------------------------------------------------------------------

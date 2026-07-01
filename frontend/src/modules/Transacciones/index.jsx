@@ -78,6 +78,7 @@ const api = {
   getCuentas:           () => client.get('/catalogos/cuentas?solo_activas=true').then(r => r.data),
   getEPs:               (id) => client.get(`/inbox/${id}/entidades-potenciales`).then(r => r.data),
   confirmarEP:          (trxId, epId) => client.post(`/inbox/${trxId}/entidades-potenciales/${epId}/confirmar`).then(r => r.data),
+  getVinculos:          (id) => client.get(`/inbox/${id}/vinculos`).then(r => r.data),
 }
 
 // -- Helpers -----------------------------------------------------------
@@ -165,60 +166,54 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
   )
 }
 
-// -- FilePreview -------------------------------------------------------
-// Compacto con boton de abrir en nueva ventana (icono expand)
-function FilePreview({ item }) {
-  const ruta = item?.ruta_documento || item?.documento_url
-  if (!ruta) return (
-    <span className="text-xs text-gray-400 italic">No attachment</span>
+// -- AttachmentList ----------------------------------------------------
+const TIPO_VINCULO_BADGE = {
+  factura:  'bg-blue-100 text-blue-700',
+  extracto: 'bg-purple-100 text-purple-700',
+}
+
+function AttachmentList({ vinculos = [] }) {
+  if (vinculos.length === 0) return (
+    <span className="text-xs text-gray-400 italic">No attachments</span>
   )
 
-  const ext = ruta.split('.').pop()?.toLowerCase()
-  const isImage = ['jpg','jpeg','png','gif','webp'].includes(ext)
-  const isPdf   = ext === 'pdf'
-
-  // Boton expandir -- abre en nueva ventana
-  const BtnExpand = () => (
-    <a
-      href={ruta}
-      target="_blank"
-      rel="noopener noreferrer"
-      title="Open in new window"
-      className="inline-flex items-center justify-center w-6 h-6 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 transition-colors flex-shrink-0"
-    >
-      {/* Icono expand: cuadrado con flecha saliendo, estilo minimalista */}
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
-        <path d="M3 3h4v1.5H4.5v7h7V10H13v4H3V3z"/>
-        <path d="M9 3h4v4h-1.5V5.56L7.28 9.78 6.22 8.72 10.44 4.5H9V3z"/>
-      </svg>
-    </a>
-  )
-
-  if (isImage) return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-2 py-1 bg-gray-50 border-b border-gray-200">
-        <span className="text-xs text-gray-500">Image</span>
-        <BtnExpand />
-      </div>
-      <img src={ruta} alt="Attachment" className="w-full object-contain max-h-24" />
-    </div>
-  )
-
-  if (isPdf) return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-2 py-1 bg-gray-50 border-b border-gray-200">
-        <span className="text-xs text-gray-500">PDF</span>
-        <BtnExpand />
-      </div>
-      <iframe src={ruta} title="PDF preview" className="w-full h-24" />
-    </div>
-  )
-
-  // Otro tipo de archivo
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 border border-gray-200 rounded-lg">
-      <span className="text-xs text-gray-500 truncate flex-1">{ruta.split('/').pop()}</span>
-      <BtnExpand />
+    <div className="space-y-1.5">
+      {vinculos.map(v => {
+        const ruta = v.ruta ?? ''
+        const ext  = ruta.split('.').pop()?.toLowerCase()
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
+        const isPdf   = ext === 'pdf'
+        const nombre  = v.nombre_archivo || ruta.split('/').pop() || v.id_documento
+
+        const BtnExpand = () => (
+          <a href={ruta} target="_blank" rel="noopener noreferrer" title="Open in new window"
+            className="inline-flex items-center justify-center w-6 h-6 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 transition-colors flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+              <path d="M3 3h4v1.5H4.5v7h7V10H13v4H3V3z"/>
+              <path d="M9 3h4v4h-1.5V5.56L7.28 9.78 6.22 8.72 10.44 4.5H9V3z"/>
+            </svg>
+          </a>
+        )
+
+        return (
+          <div key={v.id} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 border-b border-gray-200">
+              <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-semibold ${TIPO_VINCULO_BADGE[v.tipo_vinculo] ?? 'bg-gray-100 text-gray-600'}`}>
+                {v.tipo_vinculo}
+              </span>
+              <span className="text-xs text-gray-600 truncate flex-1" title={nombre}>{nombre}</span>
+              <BtnExpand />
+            </div>
+            {ruta && isImage && (
+              <img src={ruta} alt={nombre} className="w-full object-contain max-h-24" />
+            )}
+            {ruta && isPdf && (
+              <iframe src={ruta} title={nombre} className="w-full h-24" />
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -248,7 +243,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   const [vals,   setVals]   = useState({})
   const [dirty,  setDirty]  = useState(false)
   const [saving, setSaving] = useState(false)
-  const [eps,    setEps]    = useState([])
+  const [eps,      setEps]      = useState([])
+  const [vinculos, setVinculos] = useState([])
 
   useEffect(() => {
     if (!item) return
@@ -268,6 +264,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
     })
     setDirty(false)
     api.getEPs(item.id).then(d => setEps(d.items ?? [])).catch(() => setEps([]))
+    api.getVinculos(item.id).then(d => setVinculos(d.items ?? [])).catch(() => setVinculos([]))
   }, [item?.id])
 
   // Filtra IDs sinteticos (__ep_N__) antes de enviar al backend
@@ -502,9 +499,9 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
               className="w-full px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 resize-none h-[34px]" />
           </Field>
 
-          {/* Fila 6: Attachment (ancho completo, compacto con boton expand) */}
-          <Field label="Attachment" cols={4}>
-            <FilePreview item={item} />
+          {/* Fila 6: Attachments reales desde tabla vinculos */}
+          <Field label="Attachments" cols={4}>
+            <AttachmentList vinculos={vinculos} />
           </Field>
 
         </div>

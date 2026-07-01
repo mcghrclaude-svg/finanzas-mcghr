@@ -8,6 +8,7 @@ from backend.models.presupuesto import Presupuesto  # noqa: F401
 from backend.models.obligacion import Obligacion  # noqa: F401
 from backend.models.inversion import Inversion, Posicion, Valuacion  # noqa: F401
 from backend.models.documento import Documento  # noqa: F401
+from backend.models.vinculo import Vinculo  # noqa: F401
 from backend.models.inbox import InboxMobile  # noqa: F401
 from backend.models.regla import ReglaClasificacion  # noqa: F401  — fix: era "Regla"
 from backend.models.periodo import PeriodoFinanciero  # noqa: F401
