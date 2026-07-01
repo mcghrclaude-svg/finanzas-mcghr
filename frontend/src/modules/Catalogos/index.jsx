@@ -42,6 +42,7 @@ const SECCIONES = [
   { id: 'cuentas',      label: 'Accounts',   icon: '🏦' },
   { id: 'contrapartes', label: 'Entities',   icon: '🏢' },
   { id: 'personas',     label: 'People',     icon: '👤' },
+  { id: 'pendientes',   label: 'Pending',    icon: '⏳' },
 ]
 
 const COLUMNAS = {
@@ -131,6 +132,115 @@ const SINGULAR = {
   contrapartes: 'Entity', personas: 'Person',
 }
 
+const TIPO_LABEL = { contraparte: 'Entity', cuenta: 'Account', categoria: 'Category' }
+const TIPO_BADGE = {
+  contraparte: 'bg-blue-100 text-blue-700',
+  cuenta:      'bg-purple-100 text-purple-700',
+  categoria:   'bg-green-100 text-green-700',
+}
+
+// ── PendingList ───────────────────────────────────────────────────────────────
+
+function PendingList({ onReload }) {
+  const [items,   setItems]   = useState([])
+  const [loading, setLoading] = useState(false)
+  const [working, setWorking] = useState(null)
+
+  async function cargar() {
+    setLoading(true)
+    try {
+      const data = await catalogosApi.getPendientes()
+      setItems(data.items ?? [])
+    } catch (e) {
+      toast.error('Error loading pending: ' + (e.response?.data?.detail ?? e.message))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { cargar() }, [])
+
+  async function handleConfirmar(id) {
+    setWorking(id)
+    try {
+      const res = await catalogosApi.confirmarPendiente(id)
+      toast.success(`Created: ${res.nuevo_id}`)
+      cargar()
+      onReload()
+    } catch (e) {
+      toast.error(e.response?.data?.detail ?? e.message)
+    } finally {
+      setWorking(null)
+    }
+  }
+
+  async function handleDescartar(id) {
+    setWorking(id)
+    try {
+      await catalogosApi.descartarPendiente(id)
+      toast.success('Discarded')
+      cargar()
+    } catch (e) {
+      toast.error(e.response?.data?.detail ?? e.message)
+    } finally {
+      setWorking(null)
+    }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-20 text-gray-400 text-sm gap-2">
+      <span className="animate-spin">⏳</span> Loading...
+    </div>
+  )
+
+  if (items.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-2">
+      <p className="text-sm font-medium text-gray-600">No pending proposals</p>
+      <p className="text-xs">The ETL will add entries here when it finds unknown catalog values.</p>
+    </div>
+  )
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs text-gray-500">{items.length} pending proposal{items.length !== 1 ? 's' : ''}</p>
+        <button onClick={cargar} className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50">
+          ↻ Refresh
+        </button>
+      </div>
+      {items.map(ep => (
+        <div key={ep.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-4">
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 ${TIPO_BADGE[ep.tipo] ?? 'bg-gray-100 text-gray-600'}`}>
+            {TIPO_LABEL[ep.tipo] ?? ep.tipo}
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">{ep.valor_propuesto}</p>
+            <p className="text-xs text-gray-400 truncate mt-0.5">
+              {ep.trx_fecha ? ep.trx_fecha.slice(0, 10) : ''}{ep.trx_descripcion ? ` · ${ep.trx_descripcion}` : ''}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => handleConfirmar(ep.id)}
+              disabled={working === ep.id}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            >
+              {working === ep.id ? '...' : 'Confirm'}
+            </button>
+            <button
+              onClick={() => handleDescartar(ep.id)}
+              disabled={working === ep.id}
+              className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function Catalogos() {
@@ -143,6 +253,7 @@ export default function Catalogos() {
   const [guardando, setGuardando] = useState(false)
 
   const cargar = useCallback(async () => {
+    if (seccion === 'pendientes') return
     setLoading(true)
     try {
       const data = await API[seccion].listar({ solo_activas: false })
@@ -226,12 +337,14 @@ export default function Catalogos() {
           <h1 className="text-xl font-semibold text-gray-900">{meta?.icon} {meta?.label}</h1>
           <p className="text-sm text-gray-500 mt-0.5">Master data management</p>
         </div>
-        <button
-          onClick={abrirCrear}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          + New
-        </button>
+        {seccion !== 'pendientes' && (
+          <button
+            onClick={abrirCrear}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            + New
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -251,22 +364,24 @@ export default function Catalogos() {
         ))}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Total',    value: total,    color: 'text-gray-900' },
-          { label: 'Active',   value: activos,  color: 'text-success-500' },
-          { label: 'Inactive', value: inactivos,color: 'text-gray-400' },
-        ].map(s => (
-          <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
+      {/* Stats -- oculto en pestana Pending */}
+      {seccion !== 'pendientes' && (
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'Total',    value: total,    color: 'text-gray-900' },
+            { label: 'Active',   value: activos,  color: 'text-success-500' },
+            { label: 'Inactive', value: inactivos,color: 'text-gray-400' },
+          ].map(s => (
+            <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
+              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Busqueda */}
-      {seccion !== 'categorias' && (
+      {/* Busqueda -- oculto en categorias y pending */}
+      {seccion !== 'categorias' && seccion !== 'pendientes' && (
         <div className="flex items-center gap-3">
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -285,7 +400,9 @@ export default function Catalogos() {
       )}
 
       {/* Contenido */}
-      {loading ? (
+      {seccion === 'pendientes' ? (
+        <PendingList onReload={cargar} />
+      ) : loading ? (
         <div className="flex items-center justify-center py-20 text-gray-400 text-sm gap-2">
           <span className="animate-spin">⏳</span> Loading...
         </div>

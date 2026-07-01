@@ -18,6 +18,8 @@ Regla: nunca borrado fisico. Solo inactivacion (activa = 0).
 from __future__ import annotations
 
 import json
+import re
+import unicodedata
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,7 +32,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
 from backend.core.config import settings
-from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona
+from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona, EntidadPotencial
+from backend.models.transaccion import Transaccion
 
 router = APIRouter()
 
@@ -386,6 +389,92 @@ async def inactivar_persona(
     persona.activa = not persona.activa
     await db.commit()
     return None
+
+
+# -- Entidades potenciales (propuestas por ETL) ------------------------
+
+def _slug(nombre: str) -> str:
+    s = unicodedata.normalize("NFD", nombre.upper())
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    s = re.sub(r"[^A-Z0-9\s-]", "", s).strip().replace(" ", "-")
+    return s[:20]
+
+
+async def _slug_unico(nombre: str, db: AsyncSession, modelo) -> str:
+    result = await db.execute(select(modelo.id))
+    existentes = {row[0] for row in result.all()}
+    base = _slug(nombre)
+    if base not in existentes:
+        return base
+    i = 2
+    while f"{base}-{i}" in existentes:
+        i += 1
+    return f"{base}-{i}"
+
+
+@router.get("/pendientes")
+async def listar_pendientes(db: AsyncSession = Depends(get_db)):
+    q = (
+        select(EntidadPotencial, Transaccion.descripcion, Transaccion.fecha)
+        .join(Transaccion, EntidadPotencial.id_transaccion == Transaccion.id)
+        .where(EntidadPotencial.estado == "pendiente")
+        .order_by(EntidadPotencial.creado_en.desc())
+    )
+    rows = (await db.execute(q)).all()
+    return {
+        "items": [
+            {
+                "id": ep.id,
+                "tipo": ep.tipo,
+                "valor_propuesto": ep.valor_propuesto,
+                "id_transaccion": ep.id_transaccion,
+                "trx_descripcion": desc,
+                "trx_fecha": fecha,
+                "creado_en": ep.creado_en,
+            }
+            for ep, desc, fecha in rows
+        ]
+    }
+
+
+@router.post("/pendientes/{ep_id}/confirmar", status_code=201)
+async def confirmar_pendiente(ep_id: int, db: AsyncSession = Depends(get_db)):
+    ep = await db.get(EntidadPotencial, ep_id)
+    if not ep:
+        raise HTTPException(status_code=404, detail="Entidad potencial no encontrada")
+    if ep.estado != "pendiente":
+        raise HTTPException(status_code=409, detail=f"Estado actual: {ep.estado}")
+
+    nuevo_id: str
+    if ep.tipo == "contraparte":
+        nuevo_id = await _slug_unico(ep.valor_propuesto, db, Contraparte)
+        db.add(Contraparte(id=nuevo_id, nombre=ep.valor_propuesto, tipo="COMERCIO", activa=True))
+    elif ep.tipo == "cuenta":
+        nuevo_id = await _slug_unico(ep.valor_propuesto, db, Cuenta)
+        db.add(Cuenta(id=nuevo_id, nombre=ep.valor_propuesto, activa=True))
+    elif ep.tipo == "categoria":
+        nuevo_id = await _slug_unico(ep.valor_propuesto, db, Categoria)
+        db.add(Categoria(id=nuevo_id, nombre=ep.valor_propuesto, nivel=1, activa=True))
+    else:
+        raise HTTPException(status_code=422, detail=f"Tipo desconocido: {ep.tipo}")
+
+    ep.estado = "confirmado"
+    ep.resuelto_en = datetime.now(timezone.utc).isoformat()
+    await db.commit()
+    return {"ok": True, "nuevo_id": nuevo_id, "tipo": ep.tipo}
+
+
+@router.post("/pendientes/{ep_id}/descartar", status_code=200)
+async def descartar_pendiente(ep_id: int, db: AsyncSession = Depends(get_db)):
+    ep = await db.get(EntidadPotencial, ep_id)
+    if not ep:
+        raise HTTPException(status_code=404, detail="Entidad potencial no encontrada")
+    if ep.estado != "pendiente":
+        raise HTTPException(status_code=409, detail=f"Estado actual: {ep.estado}")
+    ep.estado = "descartado"
+    ep.resuelto_en = datetime.now(timezone.utc).isoformat()
+    await db.commit()
+    return {"ok": True}
 
 
 # -- Export PWA --------------------------------------------------------

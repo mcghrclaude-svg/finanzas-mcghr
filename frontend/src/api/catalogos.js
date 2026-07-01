@@ -56,6 +56,16 @@ export const catalogosApi = {
   inactivarContraparte: (id) =>
     client.delete(`${BASE}/contrapartes/${id}`).then(r => r.data),
 
+  // Entidades potenciales
+  getPendientes: () =>
+    client.get(`${BASE}/pendientes`).then(r => r.data),
+
+  confirmarPendiente: (id) =>
+    client.post(`${BASE}/pendientes/${id}/confirmar`).then(r => r.data),
+
+  descartarPendiente: (id) =>
+    client.post(`${BASE}/pendientes/${id}/descartar`).then(r => r.data),
+
   // Personas
   getPersonas: (params = {}) =>
     client.get(`${BASE}/personas`, { params }).then(r => r.data),
