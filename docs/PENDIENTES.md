@@ -152,3 +152,57 @@ Consideraciones:
   (no exponer en produccion)
 - Relacionado con PEN-003 (modo rango del ETL) -- las dos features
   se usan juntas para testing
+
+---
+
+## PEN-006 -- ABM de reglas de clasificacion y periodos financieros desde la UI
+
+**Detectado:** 2026-07-02, sesion chat-ux-etl-prep
+**Prioridad:** media (las tablas existen y el ETL las usa, pero no hay UI
+para gestionarlas; hoy solo se pueden editar con SQL directo)
+
+**Reglas de clasificacion:**
+Las reglas en reglas_clasificacion pueden volverse obsoletas o conflictivas
+con el tiempo (ej: una regla antigua que matchea patrones que hoy se manejan
+de otra forma). Se necesita:
+- Vista de lista con filtro por estado (activa/inactiva) y por tipo de match
+- Edicion y desactivacion (soft delete, no borrado fisico)
+- Eliminacion con advertencia sobre transacciones ya clasificadas por esa regla
+- Definir comportamiento: eliminar una regla no reclasifica transacciones
+  existentes -- queda como decision de diseno al implementar
+
+**Periodos financieros:**
+La tabla periodos_financieros existe y tiene schema completo (anio, mes,
+fecha_inicio, fecha_fin_tentativa, fecha_fin_real, estado, dia_acreditacion_salario)
+pero esta vacia y no hay UI ni endpoints para gestionarla. Se necesita ABM
+completo: crear periodo, editar, marcar como cerrado (fecha_fin_real).
+El cierre de un periodo tiene implicancias en el dashboard y en analitica
+que deben definirse al implementar.
+
+**Ubicacion sugerida:** Settings > Catalogs como tabs adicionales,
+o seccion nueva "Settings > Rules & Periods" si el scope lo justifica.
+
+---
+
+## PEN-007 -- Guard de entorno para Tools: mover include_router a bloque condicional
+
+**Detectado:** 2026-07-02, sesion chat-ux-etl-prep
+**Prioridad:** baja (el guard funcional con 403 es suficiente por ahora;
+se vuelve critico cuando se implemente el pin de seguridad o se despliegue
+en un entorno compartido)
+
+Hoy tools.py se registra en main.py incondicionalmente. El guard _guard_dev()
+dentro de cada endpoint devuelve 403 si settings.env != 'dev', lo que es
+funcionalmente correcto. Sin embargo, el router igual existe en la app en
+produccion: sus rutas son descubribles via /docs y el codigo de cada
+endpoint esta cargado en memoria.
+
+**Resolucion pendiente:**
+Cuando se implemente el pin de seguridad o se prepare un deploy a produccion,
+mover el include_router de tools a un bloque condicional en main.py:
+
+    if settings.env == "dev":
+        app.include_router(tools.router, ...)
+
+Esto garantiza que en prod el router directamente no existe, sus rutas
+no aparecen en /docs y el codigo no se ejecuta bajo ninguna condicion.
