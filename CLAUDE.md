@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-01 08:49
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 18:33
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260701.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260702.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -55,6 +55,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
+| Tools | IMPLEMENTADO | 410 lineas |
 | Transacciones | IMPLEMENTADO | 889 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
@@ -70,10 +71,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
 | reglas.py | IMPLEMENTADO | 73 lineas |
 | reportes.py | IMPLEMENTADO | 86 lineas |
+| tools.py | IMPLEMENTADO | 374 lineas |
 | transacciones.py | IMPLEMENTADO | 117 lineas |
-| __init__.py | IMPLEMENTADO | 27 lineas |
+| __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+12cc372 feat: settings -- modulo Tools para administracion del entorno dev (PEN-005)
+8effc43 docs: auto-update 2026-07-01 08:49
 bc959a0 feat: transacciones -- attachments reales desde tabla vinculos (TAREA 4)
 1a15044 docs: auto-update 2026-06-30 19:31
 6b88043 feat: transacciones -- indicadores de entidades potenciales en el detalle (PEN-004)
@@ -82,5 +86,3 @@ bc959a0 feat: transacciones -- attachments reales desde tabla vinculos (TAREA 4)
 119feff docs: auto-update 2026-06-30 19:11
 1e2e98d feat: migracion v1.5 -- tabla entidades_potenciales
 56c55cb docs: auto-update 2026-06-30 18:20
-d2e5907 docs: agregar PEN-005 -- pantalla de administracion del entorno dev
-b795342 docs: auto-update 2026-06-30 17:59
