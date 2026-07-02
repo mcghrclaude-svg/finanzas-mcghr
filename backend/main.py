@@ -30,6 +30,7 @@ from backend.api.v1.routers import (
     analitica,
     backup,
     dashboard,
+    tools,
 )
 
 app = FastAPI(
@@ -66,6 +67,7 @@ app.include_router(reportes.router,       prefix=f"{PREFIX}/reportes",       tag
 app.include_router(analitica.router,      prefix=f"{PREFIX}/analitica",      tags=["analitica"])
 app.include_router(backup.router,         prefix=f"{PREFIX}/backup",         tags=["backup"])
 app.include_router(dashboard.router,      prefix=f"{PREFIX}/dashboard",      tags=["dashboard"])
+app.include_router(tools.router,          prefix=f"{PREFIX}/tools",          tags=["tools"])
 
 
 @app.get("/health", tags=["system"])

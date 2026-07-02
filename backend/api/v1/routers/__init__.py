@@ -10,6 +10,7 @@ from backend.api.v1.routers import (
     analitica,
     backup,
     dashboard,
+    tools,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "analitica",
     "backup",
     "dashboard",
+    "tools",
 ]
