@@ -6,7 +6,7 @@
 
 ---
 
-## PEN-001 -- Renombrar tamano_bytes (con enie) a tamano_bytes (ASCII)
+## PEN-001 -- Renombrar tamano_bytes (con enie) a tamano_bytes (ASCII) (Issue #33)
 
 **Detectado:** 2026-06-29, sesion chat-sync-mcp-lector-correos
 **Causa:** CITA-009 -- atributo del dataclass Adjunto usa caracter no-ASCII
@@ -26,7 +26,7 @@
 
 ---
 
-## PEN-002 -- UX para correccion manual de correlaciones ETL
+## PEN-002 -- UX para correccion manual de correlaciones ETL (Issue #34)
 
 **Detectado:** 2026-06-29, sesion chat-etl-desarrollo
 **Prioridad:** media (no bloquea el ETL, mejora la calidad del aprendizaje a largo plazo)
@@ -42,7 +42,7 @@ cada transaccion en la cola de revision.
 
 ---
 
-## PEN-003 -- ETL necesita modo de ejecucion con rango de fechas explicito
+## PEN-003 -- ETL necesita modo de ejecucion con rango de fechas explicito (Issue #35)
 
 **Detectado:** 2026-06-29, sesion chat-etl-desarrollo
 **Prioridad:** media (bloquea testing reproducible y carga inicial en produccion)
@@ -75,7 +75,7 @@ Implicancias a resolver cuando se aborde:
 
 ---
 
-## PEN-004 -- ETL propone entidades nuevas del catalogo; UX y backend deben soportarlo
+## PEN-004 -- ETL propone entidades nuevas del catalogo; UX y backend deben soportarlo (Issue #36)
 
 **Detectado:** 2026-06-29, sesion chat-etl-desarrollo
 **Prioridad:** alta (sin esto el ETL deja FKs nulas silenciosamente cuando
@@ -115,7 +115,7 @@ con un flag visible que indique que hay una propuesta pendiente.
 
 ---
 
-## PEN-005 -- Pantalla de administracion del entorno de dev en la UX
+## PEN-005 -- Pantalla de administracion del entorno de dev en la UX (Issue #37)
 
 **Detectado:** 2026-06-30, sesion chat-etl-desarrollo
 **Prioridad:** media (no bloquea el ETL, pero es necesaria para testing
@@ -155,7 +155,7 @@ Consideraciones:
 
 ---
 
-## PEN-006 -- ABM de reglas de clasificacion y periodos financieros desde la UI
+## PEN-006 -- ABM de reglas de clasificacion y periodos financieros desde la UI (Issue #38)
 
 **Detectado:** 2026-07-02, sesion chat-ux-etl-prep
 **Prioridad:** media (las tablas existen y el ETL las usa, pero no hay UI
@@ -184,7 +184,7 @@ o seccion nueva "Settings > Rules & Periods" si el scope lo justifica.
 
 ---
 
-## PEN-007 -- Guard de entorno para Tools: mover include_router a bloque condicional
+## PEN-007 -- Guard de entorno para Tools: mover include_router a bloque condicional (Issue #39)
 
 **Detectado:** 2026-07-02, sesion chat-ux-etl-prep
 **Prioridad:** baja (el guard funcional con 403 es suficiente por ahora;
