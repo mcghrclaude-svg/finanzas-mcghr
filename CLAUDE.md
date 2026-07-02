@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 18:36
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 18:59
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+d534a3d docs: agregar numeros de Issue de GitHub a PENDIENTES.md
+db3c260 docs: auto-update 2026-07-02 18:36
 692e50f docs: agregar PEN-006 y PEN-007 a PENDIENTES.md
 ef1b863 docs: auto-update 2026-07-02 18:33
 12cc372 feat: settings -- modulo Tools para administracion del entorno dev (PEN-005)
@@ -84,5 +86,3 @@ bc959a0 feat: transacciones -- attachments reales desde tabla vinculos (TAREA 4)
 1a15044 docs: auto-update 2026-06-30 19:31
 6b88043 feat: transacciones -- indicadores de entidades potenciales en el detalle (PEN-004)
 7151dfe docs: auto-update 2026-06-30 19:25
-4383873 feat: catalogo -- pestana Pending para entidades propuestas por ETL (PEN-004)
-119feff docs: auto-update 2026-06-30 19:11
