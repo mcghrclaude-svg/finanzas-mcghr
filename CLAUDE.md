@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:04
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:39
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -56,7 +56,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
-| Transacciones | IMPLEMENTADO | 927 lineas |
+| Transacciones | IMPLEMENTADO | 960 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -76,13 +76,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+af58410 merge: fix/ep-dropdown-refresh-y-preview -- CLAUDE.md y HANDOFF se regeneran en proximo commit
+e54d673 docs: auto-update 2026-07-02 21:14
+3a7d2a4 fix: refresca catalogo tras confirmar EP y muestra propuesta pendiente distinguible
+dc9130c docs: auto-update 2026-07-02 21:04
 e4ed917 fix: cerrar-sesion.ps1 no reporta push exitoso si falla o no hay upstream
 ea38763 docs: auto-update 2026-07-02 19:56
 47d6528 merge: fix/attachments-ep-dropdown-ux -- CLAUDE.md y HANDOFF se regeneran en proximo commit
 e31d178 docs: auto-update 2026-07-02 19:46
 28e06ca fix: dropdown EP -- orden, color rojo, tooltip y ancho roto de Paid With
 997a324 docs: auto-update 2026-07-02 19:38
-ac9ef7f fix: attachments -- boton ampliar abre modal en vez de pestana nueva
-6a810b3 docs: auto-update 2026-07-02 19:35
-1653853 fix: attachments -- preview embebido usa la url real del documento
-271ca54 docs: auto-update 2026-07-02 19:29
