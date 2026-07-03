@@ -11,11 +11,14 @@ from __future__ import annotations
 import re
 import unicodedata
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
+from backend.core.config import settings
 from backend.core.database import get_db
 from backend.models.transaccion import Transaccion, Tramo
 from backend.models.catalogo import Categoria, Cuenta, Contraparte, EntidadPotencial
@@ -173,7 +176,7 @@ async def descartar_inbox_item(
 @router.get("/{inbox_id}/vinculos")
 async def listar_vinculos_transaccion(inbox_id: str, db: AsyncSession = Depends(get_db)):
     q = (
-        select(Vinculo, Documento.nombre_archivo, Documento.ruta, Documento.tipo_mime)
+        select(Vinculo, Documento.nombre_archivo, Documento.tipo_mime)
         .join(Documento, Vinculo.id_documento == Documento.id)
         .where(Vinculo.id_transaccion == inbox_id)
         .order_by(Vinculo.fecha_vinculo.desc())
@@ -188,12 +191,35 @@ async def listar_vinculos_transaccion(inbox_id: str, db: AsyncSession = Depends(
                 "confianza": v.confianza,
                 "fecha_vinculo": v.fecha_vinculo,
                 "nombre_archivo": nombre_archivo,
-                "ruta": ruta,
+                "url": f"/api/v1/inbox/documentos/{v.id_documento}/contenido",
                 "tipo_mime": tipo_mime,
             }
-            for v, nombre_archivo, ruta, tipo_mime in rows
+            for v, nombre_archivo, tipo_mime in rows
         ]
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /inbox/documentos/{id_documento}/contenido
+# ---------------------------------------------------------------------------
+
+@router.get("/documentos/{id_documento}/contenido")
+async def descargar_documento(id_documento: str, db: AsyncSession = Depends(get_db)):
+    """
+    Sirve el contenido binario de un documento vinculado (factura, extracto, etc).
+    Resuelve siempre contra documentos_path -- ignora cualquier directorio
+    que venga en Documento.ruta para prevenir path traversal.
+    """
+    doc = await db.get(Documento, id_documento)
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+
+    base_dir = Path(settings.documentos_path).resolve()
+    archivo = (base_dir / Path(doc.ruta).name).resolve()
+    if not archivo.is_relative_to(base_dir) or not archivo.is_file():
+        raise HTTPException(status_code=404, detail="Archivo no encontrado en disco")
+
+    return FileResponse(path=archivo, media_type=doc.tipo_mime, filename=doc.nombre_archivo)
 
 
 # ---------------------------------------------------------------------------

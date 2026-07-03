@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     # Paths
     onedrive_path: str = "data/dev/onedrive"
     backup_path: str = "data/dev/backups"
+    documentos_path: str = "data/dev/docs"
     config_path: str = "config_correos.json"
 
     # External APIs

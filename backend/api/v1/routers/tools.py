@@ -7,6 +7,7 @@ Este router NO debe registrarse ni ser accesible en produccion.
 """
 from __future__ import annotations
 
+import base64
 import json
 import shutil
 import time
@@ -60,6 +61,41 @@ TABLAS_CATALOGO = [
 def _guard_dev():
     if settings.env != "dev":
         raise HTTPException(status_code=403, detail="Solo disponible en entorno dev")
+
+
+# Archivos reales para probar el endpoint de descarga de documentos --
+# sin esto el seed solo crea filas en documentos/vinculos sin archivo en disco.
+def _pdf_prueba(titulo: str) -> bytes:
+    contenido = f"BT /F1 14 Tf 20 100 Td ({titulo}) Tj ET".encode("latin-1")
+    objetos = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] "
+        b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        f"<< /Length {len(contenido)} >>\nstream\n".encode("latin-1") + contenido + b"\nendstream",
+    ]
+    partes = [b"%PDF-1.4\n"]
+    offsets = []
+    for i, obj in enumerate(objetos, start=1):
+        offsets.append(sum(len(p) for p in partes))
+        partes.append(f"{i} 0 obj\n".encode() + obj + b"\nendobj\n")
+    xref_offset = sum(len(p) for p in partes)
+    n = len(objetos) + 1
+    xref = [f"xref\n0 {n}\n".encode(), b"0000000000 65535 f \n"]
+    for off in offsets:
+        xref.append(f"{off:010d} 00000 n \n".encode())
+    trailer = f"trailer\n<< /Size {n} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF".encode()
+    return b"".join(partes) + b"".join(xref) + trailer
+
+
+_JPG_1PX = base64.b64decode(
+    "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwg"
+    "JC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIy"
+    "MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEB"
+    "AxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAA"
+    "AAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+)
 
 
 # ---------------------------------------------------------------------------
@@ -216,6 +252,9 @@ async def seed(body: SeedRequest = SeedRequest(), db: AsyncSession = Depends(get
     p = body.prefijo
     ts = int(time.time())
 
+    docs_dir = Path(settings.documentos_path)
+    docs_dir.mkdir(parents=True, exist_ok=True)
+
     if body.fecha_base:
         base = datetime.fromisoformat(body.fecha_base)
     else:
@@ -277,7 +316,7 @@ async def seed(body: SeedRequest = SeedRequest(), db: AsyncSession = Depends(get
     db.add(Documento(
         id=doc2_id,
         nombre_archivo="factura_exito.pdf",
-        ruta=f"data/dev/docs/{doc2_id}.pdf",
+        ruta=f"{settings.documentos_path}/{doc2_id}.pdf",
         tipo_mime="application/pdf",
         estado="clasificado",
         procesado=True,
@@ -291,6 +330,7 @@ async def seed(body: SeedRequest = SeedRequest(), db: AsyncSession = Depends(get
         fecha_vinculo=fstr(base - timedelta(days=2)),
         creado_por="seed",
     ))
+    (docs_dir / f"{doc2_id}.pdf").write_bytes(_pdf_prueba("Factura Exito"))
 
     # --- TX-003: completo con vinculo tipo extracto ------------------------
     id3 = f"{p}-003-{ts}"
@@ -319,7 +359,7 @@ async def seed(body: SeedRequest = SeedRequest(), db: AsyncSession = Depends(get
     db.add(Documento(
         id=doc3_id,
         nombre_archivo="extracto_bancolombia_jun.pdf",
-        ruta=f"data/dev/docs/{doc3_id}.pdf",
+        ruta=f"{settings.documentos_path}/{doc3_id}.pdf",
         tipo_mime="application/pdf",
         estado="clasificado",
         procesado=True,
@@ -333,6 +373,7 @@ async def seed(body: SeedRequest = SeedRequest(), db: AsyncSession = Depends(get
         fecha_vinculo=fstr(base - timedelta(days=1)),
         creado_por="seed",
     ))
+    (docs_dir / f"{doc3_id}.pdf").write_bytes(_pdf_prueba("Extracto Bancolombia"))
 
     # --- TX-004: entidad potencial pendiente (activa PEN-004) --------------
     id4 = f"{p}-004-{ts}"
@@ -364,6 +405,25 @@ async def seed(body: SeedRequest = SeedRequest(), db: AsyncSession = Depends(get
         estado="pendiente",
         creado_en=now_iso,
     ))
+    doc4_id = f"{p}-DOC-004-{ts}"
+    db.add(Documento(
+        id=doc4_id,
+        nombre_archivo="foto_recibo_ferreteria.jpg",
+        ruta=f"{settings.documentos_path}/{doc4_id}.jpg",
+        tipo_mime="image/jpeg",
+        estado="clasificado",
+        procesado=True,
+        creado_en=datetime.now(timezone.utc),
+    ))
+    db.add(Vinculo(
+        id_documento=doc4_id,
+        id_transaccion=id4,
+        tipo_vinculo="factura",
+        confianza=0.70,
+        fecha_vinculo=fstr(base),
+        creado_por="seed",
+    ))
+    (docs_dir / f"{doc4_id}.jpg").write_bytes(_JPG_1PX)
 
     await db.commit()
     return {
