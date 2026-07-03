@@ -219,7 +219,12 @@ async def descargar_documento(id_documento: str, db: AsyncSession = Depends(get_
     if not archivo.is_relative_to(base_dir) or not archivo.is_file():
         raise HTTPException(status_code=404, detail="Archivo no encontrado en disco")
 
-    return FileResponse(path=archivo, media_type=doc.tipo_mime, filename=doc.nombre_archivo)
+    return FileResponse(
+        path=archivo,
+        media_type=doc.tipo_mime,
+        filename=doc.nombre_archivo,
+        content_disposition_type="inline",
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -186,11 +186,27 @@ const TIPO_VINCULO_BADGE = {
 }
 
 function AttachmentModal({ preview, onClose }) {
+  // 'checking' | 'ok' | 'missing' -- evita mostrar el JSON crudo del error
+  // 404 del backend cuando el documento no existe en disco (issue #43)
+  const [status, setStatus] = useState('checking')
+
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
+
+  useEffect(() => {
+    // El endpoint solo soporta GET (HEAD devuelve 405), asi que el chequeo
+    // de existencia usa GET -- el navegador reutiliza la respuesta cacheada
+    // (Etag/Last-Modified) para el <img>/<iframe> que se renderiza despues.
+    let cancelado = false
+    setStatus('checking')
+    fetch(preview.url)
+      .then(res => { if (!cancelado) setStatus(res.ok ? 'ok' : 'missing') })
+      .catch(() => { if (!cancelado) setStatus('missing') })
+    return () => { cancelado = true }
+  }, [preview.url])
 
   return (
     <div onClick={onClose}
@@ -203,10 +219,17 @@ function AttachmentModal({ preview, onClose }) {
             className="p-1 rounded hover:bg-gray-100 text-gray-400 text-sm flex-shrink-0">✕</button>
         </div>
         <div className="flex-1 overflow-auto bg-gray-50 flex items-center justify-center">
-          {preview.isImage && (
-            <img src={preview.url} alt={preview.nombre} className="max-w-full max-h-full object-contain" />
+          {status === 'checking' && (
+            <span className="text-xs text-gray-400">Loading...</span>
           )}
-          {preview.isPdf && (
+          {status === 'missing' && (
+            <span className="text-xs text-gray-400 italic">Archivo no disponible</span>
+          )}
+          {status === 'ok' && preview.isImage && (
+            <img src={preview.url} alt={preview.nombre} className="max-w-full max-h-full object-contain"
+              onError={() => setStatus('missing')} />
+          )}
+          {status === 'ok' && preview.isPdf && (
             <iframe src={preview.url} title={preview.nombre} className="w-full h-full min-h-[70vh]" />
           )}
         </div>
@@ -243,19 +266,13 @@ function AttachmentList({ vinculos = [] }) {
 
         return (
           <div key={v.id} className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center gap-2 px-2 py-1 bg-gray-50">
               <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-semibold ${TIPO_VINCULO_BADGE[v.tipo_vinculo] ?? 'bg-gray-100 text-gray-600'}`}>
                 {v.tipo_vinculo}
               </span>
               <span className="text-xs text-gray-600 truncate flex-1" title={nombre}>{nombre}</span>
               <BtnExpand />
             </div>
-            {url && isImage && (
-              <img src={url} alt={nombre} className="w-full object-contain max-h-24" />
-            )}
-            {url && isPdf && (
-              <iframe src={url} title={nombre} className="w-full h-24" />
-            )}
           </div>
         )
       })}
