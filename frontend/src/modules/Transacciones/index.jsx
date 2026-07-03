@@ -97,7 +97,7 @@ function fmtFecha(f) {
 }
 
 // -- AutocompleteSelect ------------------------------------------------
-function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Select...' }) {
+function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Select...', proposedLabel = null }) {
   const [query, setQuery] = useState('')
   const [open,  setOpen]  = useState(false)
   const ref = useRef()
@@ -119,6 +119,11 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
     : options
   ).slice().sort((a, b) => (b.proposed ? 1 : 0) - (a.proposed ? 1 : 0))
 
+  // Propuesta pendiente de EP: solo informativa, no cuenta como valor seleccionado.
+  // Se pinta como placeholder (nunca como el value real del input) para que quede
+  // claro que el campo no esta completo hasta click en Confirm o eleccion manual.
+  const showProposed = !open && !selected && !!proposedLabel
+
   function handleSelect(opt) {
     onChange(opt ? opt.id : null)
     setOpen(false)
@@ -127,15 +132,19 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
 
   return (
     <div className="relative" ref={ref}>
-      <div className="flex items-center border border-gray-200 rounded-lg bg-white hover:border-primary-400 focus-within:border-primary-400 h-[34px]">
+      <div className={`flex items-center border rounded-lg bg-white hover:border-primary-400 focus-within:border-primary-400 h-[34px] ${
+        showProposed ? 'border-red-200 bg-red-50/40' : 'border-gray-200'
+      }`}>
         <input
           type="text"
           value={open ? query : (selected?.label ?? '')}
           onChange={e => { setQuery(e.target.value); if (!open) setOpen(true) }}
           onFocus={() => setOpen(true)}
-          placeholder={placeholder}
-          title={!open && selected ? selected.label : undefined}
-          className="flex-1 min-w-0 px-2.5 py-1.5 text-sm bg-transparent focus:outline-none rounded-lg truncate"
+          placeholder={showProposed ? `⚠ ${proposedLabel}` : placeholder}
+          title={showProposed ? `Propuesta pendiente (sin confirmar): ${proposedLabel}` : (!open && selected ? selected.label : undefined)}
+          className={`flex-1 min-w-0 px-2.5 py-1.5 text-sm bg-transparent focus:outline-none rounded-lg truncate ${
+            showProposed ? 'placeholder-red-600 placeholder:font-semibold' : ''
+          }`}
         />
         {value && (
           <button onClick={() => handleSelect(null)} tabIndex={-1}
@@ -275,7 +284,7 @@ const RO     = "px-2.5 py-1.5 text-sm text-gray-500 bg-gray-50 border border-gra
 const CHECK  = "flex items-center gap-2 px-2.5 border border-gray-200 rounded-lg bg-white h-[34px]"
 
 // -- DetailPanel -------------------------------------------------------
-function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onDescartar, onEditar }) {
+function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onDescartar, onEditar, onCatalogoActualizado }) {
   const { undo, redo, undoStack, redoStack } = useAppStore()
   const [vals,   setVals]   = useState({})
   const [dirty,  setDirty]  = useState(false)
@@ -316,6 +325,10 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
       const res = await api.confirmarEP(item.id, ep.id)
       set(fieldKey, res.nuevo_id)
       setEps(prev => prev.filter(e => e.id !== ep.id))
+      // El catalogo del padre (contrapartes/categorias/cuentas) todavia no conoce
+      // la entidad recien creada -- sin esto, AutocompleteSelect no encuentra el
+      // id en sus options y el campo se ve vacio pese a tener el valor seteado.
+      onCatalogoActualizado?.(res.tipo, { id: res.nuevo_id, nombre: ep.valor_propuesto })
       toast.success(`Created: ${res.nuevo_id}`)
     } catch (e) {
       toast.error(e.response?.data?.detail ?? e.message)
@@ -434,6 +447,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
                   onChange={v => set('id_contraparte', v)}
                   options={cpOptsConProp}
                   placeholder="Search entity..."
+                  proposedLabel={epCp?.valor_propuesto}
                 />
               </div>
               {epCp && (
@@ -452,6 +466,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
                   onChange={v => set('id_cuenta_origen_tramo1', v)}
                   options={ctaOptsConProp}
                   placeholder="Select account..."
+                  proposedLabel={epCta?.valor_propuesto}
                 />
               </div>
               {epCta && (
@@ -491,6 +506,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
                   onChange={v => set('id_categoria', v)}
                   options={catOptsConProp}
                   placeholder="Search category..."
+                  proposedLabel={epCat?.valor_propuesto}
                 />
               </div>
               {epCat && (
@@ -865,6 +881,22 @@ function TransaccionesInner() {
     await api.editar(id, data)
   }
 
+  // Agrega al catalogo en memoria la entidad recien creada al confirmar una EP,
+  // para que AutocompleteSelect pueda resolver su label sin esperar un refetch.
+  function handleCatalogoActualizado(tipo, nuevoItem) {
+    const setters = {
+      contraparte: setContrapartes,
+      categoria:   setCategorias,
+      cuenta:      setCuentas,
+    }
+    const setter = setters[tipo]
+    if (!setter) return
+    setter(prev => {
+      const lista = Array.isArray(prev) ? prev : []
+      return lista.some(x => x.id === nuevoItem.id) ? lista : [...lista, nuevoItem]
+    })
+  }
+
   const pendientes = items.filter(i => i.estado === 'pendiente').length
 
   return (
@@ -912,6 +944,7 @@ function TransaccionesInner() {
           onConfirmar={handleConfirmar}
           onDescartar={handleDescartar}
           onEditar={handleEditar}
+          onCatalogoActualizado={handleCatalogoActualizado}
         />
       </div>
     </div>
