@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 19:56
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:04
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+e4ed917 fix: cerrar-sesion.ps1 no reporta push exitoso si falla o no hay upstream
+ea38763 docs: auto-update 2026-07-02 19:56
 47d6528 merge: fix/attachments-ep-dropdown-ux -- CLAUDE.md y HANDOFF se regeneran en proximo commit
 e31d178 docs: auto-update 2026-07-02 19:46
 28e06ca fix: dropdown EP -- orden, color rojo, tooltip y ancho roto de Paid With
@@ -84,5 +86,3 @@ ac9ef7f fix: attachments -- boton ampliar abre modal en vez de pestana nueva
 6a810b3 docs: auto-update 2026-07-02 19:35
 1653853 fix: attachments -- preview embebido usa la url real del documento
 271ca54 docs: auto-update 2026-07-02 19:29
-f4df383 feat: arrancar backend y frontend en background sin ventanas
-aa67abb docs: auto-update 2026-07-02 19:22
