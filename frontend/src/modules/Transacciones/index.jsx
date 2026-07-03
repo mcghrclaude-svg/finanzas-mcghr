@@ -172,7 +172,39 @@ const TIPO_VINCULO_BADGE = {
   extracto: 'bg-purple-100 text-purple-700',
 }
 
+function AttachmentModal({ preview, onClose }) {
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div onClick={onClose}
+      className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-6">
+      <div onClick={e => e.stopPropagation()}
+        className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 flex-shrink-0">
+          <span className="text-sm font-medium text-gray-700 truncate">{preview.nombre}</span>
+          <button onClick={onClose} title="Close"
+            className="p-1 rounded hover:bg-gray-100 text-gray-400 text-sm flex-shrink-0">✕</button>
+        </div>
+        <div className="flex-1 overflow-auto bg-gray-50 flex items-center justify-center">
+          {preview.isImage && (
+            <img src={preview.url} alt={preview.nombre} className="max-w-full max-h-full object-contain" />
+          )}
+          {preview.isPdf && (
+            <iframe src={preview.url} title={preview.nombre} className="w-full h-full min-h-[70vh]" />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AttachmentList({ vinculos = [] }) {
+  const [preview, setPreview] = useState(null)
+
   if (vinculos.length === 0) return (
     <span className="text-xs text-gray-400 italic">No attachments</span>
   )
@@ -187,13 +219,13 @@ function AttachmentList({ vinculos = [] }) {
         const nombre  = v.nombre_archivo || v.id_documento
 
         const BtnExpand = () => (
-          <a href={url} target="_blank" rel="noopener noreferrer" title="Open in new window"
+          <button type="button" onClick={() => setPreview({ url, nombre, isImage, isPdf })} title="Expand"
             className="inline-flex items-center justify-center w-6 h-6 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 transition-colors flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
               <path d="M3 3h4v1.5H4.5v7h7V10H13v4H3V3z"/>
               <path d="M9 3h4v4h-1.5V5.56L7.28 9.78 6.22 8.72 10.44 4.5H9V3z"/>
             </svg>
-          </a>
+          </button>
         )
 
         return (
@@ -214,6 +246,7 @@ function AttachmentList({ vinculos = [] }) {
           </div>
         )
       })}
+      {preview && <AttachmentModal preview={preview} onClose={() => setPreview(null)} />}
     </div>
   )
 }
