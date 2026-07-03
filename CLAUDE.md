@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 18:59
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 19:22
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -65,17 +65,19 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | backup.py | IMPLEMENTADO | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 554 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 377 lineas |
+| inbox.py | IMPLEMENTADO | 403 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
 | reglas.py | IMPLEMENTADO | 73 lineas |
 | reportes.py | IMPLEMENTADO | 86 lineas |
-| tools.py | IMPLEMENTADO | 374 lineas |
+| tools.py | IMPLEMENTADO | 434 lineas |
 | transacciones.py | IMPLEMENTADO | 117 lineas |
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+3703143 feat: backend -- endpoint de descarga de documentos y seed con archivos reales
+cd2868c docs: auto-update 2026-07-02 18:59
 d534a3d docs: agregar numeros de Issue de GitHub a PENDIENTES.md
 db3c260 docs: auto-update 2026-07-02 18:36
 692e50f docs: agregar PEN-006 y PEN-007 a PENDIENTES.md
@@ -84,5 +86,3 @@ ef1b863 docs: auto-update 2026-07-02 18:33
 8effc43 docs: auto-update 2026-07-01 08:49
 bc959a0 feat: transacciones -- attachments reales desde tabla vinculos (TAREA 4)
 1a15044 docs: auto-update 2026-06-30 19:31
-6b88043 feat: transacciones -- indicadores de entidades potenciales en el detalle (PEN-004)
-7151dfe docs: auto-update 2026-06-30 19:25
