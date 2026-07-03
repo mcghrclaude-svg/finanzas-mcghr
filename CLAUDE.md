@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:39
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:40
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -56,7 +56,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
-| Transacciones | IMPLEMENTADO | 960 lineas |
+| Transacciones | IMPLEMENTADO | 977 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -65,7 +65,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | backup.py | IMPLEMENTADO | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 554 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 403 lineas |
+| inbox.py | IMPLEMENTADO | 408 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
@@ -76,13 +76,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+d62aacb merge: fix/attachments-inline-lazy -- CLAUDE.md y HANDOFF se regeneran en proximo commit
+f884870 docs: auto-update 2026-07-02 21:39
 af58410 merge: fix/ep-dropdown-refresh-y-preview -- CLAUDE.md y HANDOFF se regeneran en proximo commit
+72b74f5 docs: auto-update 2026-07-02 21:37
+1cc877e fix: preview de attachments es lazy, inline y con mensaje amigable si falta el archivo
 e54d673 docs: auto-update 2026-07-02 21:14
 3a7d2a4 fix: refresca catalogo tras confirmar EP y muestra propuesta pendiente distinguible
 dc9130c docs: auto-update 2026-07-02 21:04
 e4ed917 fix: cerrar-sesion.ps1 no reporta push exitoso si falla o no hay upstream
 ea38763 docs: auto-update 2026-07-02 19:56
-47d6528 merge: fix/attachments-ep-dropdown-ux -- CLAUDE.md y HANDOFF se regeneran en proximo commit
-e31d178 docs: auto-update 2026-07-02 19:46
-28e06ca fix: dropdown EP -- orden, color rojo, tooltip y ancho roto de Paid With
-997a324 docs: auto-update 2026-07-02 19:38
