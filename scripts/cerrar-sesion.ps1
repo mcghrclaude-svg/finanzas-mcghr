@@ -239,8 +239,20 @@ git add CLAUDE.md docs/HANDOFF_*.md 2>$null
 $staged = git diff --cached --name-only 2>$null
 if ($staged) {
     git commit -m "docs: auto-update $fecha" --quiet 2>$null
-    git push --quiet 2>$null
-    Write-Host "   OK   Docs commiteados y pusheados" -ForegroundColor Green
+
+    git rev-parse --abbrev-ref --symbolic-full-name "@{u}" 2>$null | Out-Null
+    $tieneUpstream = ($LASTEXITCODE -eq 0)
+
+    if (-not $tieneUpstream) {
+        Write-Host "   WARN Sin upstream configurado, docs commiteados localmente" -ForegroundColor Yellow
+    } else {
+        git push --quiet 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "   OK   Docs commiteados y pusheados" -ForegroundColor Green
+        } else {
+            Write-Host "   WARN Docs commiteados localmente, el push fallo" -ForegroundColor Yellow
+        }
+    }
 } else {
     Write-Host "   OK   Sin cambios en docs" -ForegroundColor Green
 }
