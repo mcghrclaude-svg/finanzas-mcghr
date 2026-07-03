@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 19:38
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 19:46
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -56,7 +56,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
-| Transacciones | IMPLEMENTADO | 922 lineas |
+| Transacciones | IMPLEMENTADO | 927 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+28e06ca fix: dropdown EP -- orden, color rojo, tooltip y ancho roto de Paid With
+997a324 docs: auto-update 2026-07-02 19:38
 ac9ef7f fix: attachments -- boton ampliar abre modal en vez de pestana nueva
 6a810b3 docs: auto-update 2026-07-02 19:35
 1653853 fix: attachments -- preview embebido usa la url real del documento
@@ -84,5 +86,3 @@ aa67abb docs: auto-update 2026-07-02 19:22
 cd2868c docs: auto-update 2026-07-02 18:59
 d534a3d docs: agregar numeros de Issue de GitHub a PENDIENTES.md
 db3c260 docs: auto-update 2026-07-02 18:36
-692e50f docs: agregar PEN-006 y PEN-007 a PENDIENTES.md
-ef1b863 docs: auto-update 2026-07-02 18:33
