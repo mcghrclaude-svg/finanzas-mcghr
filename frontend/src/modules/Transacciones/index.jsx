@@ -114,9 +114,10 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
   }, [])
 
   const selected = options.find(o => o.id === value)
-  const filtered = query.trim()
+  const filtered = (query.trim()
     ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
     : options
+  ).slice().sort((a, b) => (b.proposed ? 1 : 0) - (a.proposed ? 1 : 0))
 
   function handleSelect(opt) {
     onChange(opt ? opt.id : null)
@@ -134,7 +135,7 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           title={!open && selected ? selected.label : undefined}
-          className="flex-1 px-2.5 py-1.5 text-sm bg-transparent focus:outline-none rounded-lg truncate"
+          className="flex-1 min-w-0 px-2.5 py-1.5 text-sm bg-transparent focus:outline-none rounded-lg truncate"
         />
         {value && (
           <button onClick={() => handleSelect(null)} tabIndex={-1}
@@ -153,8 +154,11 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
             ? <div className="px-3 py-2 text-xs text-gray-400">No results</div>
             : filtered.map(opt => (
               <button key={opt.id} onClick={() => handleSelect(opt)}
+                title={opt.proposed ? 'Propuesta automatica del ETL, pendiente de confirmar' : undefined}
                 className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${
-                  value === opt.id ? 'text-primary-700 font-medium bg-primary-50' : 'text-gray-700'
+                  opt.proposed
+                    ? 'text-red-600 font-semibold'
+                    : value === opt.id ? 'text-primary-700 font-medium bg-primary-50' : 'text-gray-700'
                 }`}>
                 {opt.label}
               </button>
@@ -172,7 +176,39 @@ const TIPO_VINCULO_BADGE = {
   extracto: 'bg-purple-100 text-purple-700',
 }
 
+function AttachmentModal({ preview, onClose }) {
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div onClick={onClose}
+      className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-6">
+      <div onClick={e => e.stopPropagation()}
+        className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 flex-shrink-0">
+          <span className="text-sm font-medium text-gray-700 truncate">{preview.nombre}</span>
+          <button onClick={onClose} title="Close"
+            className="p-1 rounded hover:bg-gray-100 text-gray-400 text-sm flex-shrink-0">✕</button>
+        </div>
+        <div className="flex-1 overflow-auto bg-gray-50 flex items-center justify-center">
+          {preview.isImage && (
+            <img src={preview.url} alt={preview.nombre} className="max-w-full max-h-full object-contain" />
+          )}
+          {preview.isPdf && (
+            <iframe src={preview.url} title={preview.nombre} className="w-full h-full min-h-[70vh]" />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AttachmentList({ vinculos = [] }) {
+  const [preview, setPreview] = useState(null)
+
   if (vinculos.length === 0) return (
     <span className="text-xs text-gray-400 italic">No attachments</span>
   )
@@ -180,20 +216,20 @@ function AttachmentList({ vinculos = [] }) {
   return (
     <div className="space-y-1.5">
       {vinculos.map(v => {
-        const ruta = v.ruta ?? ''
-        const ext  = ruta.split('.').pop()?.toLowerCase()
+        const url  = v.url ?? ''
+        const ext  = (v.nombre_archivo ?? '').split('.').pop()?.toLowerCase()
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
         const isPdf   = ext === 'pdf'
-        const nombre  = v.nombre_archivo || ruta.split('/').pop() || v.id_documento
+        const nombre  = v.nombre_archivo || v.id_documento
 
         const BtnExpand = () => (
-          <a href={ruta} target="_blank" rel="noopener noreferrer" title="Open in new window"
+          <button type="button" onClick={() => setPreview({ url, nombre, isImage, isPdf })} title="Expand"
             className="inline-flex items-center justify-center w-6 h-6 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 transition-colors flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
               <path d="M3 3h4v1.5H4.5v7h7V10H13v4H3V3z"/>
               <path d="M9 3h4v4h-1.5V5.56L7.28 9.78 6.22 8.72 10.44 4.5H9V3z"/>
             </svg>
-          </a>
+          </button>
         )
 
         return (
@@ -205,15 +241,16 @@ function AttachmentList({ vinculos = [] }) {
               <span className="text-xs text-gray-600 truncate flex-1" title={nombre}>{nombre}</span>
               <BtnExpand />
             </div>
-            {ruta && isImage && (
-              <img src={ruta} alt={nombre} className="w-full object-contain max-h-24" />
+            {url && isImage && (
+              <img src={url} alt={nombre} className="w-full object-contain max-h-24" />
             )}
-            {ruta && isPdf && (
-              <iframe src={ruta} title={nombre} className="w-full h-24" />
+            {url && isPdf && (
+              <iframe src={url} title={nombre} className="w-full h-24" />
             )}
           </div>
         )
       })}
+      {preview && <AttachmentModal preview={preview} onClose={() => setPreview(null)} />}
     </div>
   )
 }
@@ -222,7 +259,7 @@ function AttachmentList({ vinculos = [] }) {
 function Field({ label, children, cols = 1, hasPending = false }) {
   const spanClass = cols === 4 ? 'col-span-4' : cols === 3 ? 'col-span-3' : cols === 2 ? 'col-span-2' : ''
   return (
-    <div className={spanClass}>
+    <div className={`min-w-0 ${spanClass}`}>
       <label className={`block text-xs font-semibold uppercase tracking-wider mb-0.5 ${hasPending ? 'text-red-600' : 'text-gray-400'}`}>
         {label}{hasPending && ' ⚠'}
       </label>
@@ -318,9 +355,10 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   const epCta = eps.find(e => e.tipo === 'cuenta')
 
   // Inyecta la propuesta como opcion en el dropdown (con marcador __ep_)
-  const cpOptsConProp  = epCp  ? [...cpOpts,     { id: `__ep_${epCp.id}`,  label: `${epCp.valor_propuesto} (proposed)` }]  : cpOpts
-  const catOptsConProp = epCat ? [...catOpts,     { id: `__ep_${epCat.id}`, label: `${epCat.valor_propuesto} (proposed)` }] : catOpts
-  const ctaOptsConProp = epCta ? [...cuentaOpts,  { id: `__ep_${epCta.id}`, label: `${epCta.valor_propuesto} (proposed)` }] : cuentaOpts
+  // proposed:true hace que AutocompleteSelect la muestre arriba de todo y en rojo
+  const cpOptsConProp  = epCp  ? [...cpOpts,     { id: `__ep_${epCp.id}`,  label: `${epCp.valor_propuesto} (proposed)`,  proposed: true }] : cpOpts
+  const catOptsConProp = epCat ? [...catOpts,     { id: `__ep_${epCat.id}`, label: `${epCat.valor_propuesto} (proposed)`, proposed: true }] : catOpts
+  const ctaOptsConProp = epCta ? [...cuentaOpts,  { id: `__ep_${epCta.id}`, label: `${epCta.valor_propuesto} (proposed)`, proposed: true }] : cuentaOpts
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -389,8 +427,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
 
           {/* Fila 3: Counterpart (2 cols) | Paid With | Es Recurrente */}
           <Field label="Counterpart" cols={2} hasPending={!!epCp}>
-            <div className="flex gap-1">
-              <div className="flex-1">
+            <div className="flex gap-1 min-w-0">
+              <div className="flex-1 min-w-0">
                 <AutocompleteSelect
                   value={vals.id_contraparte}
                   onChange={v => set('id_contraparte', v)}
@@ -407,8 +445,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
             </div>
           </Field>
           <Field label="Paid With" hasPending={!!epCta}>
-            <div className="flex gap-1">
-              <div className="flex-1">
+            <div className="flex gap-1 min-w-0">
+              <div className="flex-1 min-w-0">
                 <AutocompleteSelect
                   value={vals.id_cuenta_origen_tramo1}
                   onChange={v => set('id_cuenta_origen_tramo1', v)}
@@ -446,8 +484,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
 
           {/* Fila 4: Category (2 cols) | Es Reembolsable | Estado Reembolso */}
           <Field label="Category" cols={2} hasPending={!!epCat}>
-            <div className="flex gap-1">
-              <div className="flex-1">
+            <div className="flex gap-1 min-w-0">
+              <div className="flex-1 min-w-0">
                 <AutocompleteSelect
                   value={vals.id_categoria}
                   onChange={v => set('id_categoria', v)}
