@@ -180,14 +180,14 @@ function AttachmentList({ vinculos = [] }) {
   return (
     <div className="space-y-1.5">
       {vinculos.map(v => {
-        const ruta = v.ruta ?? ''
-        const ext  = ruta.split('.').pop()?.toLowerCase()
+        const url  = v.url ?? ''
+        const ext  = (v.nombre_archivo ?? '').split('.').pop()?.toLowerCase()
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
         const isPdf   = ext === 'pdf'
-        const nombre  = v.nombre_archivo || ruta.split('/').pop() || v.id_documento
+        const nombre  = v.nombre_archivo || v.id_documento
 
         const BtnExpand = () => (
-          <a href={ruta} target="_blank" rel="noopener noreferrer" title="Open in new window"
+          <a href={url} target="_blank" rel="noopener noreferrer" title="Open in new window"
             className="inline-flex items-center justify-center w-6 h-6 rounded text-gray-400 hover:text-primary-600 hover:bg-gray-100 transition-colors flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
               <path d="M3 3h4v1.5H4.5v7h7V10H13v4H3V3z"/>
@@ -205,11 +205,11 @@ function AttachmentList({ vinculos = [] }) {
               <span className="text-xs text-gray-600 truncate flex-1" title={nombre}>{nombre}</span>
               <BtnExpand />
             </div>
-            {ruta && isImage && (
-              <img src={ruta} alt={nombre} className="w-full object-contain max-h-24" />
+            {url && isImage && (
+              <img src={url} alt={nombre} className="w-full object-contain max-h-24" />
             )}
-            {ruta && isPdf && (
-              <iframe src={ruta} title={nombre} className="w-full h-24" />
+            {url && isPdf && (
+              <iframe src={url} title={nombre} className="w-full h-24" />
             )}
           </div>
         )
