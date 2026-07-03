@@ -114,9 +114,10 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
   }, [])
 
   const selected = options.find(o => o.id === value)
-  const filtered = query.trim()
+  const filtered = (query.trim()
     ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
     : options
+  ).slice().sort((a, b) => (b.proposed ? 1 : 0) - (a.proposed ? 1 : 0))
 
   function handleSelect(opt) {
     onChange(opt ? opt.id : null)
@@ -134,7 +135,7 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           title={!open && selected ? selected.label : undefined}
-          className="flex-1 px-2.5 py-1.5 text-sm bg-transparent focus:outline-none rounded-lg truncate"
+          className="flex-1 min-w-0 px-2.5 py-1.5 text-sm bg-transparent focus:outline-none rounded-lg truncate"
         />
         {value && (
           <button onClick={() => handleSelect(null)} tabIndex={-1}
@@ -153,8 +154,11 @@ function AutocompleteSelect({ value, onChange, options = [], placeholder = 'Sele
             ? <div className="px-3 py-2 text-xs text-gray-400">No results</div>
             : filtered.map(opt => (
               <button key={opt.id} onClick={() => handleSelect(opt)}
+                title={opt.proposed ? 'Propuesta automatica del ETL, pendiente de confirmar' : undefined}
                 className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${
-                  value === opt.id ? 'text-primary-700 font-medium bg-primary-50' : 'text-gray-700'
+                  opt.proposed
+                    ? 'text-red-600 font-semibold'
+                    : value === opt.id ? 'text-primary-700 font-medium bg-primary-50' : 'text-gray-700'
                 }`}>
                 {opt.label}
               </button>
@@ -255,7 +259,7 @@ function AttachmentList({ vinculos = [] }) {
 function Field({ label, children, cols = 1, hasPending = false }) {
   const spanClass = cols === 4 ? 'col-span-4' : cols === 3 ? 'col-span-3' : cols === 2 ? 'col-span-2' : ''
   return (
-    <div className={spanClass}>
+    <div className={`min-w-0 ${spanClass}`}>
       <label className={`block text-xs font-semibold uppercase tracking-wider mb-0.5 ${hasPending ? 'text-red-600' : 'text-gray-400'}`}>
         {label}{hasPending && ' ⚠'}
       </label>
@@ -351,9 +355,10 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   const epCta = eps.find(e => e.tipo === 'cuenta')
 
   // Inyecta la propuesta como opcion en el dropdown (con marcador __ep_)
-  const cpOptsConProp  = epCp  ? [...cpOpts,     { id: `__ep_${epCp.id}`,  label: `${epCp.valor_propuesto} (proposed)` }]  : cpOpts
-  const catOptsConProp = epCat ? [...catOpts,     { id: `__ep_${epCat.id}`, label: `${epCat.valor_propuesto} (proposed)` }] : catOpts
-  const ctaOptsConProp = epCta ? [...cuentaOpts,  { id: `__ep_${epCta.id}`, label: `${epCta.valor_propuesto} (proposed)` }] : cuentaOpts
+  // proposed:true hace que AutocompleteSelect la muestre arriba de todo y en rojo
+  const cpOptsConProp  = epCp  ? [...cpOpts,     { id: `__ep_${epCp.id}`,  label: `${epCp.valor_propuesto} (proposed)`,  proposed: true }] : cpOpts
+  const catOptsConProp = epCat ? [...catOpts,     { id: `__ep_${epCat.id}`, label: `${epCat.valor_propuesto} (proposed)`, proposed: true }] : catOpts
+  const ctaOptsConProp = epCta ? [...cuentaOpts,  { id: `__ep_${epCta.id}`, label: `${epCta.valor_propuesto} (proposed)`, proposed: true }] : cuentaOpts
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -422,8 +427,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
 
           {/* Fila 3: Counterpart (2 cols) | Paid With | Es Recurrente */}
           <Field label="Counterpart" cols={2} hasPending={!!epCp}>
-            <div className="flex gap-1">
-              <div className="flex-1">
+            <div className="flex gap-1 min-w-0">
+              <div className="flex-1 min-w-0">
                 <AutocompleteSelect
                   value={vals.id_contraparte}
                   onChange={v => set('id_contraparte', v)}
@@ -440,8 +445,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
             </div>
           </Field>
           <Field label="Paid With" hasPending={!!epCta}>
-            <div className="flex gap-1">
-              <div className="flex-1">
+            <div className="flex gap-1 min-w-0">
+              <div className="flex-1 min-w-0">
                 <AutocompleteSelect
                   value={vals.id_cuenta_origen_tramo1}
                   onChange={v => set('id_cuenta_origen_tramo1', v)}
@@ -479,8 +484,8 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
 
           {/* Fila 4: Category (2 cols) | Es Reembolsable | Estado Reembolso */}
           <Field label="Category" cols={2} hasPending={!!epCat}>
-            <div className="flex gap-1">
-              <div className="flex-1">
+            <div className="flex gap-1 min-w-0">
+              <div className="flex-1 min-w-0">
                 <AutocompleteSelect
                   value={vals.id_categoria}
                   onChange={v => set('id_categoria', v)}
