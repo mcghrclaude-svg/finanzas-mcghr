@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 19:22
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 19:35
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+1653853 fix: attachments -- preview embebido usa la url real del documento
+aa67abb docs: auto-update 2026-07-02 19:22
 3703143 feat: backend -- endpoint de descarga de documentos y seed con archivos reales
 cd2868c docs: auto-update 2026-07-02 18:59
 d534a3d docs: agregar numeros de Issue de GitHub a PENDIENTES.md
@@ -84,5 +86,3 @@ db3c260 docs: auto-update 2026-07-02 18:36
 ef1b863 docs: auto-update 2026-07-02 18:33
 12cc372 feat: settings -- modulo Tools para administracion del entorno dev (PEN-005)
 8effc43 docs: auto-update 2026-07-01 08:49
-bc959a0 feat: transacciones -- attachments reales desde tabla vinculos (TAREA 4)
-1a15044 docs: auto-update 2026-06-30 19:31
