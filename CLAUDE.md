@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:14
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:37
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -56,7 +56,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
-| Transacciones | IMPLEMENTADO | 960 lineas |
+| Transacciones | IMPLEMENTADO | 977 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -65,7 +65,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | backup.py | IMPLEMENTADO | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 554 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 403 lineas |
+| inbox.py | IMPLEMENTADO | 408 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+1cc877e fix: preview de attachments es lazy, inline y con mensaje amigable si falta el archivo
+e54d673 docs: auto-update 2026-07-02 21:14
 3a7d2a4 fix: refresca catalogo tras confirmar EP y muestra propuesta pendiente distinguible
 ea38763 docs: auto-update 2026-07-02 19:56
 47d6528 merge: fix/attachments-ep-dropdown-ux -- CLAUDE.md y HANDOFF se regeneran en proximo commit
@@ -84,5 +86,3 @@ e31d178 docs: auto-update 2026-07-02 19:46
 997a324 docs: auto-update 2026-07-02 19:38
 ac9ef7f fix: attachments -- boton ampliar abre modal en vez de pestana nueva
 6a810b3 docs: auto-update 2026-07-02 19:35
-1653853 fix: attachments -- preview embebido usa la url real del documento
-271ca54 docs: auto-update 2026-07-02 19:29
