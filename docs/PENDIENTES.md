@@ -206,3 +206,13 @@ mover el include_router de tools a un bloque condicional en main.py:
 
 Esto garantiza que en prod el router directamente no existe, sus rutas
 no aparecen en /docs y el codigo no se ejecuta bajo ninguna condicion.
+
+---
+
+## PEN-008 -- Contraparte confirmada no aparece preseleccionada al recargar la transaccion (Issue #47)
+
+**Detectado:** 2026-07-04
+**Prioridad:** alta
+
+Al recargar una transaccion cuya contraparte ya fue confirmada, el campo
+de contraparte no aparece preseleccionado con el valor confirmado.
