@@ -8,9 +8,6 @@ confianza es REAL en la DB: 0.0 - 1.0
 
 from __future__ import annotations
 
-import re
-import unicodedata
-from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -20,11 +17,12 @@ from sqlalchemy import select, update
 
 from backend.core.config import settings
 from backend.core.database import get_db
-from backend.models.transaccion import Transaccion, Tramo
-from backend.models.catalogo import Categoria, Cuenta, Contraparte, EntidadPotencial
+from backend.models.transaccion import Tramo
+from backend.models.catalogo import EntidadPotencial
 from backend.models.documento import Documento
 from backend.models.vinculo import Vinculo
 from backend.services.inbox_service import InboxService
+from backend.services.entidades_potenciales_service import confirmar_ep
 from backend.schemas.inbox import (
     InboxListResponse,
     InboxItemSummary,
@@ -253,25 +251,6 @@ async def listar_ep_transaccion(inbox_id: str, db: AsyncSession = Depends(get_db
 # POST /inbox/{inbox_id}/entidades-potenciales/{ep_id}/confirmar
 # ---------------------------------------------------------------------------
 
-def _slug_ep(nombre: str) -> str:
-    s = unicodedata.normalize("NFD", nombre.upper())
-    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
-    s = re.sub(r"[^A-Z0-9\s-]", "", s).strip().replace(" ", "-")
-    return s[:20]
-
-
-async def _slug_unico_ep(nombre: str, db: AsyncSession, modelo) -> str:
-    result = await db.execute(select(modelo.id))
-    existentes = {row[0] for row in result.all()}
-    base = _slug_ep(nombre)
-    if base not in existentes:
-        return base
-    i = 2
-    while f"{base}-{i}" in existentes:
-        i += 1
-    return f"{base}-{i}"
-
-
 @router.post("/{inbox_id}/entidades-potenciales/{ep_id}/confirmar", status_code=201)
 async def confirmar_ep_desde_trx(
     inbox_id: str,
@@ -284,40 +263,11 @@ async def confirmar_ep_desde_trx(
     if ep.estado != "pendiente":
         raise HTTPException(status_code=409, detail=f"Estado actual: {ep.estado}")
 
-    # Crear entrada en el catalogo correspondiente
-    if ep.tipo == "contraparte":
-        nuevo_id = await _slug_unico_ep(ep.valor_propuesto, db, Contraparte)
-        db.add(Contraparte(id=nuevo_id, nombre=ep.valor_propuesto, tipo="COMERCIO", activa=True))
-    elif ep.tipo == "cuenta":
-        nuevo_id = await _slug_unico_ep(ep.valor_propuesto, db, Cuenta)
-        db.add(Cuenta(id=nuevo_id, nombre=ep.valor_propuesto, activa=True))
-    elif ep.tipo == "categoria":
-        nuevo_id = await _slug_unico_ep(ep.valor_propuesto, db, Categoria)
-        db.add(Categoria(id=nuevo_id, nombre=ep.valor_propuesto, nivel=1, activa=True))
-    else:
-        raise HTTPException(status_code=422, detail=f"Tipo desconocido: {ep.tipo}")
+    try:
+        nuevo_id = await confirmar_ep(ep, db)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
-    # Actualizar el campo de la transaccion (o su tramo)
-    trx = await db.get(Transaccion, inbox_id)
-    if trx:
-        if ep.tipo == "contraparte":
-            trx.id_contraparte = nuevo_id
-        elif ep.tipo == "categoria":
-            trx.id_categoria = nuevo_id
-        elif ep.tipo == "cuenta":
-            # Actualizar tramo 1 (igual que hace PATCH /inbox/{id})
-            q_tramo = (
-                select(Tramo)
-                .where(Tramo.id_transaccion == inbox_id)
-                .order_by(Tramo.numero_orden)
-                .limit(1)
-            )
-            tramo = (await db.execute(q_tramo)).scalars().first()
-            if tramo:
-                tramo.id_cuenta_origen = nuevo_id
-
-    ep.estado = "confirmado"
-    ep.resuelto_en = datetime.now(timezone.utc).isoformat()
     await db.commit()
     return {"ok": True, "nuevo_id": nuevo_id, "tipo": ep.tipo}
 
