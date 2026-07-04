@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-04 17:38
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-04 17:57
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+3279fad docs: agregar CONTEXTO_SUPERVISOR.md y actualizar PENDIENTES con #47
+e748db3 docs: auto-update 2026-07-04 17:38
 3e36e6d fix: propagar confirmacion de EP a todas las transacciones con el mismo valor propuesto (Fixes #46)
 d07ed04 docs: auto-update 2026-07-02 21:40
 d62aacb merge: fix/attachments-inline-lazy -- CLAUDE.md y HANDOFF se regeneran en proximo commit
@@ -84,5 +86,3 @@ af58410 merge: fix/ep-dropdown-refresh-y-preview -- CLAUDE.md y HANDOFF se regen
 72b74f5 docs: auto-update 2026-07-02 21:37
 1cc877e fix: preview de attachments es lazy, inline y con mensaje amigable si falta el archivo
 e54d673 docs: auto-update 2026-07-02 21:14
-3a7d2a4 fix: refresca catalogo tras confirmar EP y muestra propuesta pendiente distinguible
-dc9130c docs: auto-update 2026-07-02 21:04
