@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-02 21:40
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-04 17:38
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260702.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260704.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -63,9 +63,9 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | analitica.py | IMPLEMENTADO | 72 lineas |
 | backup.py | IMPLEMENTADO | 92 lineas |
-| catalogos.py | IMPLEMENTADO | 554 lineas |
+| catalogos.py | IMPLEMENTADO | 524 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
-| inbox.py | IMPLEMENTADO | 408 lineas |
+| inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+3e36e6d fix: propagar confirmacion de EP a todas las transacciones con el mismo valor propuesto (Fixes #46)
+d07ed04 docs: auto-update 2026-07-02 21:40
 d62aacb merge: fix/attachments-inline-lazy -- CLAUDE.md y HANDOFF se regeneran en proximo commit
 f884870 docs: auto-update 2026-07-02 21:39
 af58410 merge: fix/ep-dropdown-refresh-y-preview -- CLAUDE.md y HANDOFF se regeneran en proximo commit
@@ -84,5 +86,3 @@ af58410 merge: fix/ep-dropdown-refresh-y-preview -- CLAUDE.md y HANDOFF se regen
 e54d673 docs: auto-update 2026-07-02 21:14
 3a7d2a4 fix: refresca catalogo tras confirmar EP y muestra propuesta pendiente distinguible
 dc9130c docs: auto-update 2026-07-02 21:04
-e4ed917 fix: cerrar-sesion.ps1 no reporta push exitoso si falla o no hay upstream
-ea38763 docs: auto-update 2026-07-02 19:56
