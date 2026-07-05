@@ -301,7 +301,7 @@ const RO     = "px-2.5 py-1.5 text-sm text-gray-500 bg-gray-50 border border-gra
 const CHECK  = "flex items-center gap-2 px-2.5 border border-gray-200 rounded-lg bg-white h-[34px]"
 
 // -- DetailPanel -------------------------------------------------------
-function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onDescartar, onEditar, onCatalogoActualizado }) {
+function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onDescartar, onEditar, onCatalogoActualizado, onRecargar }) {
   const { undo, redo, undoStack, redoStack } = useAppStore()
   const [vals,   setVals]   = useState({})
   const [dirty,  setDirty]  = useState(false)
@@ -346,6 +346,11 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
       // la entidad recien creada -- sin esto, AutocompleteSelect no encuentra el
       // id en sus options y el campo se ve vacio pese a tener el valor seteado.
       onCatalogoActualizado?.(res.tipo, { id: res.nuevo_id, nombre: ep.valor_propuesto })
+      // El backend confirma tambien las EPs "hermanas" (mismo tipo+valor) de otras
+      // transacciones, pero el array `items` del padre queda desactualizado -- sin
+      // este refresh, al renavegar (a esta tx u otra con el mismo valor propuesto)
+      // el campo se ve vacio porque se re-inicializa desde el item stale (Issue #47).
+      onRecargar?.()
       toast.success(`Created: ${res.nuevo_id}`)
     } catch (e) {
       toast.error(e.response?.data?.detail ?? e.message)
@@ -962,6 +967,7 @@ function TransaccionesInner() {
           onDescartar={handleDescartar}
           onEditar={handleEditar}
           onCatalogoActualizado={handleCatalogoActualizado}
+          onRecargar={cargar}
         />
       </div>
     </div>

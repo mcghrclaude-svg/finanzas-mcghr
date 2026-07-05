@@ -113,6 +113,12 @@ con un flag visible que indique que hay una propuesta pendiente.
 - Evaluar si hace falta una seccion "catalogo en revision" separada del
   inbox, para gestionar propuestas acumuladas de multiples transacciones.
 
+**Confirmacion 2026-07-05 (sesion fix #47):** reproducido con el seed de
+pruebas -- `POST /tools/seed` crea una nueva EntidadPotencial para
+"FERRETERIA LOS PINOS" en cada corrida (`tools.py` linea 378) sin
+verificar si ya existe una Contraparte con ese nombre en el catalogo.
+Confirma que el bug de correlacion sigue vigente.
+
 ---
 
 ## PEN-005 -- Pantalla de administracion del entorno de dev en la UX (Issue #37)
@@ -212,7 +218,26 @@ no aparecen en /docs y el codigo no se ejecuta bajo ninguna condicion.
 ## PEN-008 -- Contraparte confirmada no aparece preseleccionada al recargar la transaccion (Issue #47)
 
 **Detectado:** 2026-07-04
+**Resuelto:** 2026-07-05
 **Prioridad:** alta
 
 Al recargar una transaccion cuya contraparte ya fue confirmada, el campo
 de contraparte no aparece preseleccionado con el valor confirmado.
+
+**Diagnostico:** el backend (`confirmar_ep()` en
+`backend/services/entidades_potenciales_service.py`) ya persistia
+`id_contraparte` correctamente, incluso en las transacciones "hermanas"
+con el mismo `valor_propuesto`. El bug era puramente de frontend: el
+array `items` del componente padre (`Transacciones/index.jsx`) nunca se
+refrescaba tras confirmar una EP, asi que al renavegar se reinicializaba
+el panel con datos obsoletos.
+
+**Fix:** `DetailPanel` ahora invoca un callback `onRecargar` (la funcion
+`cargar()` del padre) despues de confirmar una EP, para refrescar
+`items` desde el backend.
+
+**Nota:** durante la verificacion se reprodujo el escenario de PEN-004 --
+cada corrida de `POST /tools/seed` genera una nueva EntidadPotencial
+para "FERRETERIA LOS PINOS" sin correlacionar contra el catalogo
+existente (por diseno del seed, ver comentario en `tools.py` linea 378).
+Confirma que PEN-004 sigue vigente y es un issue distinto de este.

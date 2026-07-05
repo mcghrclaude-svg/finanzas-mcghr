@@ -115,8 +115,14 @@ URLs:
 
 | Archivo | Estado |
 |---|---|
-| `frontend/src/modules/Transacciones/index.jsx` | ACTUALIZADO  -- v6, ver detalle arriba |
+| `frontend/src/modules/Transacciones/index.jsx` | ACTUALIZADO  -- v6 + fix #47, ver detalle arriba |
 | `frontend/src/modules/Catalogos/index.jsx` | SIN CAMBIOS  -- funciona con fix de backend |
+
+**Archivos Frontend modificados en sesion 2026-07-05 (fix Issue #47 / PEN-008):**
+
+| Archivo | Cambio |
+|---|---|
+| `frontend/src/modules/Transacciones/index.jsx` | Fix: `DetailPanel` invoca `onRecargar` (la `cargar()` del padre) tras confirmar una EP, para que el array `items` no quede obsoleto y la contraparte confirmada no se pierda al renavegar entre transacciones |
 
 **Archivos Backend modificados en sesion 2026-06-29:**
 
