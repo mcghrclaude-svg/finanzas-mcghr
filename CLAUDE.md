@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-04 19:01
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-05 14:16
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260704.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260705.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+8782364 docs: restructurar CITA.md como indice corto con links a docs/citas/
+da220a6 docs: auto-update 2026-07-04 19:01
 71aea7a docs: extraer CITA-001 a CITA-013 a archivos individuales en docs/citas/
 67ad510 docs: auto-update 2026-07-04 17:57
 3279fad docs: agregar CONTEXTO_SUPERVISOR.md y actualizar PENDIENTES con #47
@@ -84,5 +86,3 @@ e748db3 docs: auto-update 2026-07-04 17:38
 d07ed04 docs: auto-update 2026-07-02 21:40
 d62aacb merge: fix/attachments-inline-lazy -- CLAUDE.md y HANDOFF se regeneran en proximo commit
 f884870 docs: auto-update 2026-07-02 21:39
-af58410 merge: fix/ep-dropdown-refresh-y-preview -- CLAUDE.md y HANDOFF se regeneran en proximo commit
-72b74f5 docs: auto-update 2026-07-02 21:37
