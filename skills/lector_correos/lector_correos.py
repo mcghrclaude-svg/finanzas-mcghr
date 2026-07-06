@@ -1,29 +1,29 @@
 """
 ================================================================================
-lector_correos.py — Skill genérico de lectura de correos
+lector_correos.py -- Skill generico de lectura de correos
 ================================================================================
-Versión:  1.0
-Autor:    Plataforma MCGHR — generado con Claude.ai Pro
-Ubicación: C:\\Users\\ghriz\\.claude\\skills\\lector_correos\\lector_correos.py
+Version:  1.0
+Autor:    Plataforma MCGHR -- generado con Claude.ai Pro
+Ubicacion: C:\\Users\\ghriz\\.claude\\skills\\lector_correos\\lector_correos.py
 
-DESCRIPCIÓN:
-    Módulo Python reutilizable que abstrae la lectura de correos desde
-    múltiples proveedores (Gmail via OAuth, Outlook/Hotmail via IMAP).
+DESCRIPCION:
+    Modulo Python reutilizable que abstrae la lectura de correos desde
+    multiples proveedores (Gmail via OAuth, Outlook/Hotmail via IMAP).
 
-    Diseñado para ser IMPORTADO por otros scripts:
+    Disenado para ser IMPORTADO por otros scripts:
         from lector_correos import LectorCorreos
 
-    No contiene lógica de negocio ni filtros específicos de ningún proyecto.
-    No marca correos como leídos. No modifica el estado de ningún buzón.
+    No contiene logica de negocio ni filtros especificos de ningun proyecto.
+    No marca correos como leidos. No modifica el estado de ningun buzon.
 
 PROVEEDORES SOPORTADOS:
     - Gmail (OAuth 2.0 con credentials.json de Google Cloud)
-    - Outlook / Hotmail (IMAP con contraseña de aplicación Microsoft)
+    - Outlook / Hotmail (IMAP con contrasena de aplicacion Microsoft)
 
 REQUISITOS:
     pip install google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-USO BÁSICO:
+USO BASICO:
     config = {
         "tipo": "gmail",
         "nombre": "hernan",
@@ -40,7 +40,7 @@ EXTENSIBILIDAD:
     Para agregar un nuevo proveedor (ej: Yahoo, iCloud):
     1. Crear clase YahooBackend(BaseBackend) en este mismo archivo
     2. Registrarla en BACKENDS al final del archivo
-    Sin tocar el código existente.
+    Sin tocar el codigo existente.
 ================================================================================
 """
 
@@ -61,7 +61,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Optional
 
-# ── Dependencias opcionales (Gmail) ──────────────────────────────────────────
+# ---- Dependencias opcionales (Gmail) ------------------------------------------
 try:
     from google.oauth2.credentials import Credentials
     from google.auth.transport.requests import Request
@@ -73,9 +73,9 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
 # MODELO DE DATOS
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
 
 @dataclass
 class Adjunto:
@@ -103,7 +103,7 @@ class Adjunto:
 
 @dataclass
 class Correo:
-    """Representa un correo electrónico normalizado."""
+    """Representa un correo electronico normalizado."""
     id: str
     asunto: str
     remitente: str
@@ -122,7 +122,7 @@ class Correo:
 
     @property
     def texto_para_ia(self) -> str:
-        """Texto optimizado para enviar a Claude API — máx 4000 chars."""
+        """Texto optimizado para enviar a Claude API -- max 4000 chars."""
         return (
             f"ASUNTO: {self.asunto}\n"
             f"REMITENTE: {self.remitente}\n"
@@ -134,9 +134,9 @@ class Correo:
         return any(a.es_pdf() or a.es_excel() for a in self.adjuntos)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# BACKENDS — Uno por proveedor de correo
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
+# BACKENDS -- Uno por proveedor de correo
+# ================================================================================
 
 class BaseBackend(ABC):
     """Interfaz que todo backend de correo debe implementar."""
@@ -148,7 +148,7 @@ class BaseBackend(ABC):
 
     @abstractmethod
     def conectar(self) -> None:
-        """Establece la conexión autenticada."""
+        """Establece la conexion autenticada."""
 
     @abstractmethod
     def buscar_ids(self, query: str, fecha_desde: datetime,
@@ -165,13 +165,13 @@ class BaseBackend(ABC):
                fecha_hasta: Optional[datetime] = None,
                incluir_adjuntos: bool = True) -> list[Correo]:
         """
-        Método principal. Busca correos y retorna objetos Correo completos.
-        NUNCA modifica el estado de los mensajes (no marca como leído).
+        Metodo principal. Busca correos y retorna objetos Correo completos.
+        NUNCA modifica el estado de los mensajes (no marca como leido).
 
         Args:
-            query:            Criterio de búsqueda (sintaxis del proveedor)
-            dias:             Días hacia atrás (ignorado si fecha_desde está presente)
-            fecha_desde:      Fecha de inicio explícita
+            query:            Criterio de busqueda (sintaxis del proveedor)
+            dias:             Dias hacia atras (ignorado si fecha_desde esta presente)
+            fecha_desde:      Fecha de inicio explicita
             fecha_hasta:      Fecha de fin (None = ahora)
             incluir_adjuntos: Si True, descarga el contenido de los adjuntos
         """
@@ -194,9 +194,9 @@ class BaseBackend(ABC):
         return correos
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------------------
 # Backend Gmail
-# ─────────────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------------------
 
 class GmailBackend(BaseBackend):
     """
@@ -210,7 +210,7 @@ class GmailBackend(BaseBackend):
         super().__init__(config)
         if not GMAIL_DISPONIBLE:
             raise ImportError(
-                "Faltan dependencias de Gmail. Ejecutá:\n"
+                "Faltan dependencias de Gmail. Ejecuta:\n"
                 "pip install google-auth-oauthlib google-auth-httplib2 "
                 "google-api-python-client"
             )
@@ -234,8 +234,8 @@ class GmailBackend(BaseBackend):
                 log.info(f"  [{self.nombre}] Renovando token OAuth...")
                 creds.refresh(Request())
             else:
-                log.info(f"  [{self.nombre}] Iniciando flujo OAuth — se abrirá el browser")
-                log.info(f"  [{self.nombre}] Iniciá sesión con: {self.email}")
+                log.info(f"  [{self.nombre}] Iniciando flujo OAuth -- se abrira el browser")
+                log.info(f"  [{self.nombre}] Inicia sesion con: {self.email}")
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self._credentials_file, self.SCOPES
                 )
@@ -294,19 +294,19 @@ class GmailBackend(BaseBackend):
         )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------------------
 # Backend IMAP (Outlook / Hotmail)
-# ─────────────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------------------
 
 class IMAPBackend(BaseBackend):
     """
-    Backend IMAP genérico. Funciona con Outlook/Hotmail usando
-    contraseña de aplicación Microsoft.
+    Backend IMAP generico. Funciona con Outlook/Hotmail usando
+    contrasena de aplicacion Microsoft.
 
-    Cómo obtener la contraseña de aplicación:
+    Como obtener la contrasena de aplicacion:
     1. Ir a account.microsoft.com
-    2. Seguridad → Opciones de seguridad avanzadas
-    3. Contraseñas de aplicación → Crear nueva
+    2. Seguridad -> Opciones de seguridad avanzadas
+    3. Contrasenas de aplicacion -> Crear nueva
     4. Guardar como variable de entorno OUTLOOK_APP_PASSWORD
     """
 
@@ -322,7 +322,7 @@ class IMAPBackend(BaseBackend):
         if self._conn:
             try:
                 self._conn.noop()
-                return  # Conexión activa
+                return  # Conexion activa
             except Exception:
                 self._conn = None
 
@@ -330,7 +330,7 @@ class IMAPBackend(BaseBackend):
         if not password:
             raise ValueError(
                 f"Variable de entorno {self._password_env!r} no configurada.\n"
-                f"En PowerShell: $env:{self._password_env} = 'tu-contraseña-app'"
+                f"En PowerShell: $env:{self._password_env} = 'tu-contrasena-app'"
             )
 
         if self._ssl:
@@ -346,7 +346,7 @@ class IMAPBackend(BaseBackend):
 
     def buscar_ids(self, query: str, fecha_desde: datetime,
                    fecha_hasta: Optional[datetime] = None) -> list[str]:
-        self._conn.select("INBOX", readonly=True)  # readonly=True → no marca como leído
+        self._conn.select("INBOX", readonly=True)  # readonly=True -> no marca como leido
 
         # Convertir query de estilo Gmail a criterios IMAP
         criterios = _query_gmail_a_imap(query, fecha_desde, fecha_hasta)
@@ -359,7 +359,7 @@ class IMAPBackend(BaseBackend):
 
     def obtener_correo(self, id_mensaje: bytes,
                        incluir_adjuntos: bool = True) -> Optional[Correo]:
-        # BODY.PEEK no marca el mensaje como leído (a diferencia de BODY)
+        # BODY.PEEK no marca el mensaje como leido (a diferencia de BODY)
         _, datos = self._conn.fetch(id_mensaje, "(BODY.PEEK[])")
         if not datos or not datos[0]:
             return None
@@ -385,14 +385,14 @@ class IMAPBackend(BaseBackend):
         )
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# CLASE PRINCIPAL PÚBLICA
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
+# CLASE PRINCIPAL PUBLICA
+# ================================================================================
 
 class LectorCorreos:
     """
     Punto de entrada principal del skill.
-    Crea el backend correcto según el tipo de cuenta.
+    Crea el backend correcto segun el tipo de cuenta.
 
     Uso:
         lector = LectorCorreos(config_cuenta)
@@ -423,8 +423,8 @@ class LectorCorreos:
                fecha_hasta: Optional[datetime] = None,
                incluir_adjuntos: bool = True) -> list[Correo]:
         """
-        Busca correos. Ver BaseBackend.buscar() para documentación completa.
-        IMPORTANTE: nunca marca correos como leídos.
+        Busca correos. Ver BaseBackend.buscar() para documentacion completa.
+        IMPORTANTE: nunca marca correos como leidos.
         """
         return self._backend.buscar(
             query=query,
@@ -443,16 +443,29 @@ class LectorCorreos:
         return self._backend.email
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
 # FUNCIONES AUXILIARES INTERNAS
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
 
 class _StripHTML(HTMLParser):
+    _SKIP_TAGS = {"style", "script"}
+
     def __init__(self):
         super().__init__()
         self.partes = []
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self._SKIP_TAGS:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag):
+        if tag in self._SKIP_TAGS and self._skip_depth > 0:
+            self._skip_depth -= 1
 
     def handle_data(self, data):
+        if self._skip_depth:
+            return
         limpio = data.strip()
         if limpio:
             self.partes.append(limpio)
@@ -578,7 +591,7 @@ def _extraer_contenido_imap(msg: email.message.Message,
 def _query_gmail_a_imap(query: str, fecha_desde: datetime,
                          fecha_hasta: Optional[datetime]) -> list[str]:
     """
-    Convierte una query estilo Gmail a criterios IMAP básicos.
+    Convierte una query estilo Gmail a criterios IMAP basicos.
     Soporta: from:, subject:, palabras clave simples.
     """
     criterios = []
@@ -600,26 +613,26 @@ def _query_gmail_a_imap(query: str, fecha_desde: datetime,
     if m:
         criterios.append(f'SUBJECT "{m.group(1)}"')
 
-    if not criterios[2:]:  # Sin filtros de contenido → todos los correos del período
+    if not criterios[2:]:  # Sin filtros de contenido -> todos los correos del periodo
         criterios.append("ALL")
 
     return criterios
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# MODO STANDALONE — Para pruebas desde la terminal
-# ══════════════════════════════════════════════════════════════════════════════
+# ================================================================================
+# MODO STANDALONE -- Para pruebas desde la terminal
+# ================================================================================
 
 if __name__ == "__main__":
     import argparse
     import json
 
     parser = argparse.ArgumentParser(
-        description="lector_correos.py — Prueba de conexión y búsqueda"
+        description="lector_correos.py -- Prueba de conexion y busqueda"
     )
     parser.add_argument("--config",    required=True, help="Ruta al config_correos.json")
     parser.add_argument("--cuenta",    required=True, help="Nombre de la cuenta (ej: hernan)")
-    parser.add_argument("--query",     default="",    help="Query de búsqueda")
+    parser.add_argument("--query",     default="",    help="Query de busqueda")
     parser.add_argument("--dias",      type=int, default=7)
     parser.add_argument("--adjuntos",  action="store_true")
     args = parser.parse_args()
