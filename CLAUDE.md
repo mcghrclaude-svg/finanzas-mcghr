@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-05 20:47
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-05 21:01
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,13 +76,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+5c9094f Merge branch 'chat-lector-correos-css-strip'
+b619e6b docs: auto-update 2026-07-05 20:47
 1b31035 feat: agregar alta manual de transacciones (popup Add New)
+2549b3f docs: auto-update 2026-07-05 20:11
+5a96345 fix: filtrar contenido de <style>/<script> en _StripHTML y limpiar caracteres no-ASCII
 79475fb docs: auto-update 2026-07-05 15:24
 8bdfaf9 fix: refrescar items del inbox tras confirmar entidad potencial (Fixes #47)
 e609f47 docs: auto-update 2026-07-05 14:16
 8782364 docs: restructurar CITA.md como indice corto con links a docs/citas/
 da220a6 docs: auto-update 2026-07-04 19:01
-71aea7a docs: extraer CITA-001 a CITA-013 a archivos individuales en docs/citas/
-67ad510 docs: auto-update 2026-07-04 17:57
-3279fad docs: agregar CONTEXTO_SUPERVISOR.md y actualizar PENDIENTES con #47
-e748db3 docs: auto-update 2026-07-04 17:38
