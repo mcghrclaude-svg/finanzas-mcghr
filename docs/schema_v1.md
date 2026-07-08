@@ -3,6 +3,8 @@
 
 Aprobado: Mayo 2026
 Estado: Implementado -- schema real verificado con PRAGMA table_info (Junio 2026)
+Version vigente: finanzas_v1_4b.sql (migraciones aplicadas: v1.1, v1.2, v1.2c, v1.3, v1.4, v1.4b)
+Backend (FastAPI) y frontend (React) implementados sobre este schema.
 
 ---
 
@@ -53,6 +55,7 @@ SOPORTE
   correos_procesados
   reglas_clasificacion
   log_ejecuciones
+  entidades_potenciales
 ```
 
 ---
@@ -391,6 +394,25 @@ alertas         TEXT           JSON con alertas generadas
 notas           TEXT
 ```
 
+### entidades_potenciales
+Propuestas de entidades de catalogo (contraparte, cuenta, categoria) que el
+ETL detecto pero que aun no existen como registro activo. Tabla separada
+de las tablas de catalogo -- no un campo estado en cada una. Implementada
+en `backend/models/catalogo.py` (clase `EntidadPotencial`), resuelta via
+`backend/services/entidades_potenciales_service.py` y expuesta en
+`backend/api/v1/routers/catalogos.py` (`GET /catalogos/pendientes`,
+`POST /catalogos/pendientes/{ep_id}/confirmar`, `POST /catalogos/pendientes/{ep_id}/descartar`).
+
+```
+id              INTEGER PK autoincrement
+tipo            TEXT           contraparte | cuenta | categoria
+valor_propuesto TEXT
+id_transaccion  TEXT FK->transacciones
+estado          TEXT           pendiente | confirmado | descartado
+creado_en       TEXT
+resuelto_en     TEXT           NULL si sigue pendiente
+```
+
 ---
 
 ## Decisiones de diseno registradas
@@ -415,10 +437,10 @@ notas           TEXT
 
 ## Proximos pasos
 
-- [ ] Generar SQL de creacion de tablas
-- [ ] Definir datos iniciales del catalogo (cuentas, monedas, personas, contrapartes)
+- [x] Generar SQL de creacion de tablas (ver schema/finanzas_v1_4b.sql, version vigente)
+- [x] Definir datos iniciales del catalogo (cuentas, monedas, personas, contrapartes)
 - [ ] Disenar prompt de sesion para procesamiento de correos en Claude Desktop
-- [ ] Implementar app web local Flask para revision humana (Fase 2)
+- [x] Implementar app web (backend FastAPI + frontend React) para revision humana
 
 ---
 

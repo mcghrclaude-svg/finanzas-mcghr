@@ -1,7 +1,7 @@
-# ESTADO_PROYECTO.md  -- actualizado post-sesion Junio 2026
+# ESTADO_PROYECTO.md  -- actualizado post-sesion Julio 2026
 # Plataforma Financiera MCGHR
 
-**Fecha:** 29 Junio 2026
+**Fecha:** 7 Julio 2026
 **Proposito:** Documento de handoff para retomar el proyecto en claude.ai con contexto completo.
 
 ---
@@ -63,8 +63,8 @@ URLs:
 | Skills Python (lector_correos, desproteger_pdf, auditor) | COMPLETO |
 | MCP server mcp_lector_correos | COMPLETO |
 | Prompt tarea programada Claude Desktop | COMPLETO  -- docs/ETL_PROMPT_CLAUDE_DESKTOP.md |
-| Tokens OAuth Gmail hernan | PENDIENTE  -- accion manual |
-| Tokens OAuth Gmail malu | PENDIENTE  -- accion manual |
+| Tokens OAuth Gmail hernan | COMPLETO  -- confirmado con busquedas reales exitosas (sesiones de julio) |
+| Tokens OAuth Gmail malu | COMPLETO  -- confirmado con busquedas reales exitosas (sesiones de julio) |
 | Tarea programada configurada en Claude Desktop (4am) | PENDIENTE  -- accion manual |
 
 ### Capa 2  -- Backend FastAPI
@@ -191,7 +191,7 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 | Schedule ETL | Diario a las 4am | Peticion del usuario |
 | ETL escribe en DB | Directo a SQLite via MCP sqlite | Independiente del backend |
 | Aprendizaje ETL | Lee reglas_clasificacion + ultimas 50 tx confirmadas como contexto | Mas preciso que solo regex |
-| Correlacion eventos | Campo id_evento en transacciones (hash monto+cuenta+fecha) | Unifica notificacion + factura + extracto en una sola tx |
+| Correlacion eventos | Campo id_evento en transacciones (asignado por el ETL al correlacionar, no un hash precalculado) | Unifica notificacion + factura + extracto en una sola tx |
 | Enriquecimiento | Campo estado_enriquecimiento (inicial/enriquecido/completo) | Seguimiento del ciclo contable |
 | Catalogos para PWA | Backend exporta JSON a OneDrive, PWA lo lee desde ahi | Sin llamadas API desde el celular |
 | PWA comunicacion | JSONs en OneDrive, sin API calls | Sin servidor adicional |
@@ -208,10 +208,10 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 | # | Accion | Instrucciones |
 |---|---|---|
 | 1 | Seed inbox en DB dev | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
-| 2 | Tokens OAuth Gmail hernan | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
-| 3 | Tokens OAuth Gmail malu | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
-| 4 | Configurar tarea ETL en Claude Desktop | Ver docs/ETL_CONFIGURACION_CLAUDE_DESKTOP.md |
-| 5 | Agregar script arranque a barra de tareas | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
+| 2 | Configurar tarea ETL en Claude Desktop | Ver docs/ETL_CONFIGURACION_CLAUDE_DESKTOP.md |
+| 3 | Agregar script arranque a barra de tareas | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
+
+Tokens OAuth Gmail (hernan y malu): resuelto -- confirmado con busquedas reales exitosas en ambas cuentas (sesiones de julio 2026).
 
 ---
 
@@ -219,7 +219,6 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 
 | # | Titulo | Prioridad |
 |---|---|---|
-| #2 | Tokens OAuth Gmail hernan y malu | ALTA  -- bloqueante para ETL |
 | #4 | Configurar autoforward iPhone Martha | MEDIA |
 | #5 | Regenerar token GitHub | URGENTE |
 | #8 | Configurar tarea programada ETL Claude Desktop | ALTA |

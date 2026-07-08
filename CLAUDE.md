@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-07 19:11
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-07 20:30
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,13 +76,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+933a6d9 docs: completar fecha de titulo y tabla entidades_potenciales faltante en schema_v1
+5debd9c docs: auto-update 2026-07-07 19:50
+521eb54 docs: sincronizar documentacion con estado real del proyecto (README, schema_v1, ETL_DISENO_FUNCIONAL, finanzas_v1_2 comentario, ESTADO_PROYECTO, PENDIENTES PEN-004)
+c080213 docs: auto-update 2026-07-07 19:11
 628c578 feat: ajustes UX Tools (cards colapsadas) + nueva pagina Catalogs V2
 97f6d60 docs: auto-update 2026-07-05 21:01
 5c9094f Merge branch 'chat-lector-correos-css-strip'
 b619e6b docs: auto-update 2026-07-05 20:47
 1b31035 feat: agregar alta manual de transacciones (popup Add New)
 2549b3f docs: auto-update 2026-07-05 20:11
-5a96345 fix: filtrar contenido de <style>/<script> en _StripHTML y limpiar caracteres no-ASCII
-79475fb docs: auto-update 2026-07-05 15:24
-8bdfaf9 fix: refrescar items del inbox tras confirmar entidad potencial (Fixes #47)
-e609f47 docs: auto-update 2026-07-05 14:16
