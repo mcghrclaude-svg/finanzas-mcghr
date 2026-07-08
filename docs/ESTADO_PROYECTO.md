@@ -66,6 +66,34 @@ URLs:
 | Tokens OAuth Gmail hernan | COMPLETO  -- confirmado con busquedas reales exitosas (sesiones de julio) |
 | Tokens OAuth Gmail malu | COMPLETO  -- confirmado con busquedas reales exitosas (sesiones de julio) |
 | Tarea programada configurada en Claude Desktop (4am) | PENDIENTE  -- accion manual |
+| Pipeline ETL Gmail testeable en dev (scripts/etl/) | COMPLETO  -- ver detalle abajo |
+
+**Pipeline ETL Gmail dev-testable (`scripts/etl/`) -- detalle:**
+
+Implementacion Python deterministica (regex + reglas heuristicas, sin
+LLM) de la fuente Gmail del ETL, pensada para poder probar el flujo
+completo (extraccion -> dedup -> correlacion -> insercion) contra
+`data/dev/finanzas_dev.db` sin depender de una tarea programada de
+Claude Desktop. No reemplaza el ETL real de produccion (que si usa
+razonamiento LLM para clasificar categoria/contraparte con mas contexto)
+-- es infraestructura de testing y una base de codigo reusable.
+
+| Script | Que hace |
+|---|---|
+| `extraccion.py` | Lee Gmail (hernan+malu) en un rango de fechas obligatorio, aplica regex de monto + reglas de descarte marketing + regla B (lectura de cuerpo completo si el snippet no trae el monto) |
+| `correlacion.py` | Dedup por `correos_procesados`, correlacion por titular/monto+-1%/fecha+-3d, confianza heuristica documentada, completitud, `entidades_potenciales`, INSERT en `transacciones`+`tramos` |
+| `reset_pipeline_dev.py` | Limpia solo lo que este pipeline creo (prefijo de id `gmail-etl-`) + `staging/` |
+| `inspeccionar_pipeline.py` | Reporte de consola sin SQL a mano |
+| `generar_datos_prueba.py` | Genera los 7 escenarios minimos de prueba sin depender de Gmail real |
+| `orquestador_pipeline.ps1` | Encadena extraccion + correlacion, corta si extraccion falla |
+
+Fuentes PDF (extractos OneDrive) y JSON (PWA mobile): estructura de CLI
+preparada en `extraccion.py` (`--fuente pdf|json`) pero sin logica --
+fuera del alcance de esta entrega. `id_categoria` tampoco se clasifica
+automaticamente en este pipeline (requiere razonamiento LLM) -- queda
+para revision humana o para el ETL real de produccion.
+
+Ver `docs/TESTING_PIPELINE_ETL.md` y `docs/ESCENARIOS_PRUEBA_ETL.md`.
 
 ### Capa 2  -- Backend FastAPI
 
