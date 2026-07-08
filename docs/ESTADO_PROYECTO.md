@@ -124,6 +124,20 @@ URLs:
 |---|---|
 | `frontend/src/modules/Transacciones/index.jsx` | Fix: `DetailPanel` invoca `onRecargar` (la `cargar()` del padre) tras confirmar una EP, para que el array `items` no quede obsoleto y la contraparte confirmada no se pierda al renavegar entre transacciones |
 
+**Archivos modificados en sesion 2026-07-07 (ajustes UX Tools + Catalogs V2, branch chat-Ajustes_ux_2):**
+
+| Archivo | Cambio |
+|---|---|
+| `frontend/src/modules/Tools/index.jsx` | Fix: cards de Tools arrancan colapsadas por default (antes expandidas). Se elimina la variante visual `danger` (fondo/borde rojo) de Reset Total y Restore -- todas las cards quedan con la paleta neutra |
+| `frontend/src/modules/Tools/CatalogsV2.jsx` | Nuevo: pagina de editor de categorias en arbol (estilo regedt32), ruteada en `/catalogos-v2`, item propio del sidebar bajo Settings (solo dev). Panel izquierdo con jerarquia (expand/collapse, arranca colapsado), panel derecho con detalle + edicion. Por nodo: agregar hija (deshabilitado en nivel 3) e inactivar (deshabilitado si tiene hijas activas). Fix aplicado en la misma sesion: scroll independiente por panel (antes scrolleaba la pagina completa) |
+| `frontend/src/modules/Catalogos/categoriaConfig.js` | Nuevo: extrae `generarSlug`/`generarSlugUnico` y `CAMPOS_CATEGORIAS` de `Catalogos/index.jsx` a un archivo compartido, usado tanto por Catalogos (vista clasica, sin cambio de comportamiento) como por CatalogsV2 |
+| `frontend/src/modules/Catalogos/index.jsx` | Refactor: usa `categoriaConfig.js` en vez de definir `generarSlug`/`CAMPOS.categorias` localmente. Sin cambio de comportamiento |
+| `frontend/src/App.jsx` | Nueva ruta `/catalogos-v2` (solo dev), junto a `/tools` |
+| `frontend/src/components/layout/Sidebar.jsx` | Nuevo item "Catalogs V2" en el grupo Settings, debajo de Tools (solo dev) |
+| `backend/api/v1/routers/catalogos.py` | `DELETE /categorias/{id}` (inactivar) ahora valida que la categoria no tenga hijas **activas** antes de desactivar; devuelve 409 si tiene |
+
+Pendiente para una sesion futura (registrado como issues, no bloquea esta sesion): mover `CatalogsV2.jsx` a su propio modulo por ADR-007 ([#49](https://github.com/mcghrclaude-svg/finanzas-mcghr/issues/49)); drag and drop para reparentar categorias ([#50](https://github.com/mcghrclaude-svg/finanzas-mcghr/issues/50)).
+
 **Archivos Backend modificados en sesion 2026-06-29:**
 
 | Archivo | Cambio |
@@ -239,4 +253,4 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 
 ---
 
-*Ultima actualizacion: 29 Junio 2026  -- Sesion UX Transacciones + Fix Catalogos ABM*
+*Ultima actualizacion: 7 Julio 2026  -- Sesion ajustes UX Tools + Catalogs V2 (branch chat-Ajustes_ux_2)*

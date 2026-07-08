@@ -16,6 +16,7 @@ import Catalogos from '@/modules/Catalogos'
 import Analitica from '@/modules/Analitica'
 import Backup from '@/modules/Backup'
 import Tools from '@/modules/Tools'
+import CatalogsV2 from '@/modules/Tools/CatalogsV2'
 import { Toaster } from 'react-hot-toast'
 import AlertaSinGuardar from '@/components/shared/AlertaSinGuardar'
 
@@ -37,7 +38,10 @@ export default function App() {
           <Route path="/analitica"     element={<Analitica />} />
           <Route path="/backup"        element={<Backup />} />
           {import.meta.env.VITE_ENV === 'dev' && (
-            <Route path="/tools" element={<Tools />} />
+            <>
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/catalogos-v2" element={<CatalogsV2 />} />
+            </>
           )}
         </Routes>
       </Layout>

@@ -20,13 +20,13 @@ const api = {
 }
 
 // -- Card colapsable ---------------------------------------------------
-function Card({ title, icon, danger = false, children }) {
-  const [open, setOpen] = useState(true)
+function Card({ title, icon, children }) {
+  const [open, setOpen] = useState(false)
   return (
-    <div className={`bg-white border rounded-xl overflow-hidden ${danger ? 'border-red-200' : 'border-gray-200'}`}>
+    <div className="bg-white border rounded-xl overflow-hidden border-gray-200">
       <button
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center justify-between px-4 py-3 text-left ${danger ? 'bg-red-50' : 'bg-gray-50'} border-b ${danger ? 'border-red-100' : 'border-gray-100'}`}
+        className="w-full flex items-center justify-between px-4 py-3 text-left bg-gray-50 border-b border-gray-100"
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-gray-800">
           <span>{icon}</span> {title}
@@ -127,7 +127,7 @@ function ResetTotal() {
   }
 
   return (
-    <Card title="Reset Total" icon="☢" danger>
+    <Card title="Reset Total" icon="☢">
       <p className="text-xs text-gray-500 mb-3">
         Vacia ETL + catalogo (categorias, cuentas, contrapartes, personas, inversiones,
         obligaciones, presupuestos). Preserva reglas_clasificacion y periodos_financieros.
@@ -226,7 +226,7 @@ function RestoreSection() {
   }
 
   return (
-    <Card title="Restore" icon="📂" danger>
+    <Card title="Restore" icon="📂">
       <p className="text-xs text-gray-500 mb-3">
         Reemplaza finanzas_dev.db con el snapshot seleccionado.
         La conexion se cierra y reabre automaticamente.

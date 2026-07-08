@@ -163,6 +163,18 @@ async def inactivar_categoria(
     cat = await db.get(Categoria, categoria_id)
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
+    if cat.activa:
+        hijos_activos = await db.execute(
+            select(Categoria.id).where(
+                Categoria.id_padre == categoria_id,
+                Categoria.activa == True,  # noqa: E712
+            )
+        )
+        if hijos_activos.scalars().first():
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot deactivate a category that has active child categories",
+            )
     cat.activa = not cat.activa
     await db.commit()
     return None

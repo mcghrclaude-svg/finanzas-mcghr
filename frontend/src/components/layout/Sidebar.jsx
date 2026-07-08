@@ -42,7 +42,10 @@ const NAV_GROUPS = [
     items: [
       { to: '/catalogos', label: 'Catalogs', icon: '🗂️' },
       { to: '/backup',    label: 'Backup',   icon: '💾' },
-      ...(import.meta.env.VITE_ENV === 'dev' ? [{ to: '/tools', label: 'Tools', icon: '🔧' }] : []),
+      ...(import.meta.env.VITE_ENV === 'dev' ? [
+        { to: '/tools',        label: 'Tools',       icon: '🔧' },
+        { to: '/catalogos-v2', label: 'Catalogs V2', icon: '🌳' },
+      ] : []),
     ],
   },
 ]
