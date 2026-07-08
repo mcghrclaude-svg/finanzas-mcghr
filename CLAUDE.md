@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-05 21:01
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-07 19:11
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260705.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260707.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -49,7 +49,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
-| Catalogos | IMPLEMENTADO | 435 lineas |
+| Catalogos | IMPLEMENTADO | 402 lineas |
 | Dashboard | IMPLEMENTADO | 182 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
@@ -63,7 +63,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | analitica.py | IMPLEMENTADO | 72 lineas |
 | backup.py | IMPLEMENTADO | 92 lineas |
-| catalogos.py | IMPLEMENTADO | 524 lineas |
+| catalogos.py | IMPLEMENTADO | 536 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+628c578 feat: ajustes UX Tools (cards colapsadas) + nueva pagina Catalogs V2
+97f6d60 docs: auto-update 2026-07-05 21:01
 5c9094f Merge branch 'chat-lector-correos-css-strip'
 b619e6b docs: auto-update 2026-07-05 20:47
 1b31035 feat: agregar alta manual de transacciones (popup Add New)
@@ -84,5 +86,3 @@ b619e6b docs: auto-update 2026-07-05 20:47
 79475fb docs: auto-update 2026-07-05 15:24
 8bdfaf9 fix: refrescar items del inbox tras confirmar entidad potencial (Fixes #47)
 e609f47 docs: auto-update 2026-07-05 14:16
-8782364 docs: restructurar CITA.md como indice corto con links a docs/citas/
-da220a6 docs: auto-update 2026-07-04 19:01
