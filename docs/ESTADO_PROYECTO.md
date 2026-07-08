@@ -1,4 +1,4 @@
-# ESTADO_PROYECTO.md  -- actualizado post-sesion Junio 2026
+# ESTADO_PROYECTO.md  -- actualizado post-sesion Julio 2026
 # Plataforma Financiera MCGHR
 
 **Fecha:** 7 Julio 2026

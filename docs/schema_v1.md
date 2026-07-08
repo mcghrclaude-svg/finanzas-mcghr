@@ -55,6 +55,7 @@ SOPORTE
   correos_procesados
   reglas_clasificacion
   log_ejecuciones
+  entidades_potenciales
 ```
 
 ---
@@ -391,6 +392,25 @@ transacciones_nuevas INTEGER
 documentos_nuevos INTEGER
 alertas         TEXT           JSON con alertas generadas
 notas           TEXT
+```
+
+### entidades_potenciales
+Propuestas de entidades de catalogo (contraparte, cuenta, categoria) que el
+ETL detecto pero que aun no existen como registro activo. Tabla separada
+de las tablas de catalogo -- no un campo estado en cada una. Implementada
+en `backend/models/catalogo.py` (clase `EntidadPotencial`), resuelta via
+`backend/services/entidades_potenciales_service.py` y expuesta en
+`backend/api/v1/routers/catalogos.py` (`GET /catalogos/pendientes`,
+`POST /catalogos/pendientes/{ep_id}/confirmar`, `POST /catalogos/pendientes/{ep_id}/descartar`).
+
+```
+id              INTEGER PK autoincrement
+tipo            TEXT           contraparte | cuenta | categoria
+valor_propuesto TEXT
+id_transaccion  TEXT FK->transacciones
+estado          TEXT           pendiente | confirmado | descartado
+creado_en       TEXT
+resuelto_en     TEXT           NULL si sigue pendiente
 ```
 
 ---
