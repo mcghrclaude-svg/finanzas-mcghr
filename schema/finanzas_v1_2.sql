@@ -39,12 +39,12 @@ PRAGMA foreign_keys = ON;
 -- CAMBIO 1: transacciones -- campo id_evento
 -- ============================================================================
 
--- id_evento: hash determinista generado por el ETL para identificar
--- el mismo hecho economico llegado por distintos canales.
---
--- Formato: "EVT_" + 16 caracteres hex (sha256 truncado de monto+cuenta+fecha+titular)
--- Tolerancia de fecha: +/- 3 dias para absorber diferencias entre la fecha
--- de notificacion y la fecha real del cargo.
+-- id_evento: identificador asignado por el ETL cuando decide que dos o mas
+-- eventos (notificacion, factura, extracto) son el mismo hecho economico
+-- llegado por distintos canales. No es un hash precalculado -- se asigna
+-- en el momento de la correlacion, en base a busqueda por rango
+-- (mismo titular, fecha +/- 3 dias, monto +/- 1%) y razonamiento del ETL
+-- sobre los candidatos encontrados.
 --
 -- NULL para:
 --   - Transacciones manuales (el humano las crea directamente)

@@ -78,8 +78,32 @@ Implicancias a resolver cuando se aborde:
 ## PEN-004 -- ETL propone entidades nuevas del catalogo; UX y backend deben soportarlo (Issue #36)
 
 **Detectado:** 2026-06-29, sesion chat-etl-desarrollo
+**Resuelto:** 2026-07-07 (implementacion base -- ver nota de gap abajo)
 **Prioridad:** alta (sin esto el ETL deja FKs nulas silenciosamente cuando
 encuentra contrapartes, categorias, cuentas o personas desconocidas)
+
+**Implementacion:** las tres capas descritas abajo (schema, backend, UX)
+estan implementadas y en uso real:
+- **Schema:** tabla separada `entidades_potenciales` (no un campo estado en
+  cada tabla de catalogo) -- `backend/models/catalogo.py`, clase
+  `EntidadPotencial` (id, tipo, valor_propuesto, id_transaccion, estado,
+  creado_en, resuelto_en).
+- **Backend:** `backend/services/entidades_potenciales_service.py`
+  (`confirmar_ep()`) y endpoints en `backend/api/v1/routers/catalogos.py`:
+  `GET /catalogos/pendientes`, `POST /catalogos/pendientes/{ep_id}/confirmar`,
+  `POST /catalogos/pendientes/{ep_id}/descartar`.
+- **UX:** el inbox muestra la propuesta pendiente; el fix del Issue #47
+  confirma el flujo en uso real (persistencia de `id_contraparte` al
+  confirmar una EP).
+
+**Gap abierto (no bloqueante):** el mecanismo no chequea si ya existe una
+entidad activa en el catalogo con el mismo nombre antes de crear una nueva
+EntidadPotencial -- confirmado en `POST /tools/seed`, que genera una
+EntidadPotencial nueva para "FERRETERIA LOS PINOS" en cada corrida
+(`tools.py` linea 401) sin correlacionar contra el catalogo existente.
+Segun la nota de PEN-008, esto es "por diseno del seed" y no se confirmo
+como comportamiento del ETL real en produccion. Evaluar si amerita un
+nuevo item de pendientes si se reproduce fuera del seed.
 
 Cuando el ETL detecta una entidad del catalogo que no existe (una contraparte
 nueva, un medio de pago nuevo, una categoria que no matchea ninguna existente,

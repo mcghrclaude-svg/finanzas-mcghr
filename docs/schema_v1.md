@@ -3,6 +3,8 @@
 
 Aprobado: Mayo 2026
 Estado: Implementado -- schema real verificado con PRAGMA table_info (Junio 2026)
+Version vigente: finanzas_v1_4b.sql (migraciones aplicadas: v1.1, v1.2, v1.2c, v1.3, v1.4, v1.4b)
+Backend (FastAPI) y frontend (React) implementados sobre este schema.
 
 ---
 
@@ -415,10 +417,10 @@ notas           TEXT
 
 ## Proximos pasos
 
-- [ ] Generar SQL de creacion de tablas
-- [ ] Definir datos iniciales del catalogo (cuentas, monedas, personas, contrapartes)
+- [x] Generar SQL de creacion de tablas (ver schema/finanzas_v1_4b.sql, version vigente)
+- [x] Definir datos iniciales del catalogo (cuentas, monedas, personas, contrapartes)
 - [ ] Disenar prompt de sesion para procesamiento de correos en Claude Desktop
-- [ ] Implementar app web local Flask para revision humana (Fase 2)
+- [x] Implementar app web (backend FastAPI + frontend React) para revision humana
 
 ---
 

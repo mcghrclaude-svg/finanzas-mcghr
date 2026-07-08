@@ -372,8 +372,9 @@ correlacion de eventos:
 ```sql
 ALTER TABLE transacciones ADD COLUMN
     id_evento TEXT;
-    -- Hash determinista para correlacionar el mismo hecho economico
-    -- que llega por multiples canales (notificacion + factura + extracto)
+    -- Asignado por el ETL cuando decide que dos o mas eventos son el mismo
+    -- hecho economico llegado por multiples canales (notificacion + factura
+    -- + extracto). No es un hash precalculado.
 
 ALTER TABLE transacciones ADD COLUMN
     estado_enriquecimiento TEXT DEFAULT 'inicial';
@@ -399,23 +400,36 @@ Aplica a todas las entidades del catalogo:
 - `categorias` -- si el ETL cree que el gasto no encaja en ninguna existente
 - `personas` -- titular o beneficiario no registrado
 
-### Comportamiento del ETL
+### Comportamiento del ETL (implementado -- ver PEN-004)
+
+El mecanismo real no inserta la entidad propuesta directamente en la
+tabla de catalogo correspondiente. Usa una tabla separada,
+`entidades_potenciales` (columnas: id, tipo, valor_propuesto,
+id_transaccion, estado, creado_en, resuelto_en -- definida en
+`backend/models/catalogo.py`).
 
 1. Detecta que la entidad no existe en el catalogo activo.
-2. La inserta en la tabla correspondiente con un estado `'potencial'`
-   (pendiente de definir en schema -- ver PEN-004).
-3. Crea la transaccion referenciando esa entidad potencial.
-4. La transaccion queda en estado `pendiente` como siempre, pero con
-   un flag adicional que indica que tiene entidades sin confirmar.
+2. Crea un registro en `entidades_potenciales` con `estado = 'pendiente'`,
+   `tipo` (contraparte | cuenta | categoria) y `valor_propuesto`, referenciando
+   la transaccion via `id_transaccion`.
+3. La transaccion queda en estado `pendiente` como siempre; la existencia
+   de una EntidadPotencial asociada es lo que indica que tiene una
+   propuesta sin confirmar.
 
-### Comportamiento esperado de la UX (pendiente -- ver PEN-004)
+### Comportamiento de la UX (implementado -- ver PEN-004)
 
-El inbox debe mostrar visualmente que la transaccion tiene una entidad
-propuesta. El humano puede confirmar la entidad (activarla en el catalogo)
-o descartarla (dejar la FK nula) como parte del flujo de revision.
+El inbox muestra visualmente que la transaccion tiene una entidad
+propuesta. El humano confirma o descarta la propuesta desde la app web,
+resuelto por `backend/services/entidades_potenciales_service.py` y
+expuesto en `backend/api/v1/routers/catalogos.py`:
+- `GET /catalogos/pendientes` -- lista EntidadPotencial en estado pendiente
+- `POST /catalogos/pendientes/{ep_id}/confirmar` -- crea la entrada real
+  en el catalogo (Contraparte/Cuenta/Categoria) y confirma toda EP
+  pendiente con el mismo tipo + valor_propuesto
+- `POST /catalogos/pendientes/{ep_id}/descartar` -- descarta la propuesta
 
-La implementacion concreta del schema y de los endpoints queda diferida
-a PEN-004, que cubre las tres capas: schema, backend y UX.
+El fix del Issue #47 confirma este flujo en uso real (persistencia de
+`id_contraparte` al confirmar una EP).
 
 ---
 
