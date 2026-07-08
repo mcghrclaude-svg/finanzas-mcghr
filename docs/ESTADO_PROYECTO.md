@@ -238,6 +238,25 @@ Tokens OAuth Gmail (hernan y malu): resuelto -- confirmado con busquedas reales 
 
 ---
 
+## Sesion 2026-07-07 (tarde) -- Sync de documentacion con estado real
+
+Limpieza de documentacion (sin cambios de logica ni comportamiento),
+verificada contra el codigo real antes de cada correccion. Mergeada a
+main en el commit `36a7bef` (branch `docs/sync-estado-real-proyecto`).
+
+**Archivos corregidos (8):**
+
+| Archivo | Cambio |
+|---|---|
+| `README.md` | Estructura del repo actualizada (backend/, frontend/, src/, tests/, Docker); checklist refleja stack real FastAPI + React |
+| `docs/schema_v1.md` | Estado actualizado a implementado; referencia a `finanzas_v1_4b.sql` como version vigente; agregada tabla `entidades_potenciales` (faltaba en el mapa y en el detalle) |
+| `docs/ETL_DISENO_FUNCIONAL.md` | Seccion de entidades potenciales corregida para describir el mecanismo real (tabla separada `entidades_potenciales`, no insercion directa en catalogo); comentario de `id_evento` corregido en dos lugares (ya no se describe como hash determinista) |
+| `schema/finanzas_v1_2.sql` | Comentario de `id_evento` corregido (asignado por el ETL al correlacionar, no un hash precalculado) -- solo el comentario, DDL sin cambios |
+| `docs/ESTADO_PROYECTO.md` | Titulo corregido a Julio 2026; tabla de decisiones (id_evento) corregida; tokens OAuth Gmail (hernan y malu) marcados resueltos |
+| `docs/PENDIENTES.md` | PEN-004 marcado resuelto para la implementacion base (schema/backend/UX), con nota de gap abierto no bloqueante sobre el chequeo de correlacion en el seed |
+
+---
+
 ## Documentacion del Punto 3
 
 | Documento | Contenido |
@@ -252,4 +271,4 @@ Tokens OAuth Gmail (hernan y malu): resuelto -- confirmado con busquedas reales 
 
 ---
 
-*Ultima actualizacion: 7 Julio 2026  -- Sesion ajustes UX Tools + Catalogs V2 (branch chat-Ajustes_ux_2)*
+*Ultima actualizacion: 7 Julio 2026  -- Sesion sync documentacion con estado real (branch docs/sync-estado-real-proyecto, mergeada a main)*
