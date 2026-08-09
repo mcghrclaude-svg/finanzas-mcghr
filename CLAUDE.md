@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-07-07 20:34
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-08 23:44
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260707.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260808.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+a0f31aa feat: PWA de captura de gastos (pwa-gastos) -- primera etapa funcional
+40ada24 docs: auto-update 2026-07-07 20:34
 4214cc8 docs: registrar cierre de sesion sync documentacion en ESTADO_PROYECTO
 36a7bef merge: docs/sync-estado-real-proyecto -- sync documentacion con estado real (README, schema_v1, ETL_DISENO_FUNCIONAL, finanzas_v1_2, ESTADO_PROYECTO, PENDIENTES PEN-004)
 8d65762 docs: auto-update 2026-07-07 20:30
@@ -84,5 +86,3 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 521eb54 docs: sincronizar documentacion con estado real del proyecto (README, schema_v1, ETL_DISENO_FUNCIONAL, finanzas_v1_2 comentario, ESTADO_PROYECTO, PENDIENTES PEN-004)
 c080213 docs: auto-update 2026-07-07 19:11
 628c578 feat: ajustes UX Tools (cards colapsadas) + nueva pagina Catalogs V2
-97f6d60 docs: auto-update 2026-07-05 21:01
-5c9094f Merge branch 'chat-lector-correos-css-strip'
