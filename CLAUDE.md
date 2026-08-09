@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-08 23:44
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-08 23:47
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -76,6 +76,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 29 lineas |
 
 ## Ultimos 10 commits
+ff41417 fix(pwa-gastos): caracteres no-ASCII detectados por CITA-009
+1140e0f docs: auto-update 2026-08-08 23:44
 a0f31aa feat: PWA de captura de gastos (pwa-gastos) -- primera etapa funcional
 40ada24 docs: auto-update 2026-07-07 20:34
 4214cc8 docs: registrar cierre de sesion sync documentacion en ESTADO_PROYECTO
@@ -84,5 +86,3 @@ a0f31aa feat: PWA de captura de gastos (pwa-gastos) -- primera etapa funcional
 933a6d9 docs: completar fecha de titulo y tabla entidades_potenciales faltante en schema_v1
 5debd9c docs: auto-update 2026-07-07 19:50
 521eb54 docs: sincronizar documentacion con estado real del proyecto (README, schema_v1, ETL_DISENO_FUNCIONAL, finanzas_v1_2 comentario, ESTADO_PROYECTO, PENDIENTES PEN-004)
-c080213 docs: auto-update 2026-07-07 19:11
-628c578 feat: ajustes UX Tools (cards colapsadas) + nueva pagina Catalogs V2
