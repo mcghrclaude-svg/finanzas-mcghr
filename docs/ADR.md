@@ -417,3 +417,66 @@ de repo, git nativo, y posibilidad de worktrees).
 
 **Evidencia:** Chat "estrategia de acceso a archivos del repo", sesion 2026-06-29
 
+---
+
+## ADR-014 -- Selector de carpetas de OneDrive propio en vez del widget oficial File Picker v8
+
+**Fecha:** 2026-08-09
+**Estado:** ACTIVA
+**Origen:** CONSENSO (diagnostico iterativo agente + Hernan, confirmado con error oficial de Microsoft)
+
+**Contexto:**
+El plan original de la PWA de captura de gastos (pwa-gastos/) especificaba usar el
+OneDrive File Picker v8 oficial de Microsoft, embebido en iframe, para el selector de
+carpetas de Configuracion. Durante la implementacion aparecio una cadena de problemas
+distintos, cada uno con un sintoma diferente, antes de llegar a un bloqueo real de la
+plataforma:
+
+1. El `<form>` que lanza el picker se armaba y enviaba (`form.submit()`) en el mismo
+   tick sincronico del `useEffect` en que se montaba el iframe, asignando `iframe.name`
+   imperativamente en ese mismo momento. El navegador no llegaba a registrar ese
+   contexto de navegacion nombrado antes del submit, y en vez de fallar abria una
+   pestana nueva en lugar de navegar dentro del iframe.
+2. La URL del endpoint documentada en la guia general de Microsoft Learn
+   (`{baseUrl}/_layouts/15/FilePicker.aspx`) da 404 real en `onedrive.live.com`
+   (confirmado en la pestana Network) -- esa ruta es para SharePoint/tenant. La URL real
+   que carga el picker de consumidor es `onedrive.live.com/picker/v8.0/index.html`.
+3. Al usar iframe (no popup), el widget exige un input oculto `access_token` en el body
+   del POST. La documentacion indica pedir ese token con scope de la API SharePoint
+   (`OneDrive.ReadWrite`/`AllSites.Read`/`MyFiles.Read`/`MyFiles.Write`), un recurso
+   distinto del token de Graph que ya usa el resto de la app. Al agregar esos permisos
+   en el App Registration de Azure y pedir el token, la respuesta fue `AADSTS9002332`:
+   esa API de SharePoint esta bloqueada explicitamente para cuentas personales bajo
+   `/consumers`, solo funciona con cuentas corporativas/Azure AD -- confirmado por el
+   mensaje de error oficial de Microsoft, no una suposicion.
+
+**Decision:**
+Se abandona el widget oficial "OneDrive File Picker v8" y se reemplaza por un selector
+de carpetas propio (`pwa-gastos/src/components/OneDrivePickerModal.jsx`), construido con
+llamadas directas a Microsoft Graph API: `GET /me/drive` (una vez, para el driveId) y
+`GET /drives/{driveId}/items/{itemId}/children` (reutilizando `listChildren`, ya
+existente en `graphClient.js`) para navegar carpetas con breadcrumb, filtrando a items
+con la propiedad `folder`. Usa el mismo token de Graph (`Files.ReadWrite.All`) que ya usa
+el resto de la app para subir/leer archivos -- sin scope ni dependencia npm nueva.
+
+**Alternativas descartadas:**
+- Seguir debuggeando el widget oficial contra el flujo de cuenta de consumidor:
+  descartado porque el bloqueo de scope SharePoint (AADSTS9002332) es una restriccion de
+  Microsoft, no un error de configuracion propio -- no hay combinacion de scopes que lo
+  resuelva
+- Pedir el token con el scope de Graph para el input `access_token` del widget: probado,
+  el picker lo acepta para cargar pero el flujo de seleccion en si sigue dependiendo de
+  la capa SharePoint internamente
+
+**Consecuencias:**
+- Sin dependencia nueva de npm; se elimino todo el codigo de iframe/postMessage/MessageChannel
+  del picker de Microsoft
+- El selector propio no tiene busqueda de texto ni miniaturas, solo navegacion por
+  breadcrumb -- suficiente para el caso de uso (elegir una carpeta, no un archivo)
+- Cualquier limitacion futura del selector propio (por ejemplo, paginacion en carpetas
+  con muchos items) queda a cargo del codigo de la app, no de un widget de Microsoft
+
+**Evidencia:** Chat sesion 2026-08-09 (debugging picker OneDrive, pwa-gastos), error
+AADSTS9002332 confirmado por Microsoft al pedir token de scope SharePoint. Ver CITA-014
+para el detalle paso a paso del debugging.
+

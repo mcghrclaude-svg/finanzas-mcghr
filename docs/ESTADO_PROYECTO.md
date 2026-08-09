@@ -1,7 +1,7 @@
-# ESTADO_PROYECTO.md  -- actualizado post-sesion Julio 2026
+# ESTADO_PROYECTO.md  -- actualizado post-sesion Agosto 2026
 # Plataforma Financiera MCGHR
 
-**Fecha:** 7 Julio 2026
+**Fecha:** 9 Agosto 2026
 **Proposito:** Documento de handoff para retomar el proyecto en claude.ai con contexto completo.
 
 ---
@@ -154,8 +154,34 @@ Pendiente para una sesion futura (registrado como issues, no bloquea esta sesion
 |---|---|
 | Formato JSON OneDrive documentado | COMPLETO  -- docs/ETL_DISENO_FUNCIONAL.md |
 | carpeta OneDrive/PWA/ creada | COMPLETO |
-| catalogos.json generado por backend | COMPLETO  -- POST /catalogos/export/pwa |
-| Codigo PWA (React instalable en iPhone) | PENDIENTE  -- Entrega 4 |
+| catalogos.json generado por backend | DESACTUALIZADO  -- POST /catalogos/export/pwa produce `{categorias, contrapartes, cuentas}` con `{id, nombre}`; la PWA nueva (pwa-gastos/) espera `{categorias, medios_de_pago, monedas}` con `{id, etiqueta}`, incluyendo un catalogo de moneda que todavia no existe en el backend. Ver detalle en "Pendiente: backend PC" abajo |
+| Codigo PWA (React instalable en iPhone) -- `pwa-gastos/`, branch `chat-pwa-gastos` | PARCIAL  -- funcional de punta a punta en localhost, ver detalle abajo |
+
+**PWA (`pwa-gastos/`) -- detalle, sesion 2026-08-09:**
+
+| Feature | Estado |
+|---|---|
+| Login MSAL (loginRedirect, scope Files.ReadWrite.All, cuentas personales) | COMPLETO  -- probado en localhost con cuenta Microsoft real |
+| Selector de carpetas de OneDrive (raiz de gastos, catalogos, resumen) | COMPLETO  -- selector propio sobre Graph API, no el widget oficial de Microsoft. Ver ADR-014 y CITA-014 |
+| Alta de gasto (fecha, categoria/moneda/medio de pago con busqueda, monto, quien, foto con compresion) | COMPLETO |
+| Botones Limpiar / Grabar y Cerrar / Grabar y Nuevo + mensaje de confirmacion/error de altura fija | COMPLETO |
+| Moneda y medio de pago por default (Configuracion), precargados y editables en cada alta | COMPLETO  -- mismo patron que usuario por default |
+| Guardado local (IndexedDB, sin campo de estado -- presencia = pendiente) | COMPLETO |
+| Sincronizacion IndexedDB -> OneDrive (JSON + foto, borra al exito) | COMPLETO  -- probado con datos de ejemplo; subida real a una carpeta configurada todavia no probada de punta a punta |
+| Ver gastos pendientes (listado + borrar) | COMPLETO |
+| Resumen del mes | PENDIENTE (por diseno)  -- placeholder deshabilitado, formato del JSON de resumen no definido todavia |
+| PWA instalable (manifest + service worker, vite-plugin-pwa) | COMPLETO |
+| Workflow GitHub Actions (build + deploy a GitHub Pages) | COMPLETO  -- creado, no ejecutado todavia |
+| Deploy real a GitHub Pages | PENDIENTE  -- accion manual, ver tabla de acciones pendientes abajo |
+| Prueba en iPhone real (Safari, instalada como PWA) | PENDIENTE |
+
+**Pendiente: backend PC para la PWA (no arranco):**
+
+| Item | Estado |
+|---|---|
+| Script Python que lee `pendientes/`, valida contra schema real, inserta en Inbox, mueve a `procesados/` | PENDIENTE  -- no arranco |
+| Exportador de catalogos actualizado (medios_de_pago desde `cuentas`, catalogo real de moneda) | PENDIENTE  -- no arranco. El export actual no coincide con el contrato que espera la PWA nueva (ver fila de arriba) |
+| Generador de JSON de resumen mensual | PENDIENTE  -- formato todavia no definido |
 
 ---
 
@@ -170,12 +196,12 @@ Pendiente para una sesion futura (registrado como issues, no bloquea esta sesion
 | 3C | Frontend Inbox + export catalogos PWA | COMPLETO |
 | 3D | UX Transacciones v6 + fix catalogos ABM | COMPLETO  -- sesion 2026-06-29 |
 
-### Punto 4  -- PWA Mobile (proximo)
+### Punto 4  -- PWA Mobile
 
-| Entrega | Descripcion |
-|---|---|
-| 4A | PWA React: captura rapida de gastos desde iPhone |
-| 4B | Integracion con ETL via OneDrive |
+| Entrega | Descripcion | Estado |
+|---|---|---|
+| 4A | PWA React: captura rapida de gastos desde iPhone | PARCIAL  -- funcional en localhost (ver Capa 4 arriba), pendiente deploy a GitHub Pages y prueba en iPhone real |
+| 4B | Integracion con ETL via OneDrive (script Python de PC + exportador de catalogos actualizado) | PENDIENTE  -- no arranco |
 
 ### Punto 5  -- Completar routers backend (futuro)
 
@@ -210,6 +236,9 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 | 1 | Seed inbox en DB dev | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
 | 2 | Configurar tarea ETL en Claude Desktop | Ver docs/ETL_CONFIGURACION_CLAUDE_DESKTOP.md |
 | 3 | Agregar script arranque a barra de tareas | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
+| 4 | Habilitar GitHub Pages para pwa-gastos | Settings > Pages > Source: GitHub Actions (una sola vez) |
+| 5 | Agregar Redirect URI de produccion en Azure Portal | Despues del primer deploy, agregar `https://mcghrclaude-svg.github.io/finanzas-mcghr/` (con barra final) al App Registration `GastosApp-MCGHR` |
+| 6 | Probar pwa-gastos en iPhone real | Desde Safari, "Agregar a pantalla de inicio", probar login/selector/alta/sync con cuenta Microsoft real (GHR y luego MC) |
 
 Tokens OAuth Gmail (hernan y malu): resuelto -- confirmado con busquedas reales exitosas en ambas cuentas (sesiones de julio 2026).
 
@@ -271,4 +300,4 @@ main en el commit `36a7bef` (branch `docs/sync-estado-real-proyecto`).
 
 ---
 
-*Ultima actualizacion: 7 Julio 2026  -- Sesion sync documentacion con estado real (branch docs/sync-estado-real-proyecto, mergeada a main)*
+*Ultima actualizacion: 9 Agosto 2026  -- Sesion PWA de captura de gastos, primera etapa funcional (branch chat-pwa-gastos, pendiente de mergear a main)*
