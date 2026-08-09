@@ -29,7 +29,7 @@ export default function NuevoGasto() {
   const [quien, setQuien] = useState(usuarioDispositivo)
   const [foto, setFoto] = useState(null)
   // PhotoInput guarda su propio preview interno -- para descartar la foto
-  // "por completo" (no solo el state acá) hay que forzar su remount.
+  // "por completo" (no solo el state aca) hay que forzar su remount.
   const [fotoKey, setFotoKey] = useState(0)
   const [guardado, setGuardado] = useState(false)
   const [error, setError] = useState(null)
@@ -115,7 +115,7 @@ export default function NuevoGasto() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-md">
         <div className="flex items-center gap-3 mb-6">
-          <Link to="/" className="text-blue-600 text-sm font-medium">← Volver</Link>
+          <Link to="/" className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
           <h1 className="text-xl font-semibold text-gray-900">Agregar gasto</h1>
         </div>
 

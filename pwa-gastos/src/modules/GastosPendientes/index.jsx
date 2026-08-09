@@ -53,7 +53,7 @@ export default function GastosPendientes() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-md">
         <div className="flex items-center gap-3 mb-6">
-          <Link to="/" className="text-blue-600 text-sm font-medium">← Volver</Link>
+          <Link to="/" className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
           <h1 className="text-xl font-semibold text-gray-900">Gastos pendientes</h1>
         </div>
 
@@ -74,7 +74,7 @@ export default function GastosPendientes() {
               <div key={g.localId} className="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900">{g.monto} {g.id_moneda}</p>
-                  <p className="text-sm text-gray-500">{g.fecha} · {g.id_categoria} · {g.quien}</p>
+                  <p className="text-sm text-gray-500">{g.fecha} - {g.id_categoria} - {g.quien}</p>
                 </div>
                 <button
                   onClick={() => eliminar(g.localId)}
