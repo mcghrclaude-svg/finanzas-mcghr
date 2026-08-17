@@ -115,12 +115,36 @@ if (Test-Path $pagesPath) {
 }
 
 # CITA-009: Caracteres no-ASCII en archivos del ultimo commit
+# Excepcion: emojis/simbolos usados como iconos de UI/navegacion (Sidebar,
+# botones, labels de menu, spinners) no cuentan como violacion. Se excluyen
+# antes del chequeo:
+#   - pares subrogados con alto D83C-D83E (pictogramas U+1F000-1FBFF: la
+#     inmensa mayoria de los emojis estandar, ej. tag/banco/calendario)
+#   - simbolos BMP U+2190-21FF (Arrows, ej. flecha circular de refresh)
+#   - simbolos BMP U+2300-23FF (Misc Technical, ej. reloj de arena)
+#   - simbolos BMP U+25A0-27BF (Geometric Shapes / Misc Symbols / Dingbats,
+#     ej. engranaje, triangulos de coleccion) -- deliberadamente arranca en
+#     25A0 para NO incluir Box Drawing (2500-257F), que son separadores de
+#     comentario, no iconos
+#   - selector de variacion U+FE0F y ZWJ U+200D (usados en secuencias emoji)
+# La regla de ASCII puro sigue aplicando de lleno a texto real fuera de
+# estos rangos: acentos, enie, guiones largos, separadores de comentario,
+# etc. -- ver CITA-009.md.
 $archivosCommit = @(git diff HEAD~1 --name-only 2>$null | Where-Object { $_ -match "\.(py|jsx|js|ps1|md)$" })
 foreach ($archivo in $archivosCommit) {
     $rutaCompleta = Join-Path $RepoPath $archivo
     if (Test-Path $rutaCompleta) {
         $contenido = Get-Content $rutaCompleta -Raw -Encoding utf8 -ErrorAction SilentlyContinue
-        if ($contenido -match "[^\x00-\x7F]") {
+        $altoIni = [char]0xD83C; $altoFin = [char]0xD83E
+        $bajoIni = [char]0xDC00; $bajoFin = [char]0xDFFF
+        $flechaIni = [char]0x2190; $flechaFin = [char]0x21FF
+        $tecIni    = [char]0x2300; $tecFin    = [char]0x23FF
+        $simIni    = [char]0x25A0; $simFin    = [char]0x27BF
+        $vs16      = [char]0xFE0F; $zwj       = [char]0x200D
+        $patronEmoji    = "[$altoIni-$altoFin][$bajoIni-$bajoFin]"
+        $patronSimbolos = "[$flechaIni-$flechaFin$tecIni-$tecFin$simIni-$simFin$vs16$zwj]"
+        $sinEmojis = $contenido -replace $patronEmoji, '' -replace $patronSimbolos, ''
+        if ($sinEmojis -match "[^\x00-\x7F]") {
             $warnings += "CITA-009: Caracteres no-ASCII detectados en: $archivo"
         }
     }

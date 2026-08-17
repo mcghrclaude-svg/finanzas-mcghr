@@ -41,9 +41,16 @@ class Cuenta(Base):
     nombre = Column(String, nullable=False)
     tipo = Column(String)  # CC | TC | AHORRO | INVERSION
     banco = Column(String)
-    moneda = Column(String(3), default="COP")
+    # Opcional: una tarjeta de credito puede pagar en varias monedas y no
+    # tener una unica asociada. Puramente informativo por ahora -- no se usa
+    # para validar ni restringir nada en Transacciones ni en la PWA.
+    moneda = Column(String(3))
     es_corporativa = Column(Boolean, default=False)
     activa = Column(Boolean, default=True)
+    propietario = Column(String, default="Ambos")  # GHR | MC | Ambos
+    # Si es False, la cuenta no aparece en el dropdown de medio de pago de
+    # la PWA (ej. cuentas de inversion como IBKR que no son medios de pago).
+    visible_pwa = Column(Boolean, default=True)
 
 
 class Contraparte(Base):

@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-16 23:20
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 14:45
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260816.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260817.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -49,7 +49,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
-| Catalogos | IMPLEMENTADO | 421 lineas |
+| Catalogos | IMPLEMENTADO | 446 lineas |
 | Dashboard | IMPLEMENTADO | 182 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
@@ -64,7 +64,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | analitica.py | IMPLEMENTADO | 72 lineas |
 | backup.py | IMPLEMENTADO | 92 lineas |
-| catalogos.py | IMPLEMENTADO | 556 lineas |
+| catalogos.py | IMPLEMENTADO | 518 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
@@ -78,13 +78,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
-296502d docs: consolidar aprendizaje de PWA gastos, import backend y deploy a prod
-e34492b docs: auto-update 2026-08-16 23:16
-fc31c57 chore: agregar script dev:prod y gitignorar env local de produccion
-4e413da docs: auto-update 2026-08-16 23:16
-61a71fa fix(backend): exportar catalogos.json a la carpeta configurada en Config PWA
-9154817 docs: auto-update 2026-08-16 23:16
-526fb0f fix(pwa-import-backend): Tarea Programada corre via .bat intermedio
-0de6310 docs: auto-update 2026-08-16 23:15
-bd7ece4 fix(backend): conectar CORS a settings.cors_origins en vez de origenes hardcodeados
-b36f991 docs: auto-update 2026-08-16 22:19
+5e6b77d fix(catalogos): CITA-009 em-dash en label/emptyLabel de Currency
+cb861ff docs: auto-update 2026-08-17 14:44
+941eb6e fix(catalogos): dropdown de Currency en Cuentas usa catalogo real de Moneda
+2d5bbfe docs: auto-update 2026-08-17 13:44
+87aa398 feat(catalogos): propietario y visibilidad PWA en Cuenta, moneda opcional
+0d66753 docs: auto-update 2026-08-17 13:43
+cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
+8da19e2 docs: auto-update 2026-08-17 01:29
+44186ce feat(frontend): editor jerarquico de categorias reemplaza Catalogs V2
+33648ae docs: auto-update 2026-08-17 01:14

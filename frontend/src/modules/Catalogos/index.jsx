@@ -13,7 +13,13 @@ import CategoriaTree from './CategoriaTree'
 import TablaGenerica from './TablaGenerica'
 import ModalForm from './ModalForm'
 import ModalConfirm from './ModalConfirm'
-import { generarSlugUnico, CAMPOS_CATEGORIAS } from './categoriaConfig'
+import { generarSlugUnico, buildTree, CAMPOS_CATEGORIAS } from './categoriaConfig'
+
+// Opciones del dropdown de Currency en el formulario de Cuentas -- catalogo
+// real de Moneda (solo activas), no una lista fija. extra = { items, monedasActivas }.
+function opcionesMoneda(values, extra) {
+  return (extra?.monedasActivas ?? []).map(m => ({ value: m.id, label: `${m.id} - ${m.nombre}` }))
+}
 
 // ── Configuracion ─────────────────────────────────────────────────────────────
 
@@ -67,14 +73,18 @@ const CAMPOS = {
       ]
     },
     { key: 'banco',  label: 'Bank',     type: 'text' },
-    { key: 'moneda', label: 'Currency', type: 'select',
+    { key: 'moneda', label: 'Currency', type: 'select', hint: 'Optional -- leave blank for multi-currency accounts (e.g. credit cards)',
+      emptyLabel: '-- No currency (multi-currency account) --',
+      options: opcionesMoneda,
+    },
+    { key: 'propietario', label: 'Owner', type: 'select', required: true,
       options: [
-        { value: 'COP', label: 'COP — Colombian Peso' },
-        { value: 'USD', label: 'USD — US Dollar' },
-        { value: 'ARS', label: 'ARS — Argentine Peso' },
-        { value: 'EUR', label: 'EUR — Euro' },
+        { value: 'GHR',   label: 'GHR' },
+        { value: 'MC',    label: 'MC' },
+        { value: 'Ambos', label: 'Both' },
       ]
     },
+    { key: 'visible_pwa', label: 'Visible in PWA', type: 'checkbox' },
   ],
   contrapartes: [
     { key: 'nombre', label: 'Name', type: 'text', required: true },
@@ -232,13 +242,22 @@ export default function Catalogos() {
   const [modal,     setModal]     = useState(null)
   const [formVals,  setFormVals]  = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [monedasActivas, setMonedasActivas] = useState([])
 
+  // Se recarga junto con la seccion activa (cambio de tab, guardar, inactivar)
+  // en vez de una sola vez al montar -- si no, queda obsoleta apenas alguien
+  // activa/inactiva una moneda y el dropdown de Currency en Cuentas sigue
+  // mostrando datos viejos.
   const cargar = useCallback(async () => {
     if (seccion === 'pendientes') return
     setLoading(true)
     try {
-      const data = await API[seccion].listar({ solo_activas: false })
+      const [data, monedasData] = await Promise.all([
+        API[seccion].listar({ solo_activas: false }),
+        catalogosApi.getMonedas({ solo_activas: true }),
+      ])
       setItems(Array.isArray(data) ? data : data.items ?? [])
+      setMonedasActivas(monedasData.items ?? [])
     } catch (e) {
       toast.error('Error loading: ' + (e.response?.data?.detail ?? e.message))
     } finally {
@@ -258,7 +277,7 @@ export default function Catalogos() {
   const inactivos = total - activos
 
   function abrirCrear() {
-    setFormVals({ nivel: 1, tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO' })
+    setFormVals({ tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO', propietario: 'Ambos', visible_pwa: true })
     setModal({ tipo: 'form', item: null })
   }
 
@@ -286,7 +305,11 @@ export default function Catalogos() {
         // Autogenerar ID como slug del nombre
         const existingIds = items.map(i => i.id)
         const autoId = generarSlugUnico(formVals.nombre || 'ITEM', existingIds)
-        await API[seccion].crear({ ...formVals, id: autoId })
+        // Categorias: el nivel se deriva del padre elegido, no es un campo visible.
+        const derivados = seccion === 'categorias'
+          ? { nivel: (items.find(i => i.id === formVals.id_padre)?.nivel ?? 0) + 1 }
+          : {}
+        await API[seccion].crear({ ...formVals, id: autoId, ...derivados })
         toast.success('Created successfully')
       }
       setModal(null)
@@ -393,7 +416,7 @@ export default function Catalogos() {
           <span className="animate-spin">⏳</span> Loading...
         </div>
       ) : seccion === 'categorias' ? (
-        <CategoriaTree items={itemsFiltrados} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
+        <CategoriaTree items={buildTree(itemsFiltrados)} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
       ) : (
         <TablaGenerica columnas={COLUMNAS[seccion] ?? []} items={itemsFiltrados} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
       )}
@@ -409,6 +432,8 @@ export default function Catalogos() {
           onClose={() => setModal(null)}
           onGuardar={handleGuardar}
           guardando={guardando}
+          extra={{ items, monedasActivas }}
+          onInactivar={seccion === 'categorias' ? () => setModal({ tipo: 'confirm', item: modal.item }) : undefined}
         />
       )}
 

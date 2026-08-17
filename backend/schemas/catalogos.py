@@ -1,21 +1,27 @@
 """
 Schemas Pydantic para catalogos maestros.
-Alineados con backend/models/catalogo.py exactamente.
+Fuente oficial: el router importa estas clases, no las duplica.
 Solo ASCII en comentarios.
 """
 from pydantic import BaseModel, field_validator
-from typing import Optional, Any
+from typing import Optional
 import re
 
 ID_RE = re.compile(r"^[A-Z0-9_-]{1,30}$")
+MONEDA_CODIGO_RE = re.compile(r"^[A-Z]{3}$")
 
 def validar_id(v: str) -> str:
     if not ID_RE.match(v):
         raise ValueError("ID debe ser mayusculas, sin espacios, max 30 chars")
     return v
 
+def validar_nombre_sin_barra(v: str | None) -> str | None:
+    if v and "/" in v:
+        raise ValueError("El nombre no puede contener '/'; usa '-' en su lugar")
+    return v
 
-# ── Categoria ─────────────────────────────────────────────────────────────────
+
+# -- Categoria ---------------------------------------------------------
 
 PATRONES_GASTO = {"fijo_unico", "fijo_recurrente", "variable_frecuente", "variable_esporadico"}
 
@@ -23,8 +29,12 @@ class CategoriaBase(BaseModel):
     nombre: str
     nivel: int = 1
     id_padre: Optional[str] = None
-    activa: bool = True
     tipo_patron_gasto: str = "variable_frecuente"
+
+    @field_validator("nombre")
+    @classmethod
+    def nombre_sin_barra(cls, v):
+        return validar_nombre_sin_barra(v)
 
     @field_validator("nivel")
     @classmethod
@@ -50,29 +60,50 @@ class CategoriaCreate(CategoriaBase):
 
 class CategoriaUpdate(BaseModel):
     nombre: Optional[str] = None
-    activa: Optional[bool] = None
     tipo_patron_gasto: Optional[str] = None
 
-# Read usa dict para el arbol (viene de _construir_arbol, no ORM directo)
-class CategoriaRead(CategoriaBase):
-    id: str
-    hijos: list[Any] = []
-    model_config = {"from_attributes": True}
+    @field_validator("nombre")
+    @classmethod
+    def nombre_sin_barra(cls, v):
+        return validar_nombre_sin_barra(v)
 
-class CategoriaFlat(CategoriaBase):
-    id: str
-    model_config = {"from_attributes": True}
+    @field_validator("tipo_patron_gasto")
+    @classmethod
+    def patron_valido(cls, v):
+        if v is not None and v not in PATRONES_GASTO:
+            raise ValueError(f"tipo_patron_gasto debe ser uno de: {PATRONES_GASTO}")
+        return v
 
 
-# ── Cuenta ────────────────────────────────────────────────────────────────────
+# -- Cuenta --------------------------------------------------------------
+
+PROPIETARIOS = {"GHR", "MC", "Ambos"}
+
+def moneda_vacia_a_none(v: str | None) -> str | None:
+    # El <select> del formulario de escritorio manda '' cuando no se elige
+    # moneda; se normaliza a None para que quede NULL en DB, no ''.
+    return v or None
 
 class CuentaBase(BaseModel):
     nombre: str
     tipo: Optional[str] = None
     banco: Optional[str] = None
-    moneda: str = "COP"
+    moneda: Optional[str] = None
     es_corporativa: bool = False
-    activa: bool = True
+    propietario: str = "Ambos"
+    visible_pwa: bool = True
+
+    @field_validator("moneda")
+    @classmethod
+    def moneda_normalizada(cls, v):
+        return moneda_vacia_a_none(v)
+
+    @field_validator("propietario")
+    @classmethod
+    def propietario_valido(cls, v):
+        if v not in PROPIETARIOS:
+            raise ValueError(f"propietario debe ser uno de: {PROPIETARIOS}")
+        return v
 
 class CuentaCreate(CuentaBase):
     id: str
@@ -84,20 +115,31 @@ class CuentaCreate(CuentaBase):
 
 class CuentaUpdate(BaseModel):
     nombre: Optional[str] = None
+    tipo: Optional[str] = None
     banco: Optional[str] = None
-    activa: Optional[bool] = None
+    moneda: Optional[str] = None
+    es_corporativa: Optional[bool] = None
+    propietario: Optional[str] = None
+    visible_pwa: Optional[bool] = None
 
-class CuentaRead(CuentaBase):
-    id: str
-    model_config = {"from_attributes": True}
+    @field_validator("moneda")
+    @classmethod
+    def moneda_normalizada(cls, v):
+        return moneda_vacia_a_none(v)
+
+    @field_validator("propietario")
+    @classmethod
+    def propietario_valido(cls, v):
+        if v is not None and v not in PROPIETARIOS:
+            raise ValueError(f"propietario debe ser uno de: {PROPIETARIOS}")
+        return v
 
 
-# ── Contraparte ───────────────────────────────────────────────────────────────
+# -- Contraparte -----------------------------------------------------------
 
 class ContraparteBase(BaseModel):
     nombre: str
     tipo: Optional[str] = None
-    activa: bool = True
 
 class ContraparteCreate(ContraparteBase):
     id: str
@@ -110,19 +152,13 @@ class ContraparteCreate(ContraparteBase):
 class ContraparteUpdate(BaseModel):
     nombre: Optional[str] = None
     tipo: Optional[str] = None
-    activa: Optional[bool] = None
-
-class ContraparteRead(ContraparteBase):
-    id: str
-    model_config = {"from_attributes": True}
 
 
-# ── Persona ───────────────────────────────────────────────────────────────────
+# -- Persona -----------------------------------------------------------------
 
 class PersonaBase(BaseModel):
     nombre: str
     alias: Optional[str] = None
-    activa: bool = True
 
 class PersonaCreate(PersonaBase):
     id: str
@@ -135,15 +171,23 @@ class PersonaCreate(PersonaBase):
 class PersonaUpdate(BaseModel):
     nombre: Optional[str] = None
     alias: Optional[str] = None
-    activa: Optional[bool] = None
-
-class PersonaRead(PersonaBase):
-    id: str
-    model_config = {"from_attributes": True}
 
 
-# ── Respuesta generica ────────────────────────────────────────────────────────
+# -- Moneda --------------------------------------------------------------
 
-class MsgResponse(BaseModel):
-    ok: bool = True
-    msg: str
+class MonedaCreate(BaseModel):
+    codigo: str
+    nombre: str
+    simbolo: Optional[str] = None
+
+    @field_validator("codigo")
+    @classmethod
+    def codigo_valido(cls, v):
+        v = v.strip().upper()
+        if not MONEDA_CODIGO_RE.match(v):
+            raise ValueError("codigo debe ser 3 letras mayusculas (formato ISO 4217, ej: COP, USD)")
+        return v
+
+class MonedaUpdate(BaseModel):
+    nombre: Optional[str] = None
+    simbolo: Optional[str] = None
