@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 13:44
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 14:44
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -49,7 +49,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
-| Catalogos | IMPLEMENTADO | 435 lineas |
+| Catalogos | IMPLEMENTADO | 446 lineas |
 | Dashboard | IMPLEMENTADO | 182 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+941eb6e fix(catalogos): dropdown de Currency en Cuentas usa catalogo real de Moneda
+2d5bbfe docs: auto-update 2026-08-17 13:44
 87aa398 feat(catalogos): propietario y visibilidad PWA en Cuenta, moneda opcional
 0d66753 docs: auto-update 2026-08-17 13:43
 cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
@@ -86,5 +88,3 @@ cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
 33648ae docs: auto-update 2026-08-17 01:14
 5bec9ae fix(scripts): guard en iniciar_finanzas.ps1 para no duplicar procesos
 254bfdf docs: auto-update 2026-08-17 01:13
-95fb0f7 fix(backend): eliminar duplicacion de schemas de catalogos
-4f1d138 docs: auto-update 2026-08-16 23:20
