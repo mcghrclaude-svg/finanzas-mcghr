@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-16 19:58
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-16 22:19
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+716445d fix(pwa-gastos): safe area en iOS (notch/Dynamic Island) + version visible en Home
+2086f34 docs: auto-update 2026-08-16 19:58
 d98ee9b merge: chat-pwa-gastos -- PWA de captura de gastos + layout/comentarios
 ba89126 merge: feature/pwa-import-backend -- import de gastos PWA a la DB de escritorio
 7b4d152 docs: auto-update 2026-08-16 19:51
@@ -86,5 +88,3 @@ ae098c7 docs: auto-update 2026-08-16 19:09
 5f11ce4 fix(pwa-import-backend): caracteres no-ASCII detectados por CITA-009
 f813519 docs: auto-update 2026-08-16 19:08
 b038795 feat: importar gastos de la PWA mobile a la DB de escritorio
-aae9415 docs: auto-update 2026-08-16 19:00
-2e3c5f1 feat(pwa-gastos): reordenar layout Agregar gasto y agregar campo Comentarios
