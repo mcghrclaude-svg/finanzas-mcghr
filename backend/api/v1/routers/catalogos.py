@@ -17,11 +17,7 @@ Regla: nunca borrado fisico. Solo inactivacion (activa = 0).
 
 from __future__ import annotations
 
-import json
-import os
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -29,10 +25,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
-from backend.core.config import settings
-from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona, EntidadPotencial
+from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona, Moneda, EntidadPotencial
 from backend.models.transaccion import Transaccion
 from backend.services.entidades_potenciales_service import confirmar_ep
+from backend.services.pwa_export_service import exportar_catalogos_pwa as generar_catalogos_pwa
 
 router = APIRouter()
 
@@ -82,6 +78,15 @@ class PersonaCreate(BaseModel):
 class PersonaUpdate(BaseModel):
     nombre: str | None = None
     alias: str | None = None
+
+class MonedaCreate(BaseModel):
+    codigo: str
+    nombre: str
+    simbolo: str | None = None
+
+class MonedaUpdate(BaseModel):
+    nombre: str | None = None
+    simbolo: str | None = None
 
 
 # -- Categorias --------------------------------------------------------
@@ -135,6 +140,7 @@ async def crear_categoria(
     db.add(nueva)
     await db.commit()
     await db.refresh(nueva)
+    await generar_catalogos_pwa(db)
     return {"id": nueva.id, "nombre": nueva.nombre}
 
 
@@ -152,6 +158,7 @@ async def editar_categoria(
         setattr(cat, k, v)
     await db.commit()
     await db.refresh(cat)
+    await generar_catalogos_pwa(db)
     return {"id": cat.id, "nombre": cat.nombre}
 
 
@@ -177,6 +184,7 @@ async def inactivar_categoria(
             )
     cat.activa = not cat.activa
     await db.commit()
+    await generar_catalogos_pwa(db)
     return None
 
 
@@ -230,6 +238,7 @@ async def crear_cuenta(
     db.add(nueva)
     await db.commit()
     await db.refresh(nueva)
+    await generar_catalogos_pwa(db)
     return {"id": nueva.id, "nombre": nueva.nombre}
 
 
@@ -247,6 +256,7 @@ async def editar_cuenta(
         setattr(cuenta, k, v)
     await db.commit()
     await db.refresh(cuenta)
+    await generar_catalogos_pwa(db)
     return {"id": cuenta.id, "nombre": cuenta.nombre}
 
 
@@ -260,6 +270,7 @@ async def inactivar_cuenta(
         raise HTTPException(status_code=404, detail="Account not found")
     cuenta.activa = not cuenta.activa
     await db.commit()
+    await generar_catalogos_pwa(db)
     return None
 
 
@@ -402,6 +413,81 @@ async def inactivar_persona(
     return None
 
 
+# -- Monedas -------------------------------------------------------------
+
+@router.get("/monedas")
+async def listar_monedas(
+    solo_activas: bool = Query(True),
+    db: AsyncSession = Depends(get_db),
+):
+    q = select(Moneda)
+    if solo_activas:
+        q = q.where(Moneda.activa == True)  # noqa: E712
+    q = q.order_by(Moneda.codigo)
+    result = await db.execute(q)
+    monedas = result.scalars().all()
+    return {
+        "items": [
+            {"id": m.codigo, "nombre": m.nombre, "simbolo": m.simbolo, "activa": m.activa}
+            for m in monedas
+        ]
+    }
+
+
+@router.post("/monedas", status_code=201)
+async def crear_moneda(
+    body: MonedaCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    codigo = body.codigo.strip().upper()
+    existing = await db.get(Moneda, codigo)
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Currency '{codigo}' already exists")
+    nueva = Moneda(
+        codigo=codigo,
+        nombre=body.nombre,
+        simbolo=body.simbolo,
+        activa=True,
+    )
+    db.add(nueva)
+    await db.commit()
+    await db.refresh(nueva)
+    await generar_catalogos_pwa(db)
+    return {"id": nueva.codigo, "nombre": nueva.nombre}
+
+
+@router.patch("/monedas/{codigo}")
+async def editar_moneda(
+    codigo: str,
+    body: MonedaUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    moneda = await db.get(Moneda, codigo)
+    if not moneda:
+        raise HTTPException(status_code=404, detail="Currency not found")
+    campos = body.model_dump(exclude_none=True)
+    for k, v in campos.items():
+        setattr(moneda, k, v)
+    await db.commit()
+    await db.refresh(moneda)
+    await generar_catalogos_pwa(db)
+    return {"id": moneda.codigo, "nombre": moneda.nombre}
+
+
+@router.delete("/monedas/{codigo}", status_code=204)
+async def inactivar_moneda(
+    codigo: str,
+    db: AsyncSession = Depends(get_db),
+):
+    moneda = await db.get(Moneda, codigo)
+    if not moneda:
+        raise HTTPException(status_code=404, detail="Currency not found")
+    moneda.activa = not moneda.activa
+    await db.commit()
+    await generar_catalogos_pwa(db)
+    return None
+
+
 # -- Entidades potenciales (propuestas por ETL) ------------------------
 
 @router.get("/pendientes")
@@ -462,75 +548,9 @@ async def descartar_pendiente(ep_id: int, db: AsyncSession = Depends(get_db)):
 # -- Export PWA --------------------------------------------------------
 
 @router.post("/export/pwa")
-async def exportar_catalogos_pwa(db: AsyncSession = Depends(get_db)):
+async def exportar_pwa_endpoint(db: AsyncSession = Depends(get_db)):
     """
-    Genera catalogos.json con categorias, contrapartes y cuentas activas.
-    Lo escribe en OneDrive/PWA/ para que la app mobile lo lea.
+    Genera catalogos.json con categorias, medios_de_pago (cuentas) y monedas
+    activas. Lo escribe en OneDrive/PWA/ para que la app mobile lo lea.
     """
-    cats_result = await db.execute(
-        select(Categoria)
-        .where(Categoria.activa == True)  # noqa: E712
-        .order_by(Categoria.nivel, Categoria.nombre)
-    )
-    cats = cats_result.scalars().all()
-
-    cps_result = await db.execute(
-        select(Contraparte)
-        .where(Contraparte.activa == True)  # noqa: E712
-        .order_by(Contraparte.nombre)
-    )
-    cps = cps_result.scalars().all()
-
-    cuentas_result = await db.execute(
-        select(Cuenta)
-        .where(Cuenta.activa == True)  # noqa: E712
-        .order_by(Cuenta.nombre)
-    )
-    cuentas = cuentas_result.scalars().all()
-
-    payload = {
-        "version": "1.0",
-        "generado_en": datetime.now(timezone.utc).isoformat(),
-        "categorias": [
-            {
-                "id": c.id,
-                "nombre": c.nombre,
-                "nivel": c.nivel,
-                "id_padre": c.id_padre,
-                "tipo_patron_gasto": c.tipo_patron_gasto,
-            }
-            for c in cats
-        ],
-        "contrapartes": [
-            {"id": c.id, "nombre": c.nombre, "tipo": c.tipo}
-            for c in cps
-        ],
-        "cuentas": [
-            {"id": c.id, "nombre": c.nombre, "tipo": c.tipo, "banco": c.banco}
-            for c in cuentas
-        ],
-    }
-
-    onedrive = Path(settings.onedrive_path)
-    pwa_dir = onedrive / "PWA"
-    try:
-        pwa_dir.mkdir(parents=True, exist_ok=True)
-        ruta_json = pwa_dir / "catalogos.json"
-        ruta_json.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"No se pudo escribir el archivo en OneDrive: {e}",
-        )
-
-    return {
-        "ok": True,
-        "ruta_archivo": str(ruta_json),
-        "generado_en": payload["generado_en"],
-        "categorias": len(cats),
-        "contrapartes": len(cps),
-        "cuentas": len(cuentas),
-    }
+    return await generar_catalogos_pwa(db)

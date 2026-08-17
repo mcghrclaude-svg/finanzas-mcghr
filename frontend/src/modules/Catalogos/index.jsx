@@ -22,6 +22,7 @@ const SECCIONES = [
   { id: 'cuentas',      label: 'Accounts',   icon: '🏦' },
   { id: 'contrapartes', label: 'Entities',   icon: '🏢' },
   { id: 'personas',     label: 'People',     icon: '👤' },
+  { id: 'monedas',      label: 'Currencies', icon: '💱' },
   { id: 'pendientes',   label: 'Pending',    icon: '⏳' },
 ]
 
@@ -42,6 +43,12 @@ const COLUMNAS = {
     { key: 'nombre', label: 'Name' },
     { key: 'alias',  label: 'Alias',  mono: true },
     { key: 'activa', label: 'Status', estado: true },
+  ],
+  monedas: [
+    { key: 'id',      label: 'Code',   mono: true },
+    { key: 'nombre',  label: 'Name' },
+    { key: 'simbolo', label: 'Symbol', mono: true },
+    { key: 'activa',  label: 'Status', estado: true },
   ],
 }
 
@@ -85,6 +92,12 @@ const CAMPOS = {
     { key: 'nombre', label: 'Name',  type: 'text', required: true },
     { key: 'alias',  label: 'Alias', type: 'text', hint: 'Nickname or initials' },
   ],
+  monedas: [
+    { key: 'codigo',  label: 'Code',   type: 'text', required: true, upper: true, lock_on_edit: true,
+      hint: 'ISO 4217, e.g. COP, USD' },
+    { key: 'nombre',  label: 'Name',   type: 'text', required: true, hint: 'e.g. Colombian Peso' },
+    { key: 'simbolo', label: 'Symbol', type: 'text', hint: 'e.g. $' },
+  ],
 }
 
 const API = {
@@ -92,11 +105,12 @@ const API = {
   cuentas:      { listar: (p) => catalogosApi.getCuentas(p),      crear: catalogosApi.crearCuenta,      editar: catalogosApi.editarCuenta,      inactivar: catalogosApi.inactivarCuenta      },
   contrapartes: { listar: (p) => catalogosApi.getContrapartes(p), crear: catalogosApi.crearContraparte, editar: catalogosApi.editarContraparte, inactivar: catalogosApi.inactivarContraparte },
   personas:     { listar: (p) => catalogosApi.getPersonas(p),     crear: catalogosApi.crearPersona,     editar: catalogosApi.editarPersona,     inactivar: catalogosApi.inactivarPersona     },
+  monedas:      { listar: (p) => catalogosApi.getMonedas(p),      crear: catalogosApi.crearMoneda,      editar: catalogosApi.editarMoneda,      inactivar: catalogosApi.inactivarMoneda      },
 }
 
 const SINGULAR = {
   categorias: 'Category', cuentas: 'Account',
-  contrapartes: 'Entity', personas: 'Person',
+  contrapartes: 'Entity', personas: 'Person', monedas: 'Currency',
 }
 
 const TIPO_LABEL = { contraparte: 'Entity', cuenta: 'Account', categoria: 'Category' }
@@ -249,7 +263,8 @@ export default function Catalogos() {
   }
 
   function abrirEditar(item) {
-    setFormVals({ ...item })
+    // Monedas: el campo visible del formulario es "codigo", no "id".
+    setFormVals(seccion === 'monedas' ? { ...item, codigo: item.id } : { ...item })
     setModal({ tipo: 'form', item })
   }
 
@@ -263,6 +278,10 @@ export default function Catalogos() {
       if (modal.item) {
         await API[seccion].editar(modal.item.id, formVals)
         toast.success('Updated successfully')
+      } else if (seccion === 'monedas') {
+        // El codigo lo escribe el usuario -- no se autogenera como slug.
+        await API[seccion].crear(formVals)
+        toast.success('Created successfully')
       } else {
         // Autogenerar ID como slug del nombre
         const existingIds = items.map(i => i.id)

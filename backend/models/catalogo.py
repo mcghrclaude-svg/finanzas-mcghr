@@ -64,6 +64,15 @@ class Persona(Base):
     activa = Column(Boolean, default=True)
 
 
+class Moneda(Base):
+    __tablename__ = "monedas"
+
+    codigo = Column(String(3), primary_key=True)  # ISO 4217, ej. "COP"
+    simbolo = Column(String(5))
+    nombre = Column(String, nullable=False)
+    activa = Column(Boolean, default=True)
+
+
 class EntidadPotencial(Base):
     """Entidades propuestas por el ETL que aun no existen en el catalogo."""
     __tablename__ = "entidades_potenciales"
