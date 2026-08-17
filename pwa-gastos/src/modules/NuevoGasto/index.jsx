@@ -9,6 +9,8 @@ import { db } from '../../db/db'
 import { uuid, fileTimestamp } from '../../utils/ids'
 import { syncPendientes } from '../../utils/sync'
 
+const MAX_LEN_COMENTARIOS = 1000
+
 function hoyISO() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -27,6 +29,7 @@ export default function NuevoGasto() {
   const [idMoneda, setIdMoneda] = useState(monedaDefault)
   const [idMedioPago, setIdMedioPago] = useState(medioPagoDefault)
   const [quien, setQuien] = useState(usuarioDispositivo)
+  const [comentarios, setComentarios] = useState('')
   const [foto, setFoto] = useState(null)
   // PhotoInput guarda su propio preview interno -- para descartar la foto
   // "por completo" (no solo el state aca) hay que forzar su remount.
@@ -53,6 +56,7 @@ export default function NuevoGasto() {
     setIdMoneda(monedaDefault)
     setIdMedioPago(medioPagoDefault)
     setQuien(usuarioDispositivo)
+    setComentarios('')
     setFoto(null)
     setFotoKey((k) => k + 1)
   }
@@ -82,6 +86,7 @@ export default function NuevoGasto() {
       id_moneda: idMoneda,
       id_medio_pago: idMedioPago,
       quien,
+      comentarios: comentarios.trim() || null,
       archivoBase,
       imagenBlob: foto ?? null,
       imagenNombre: foto ? `${archivoBase}.jpg` : null,
@@ -139,43 +144,62 @@ export default function NuevoGasto() {
             />
           </div>
 
-          <Combobox
-            label="Categoria"
-            options={catalogos.categorias}
-            value={idCategoria}
-            onChange={setIdCategoria}
-            placeholder="Buscar categoria..."
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <Combobox
+              label="Categoria"
+              options={catalogos.categorias}
+              value={idCategoria}
+              onChange={setIdCategoria}
+              placeholder="Buscar categoria..."
+            />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="0.01"
-              value={monto}
-              onChange={(e) => setMonto(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="0.00"
+            <Combobox
+              label="Medio de pago"
+              options={catalogos.medios_de_pago}
+              value={idMedioPago}
+              onChange={setIdMedioPago}
+              placeholder="Buscar medio de pago..."
             />
           </div>
 
-          <Combobox
-            label="Moneda"
-            options={catalogos.monedas}
-            value={idMoneda}
-            onChange={setIdMoneda}
-            placeholder="Buscar moneda..."
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <Combobox
+              label="Moneda"
+              options={catalogos.monedas}
+              value={idMoneda}
+              onChange={setIdMoneda}
+              placeholder="Buscar moneda..."
+            />
 
-          <Combobox
-            label="Medio de pago"
-            options={catalogos.medios_de_pago}
-            value={idMedioPago}
-            onChange={setIdMedioPago}
-            placeholder="Buscar medio de pago..."
-          />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.01"
+                value={monto}
+                onChange={(e) => setMonto(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Comentarios</label>
+              <span className="text-xs text-gray-400">{comentarios.length}/{MAX_LEN_COMENTARIOS}</span>
+            </div>
+            <textarea
+              value={comentarios}
+              onChange={(e) => setComentarios(e.target.value)}
+              maxLength={MAX_LEN_COMENTARIOS}
+              rows={3}
+              placeholder="Notas opcionales..."
+              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 resize-none"
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Quien realizo el gasto</label>

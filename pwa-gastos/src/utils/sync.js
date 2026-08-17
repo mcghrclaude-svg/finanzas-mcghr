@@ -34,6 +34,7 @@ export async function syncPendientes(account) {
         id_moneda: gasto.id_moneda,
         id_medio_pago: gasto.id_medio_pago,
         quien: gasto.quien,
+        comentarios: gasto.comentarios ?? null,
         imagen: gasto.imagenNombre ?? null,
         creado_en: gasto.creadoEn,
       }
