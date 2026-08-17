@@ -44,8 +44,7 @@ const NAV_GROUPS = [
       { to: '/backup',    label: 'Backup',   icon: '💾' },
       { to: '/pwa',       label: 'PWA',      icon: '📲' },
       ...(import.meta.env.VITE_ENV === 'dev' ? [
-        { to: '/tools',        label: 'Tools',       icon: '🔧' },
-        { to: '/catalogos-v2', label: 'Catalogs V2', icon: '🌳' },
+        { to: '/tools', label: 'Tools', icon: '🔧' },
       ] : []),
     ],
   },

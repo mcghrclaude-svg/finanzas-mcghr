@@ -13,7 +13,7 @@ import CategoriaTree from './CategoriaTree'
 import TablaGenerica from './TablaGenerica'
 import ModalForm from './ModalForm'
 import ModalConfirm from './ModalConfirm'
-import { generarSlugUnico, CAMPOS_CATEGORIAS } from './categoriaConfig'
+import { generarSlugUnico, buildTree, CAMPOS_CATEGORIAS } from './categoriaConfig'
 
 // ── Configuracion ─────────────────────────────────────────────────────────────
 
@@ -258,7 +258,7 @@ export default function Catalogos() {
   const inactivos = total - activos
 
   function abrirCrear() {
-    setFormVals({ nivel: 1, tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO' })
+    setFormVals({ tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO' })
     setModal({ tipo: 'form', item: null })
   }
 
@@ -286,7 +286,11 @@ export default function Catalogos() {
         // Autogenerar ID como slug del nombre
         const existingIds = items.map(i => i.id)
         const autoId = generarSlugUnico(formVals.nombre || 'ITEM', existingIds)
-        await API[seccion].crear({ ...formVals, id: autoId })
+        // Categorias: el nivel se deriva del padre elegido, no es un campo visible.
+        const derivados = seccion === 'categorias'
+          ? { nivel: (items.find(i => i.id === formVals.id_padre)?.nivel ?? 0) + 1 }
+          : {}
+        await API[seccion].crear({ ...formVals, id: autoId, ...derivados })
         toast.success('Created successfully')
       }
       setModal(null)
@@ -393,7 +397,7 @@ export default function Catalogos() {
           <span className="animate-spin">⏳</span> Loading...
         </div>
       ) : seccion === 'categorias' ? (
-        <CategoriaTree items={itemsFiltrados} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
+        <CategoriaTree items={buildTree(itemsFiltrados)} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
       ) : (
         <TablaGenerica columnas={COLUMNAS[seccion] ?? []} items={itemsFiltrados} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
       )}
@@ -409,6 +413,8 @@ export default function Catalogos() {
           onClose={() => setModal(null)}
           onGuardar={handleGuardar}
           guardando={guardando}
+          extra={items}
+          onInactivar={seccion === 'categorias' ? () => setModal({ tipo: 'confirm', item: modal.item }) : undefined}
         />
       )}
 
