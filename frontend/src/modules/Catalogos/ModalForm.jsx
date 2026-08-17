@@ -59,7 +59,7 @@ export default function ModalForm({ titulo, campos, values, onChange, isEdit, on
                     disabled={disabled}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                   >
-                    <option value="">— Seleccionar —</option>
+                    <option value="">{campo.emptyLabel ?? '— Seleccionar —'}</option>
                     {opciones?.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}

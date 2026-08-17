@@ -15,6 +15,12 @@ import ModalForm from './ModalForm'
 import ModalConfirm from './ModalConfirm'
 import { generarSlugUnico, buildTree, CAMPOS_CATEGORIAS } from './categoriaConfig'
 
+// Opciones del dropdown de Currency en el formulario de Cuentas -- catalogo
+// real de Moneda (solo activas), no una lista fija. extra = { items, monedasActivas }.
+function opcionesMoneda(values, extra) {
+  return (extra?.monedasActivas ?? []).map(m => ({ value: m.id, label: `${m.id} — ${m.nombre}` }))
+}
+
 // ── Configuracion ─────────────────────────────────────────────────────────────
 
 const SECCIONES = [
@@ -68,12 +74,8 @@ const CAMPOS = {
     },
     { key: 'banco',  label: 'Bank',     type: 'text' },
     { key: 'moneda', label: 'Currency', type: 'select', hint: 'Optional -- leave blank for multi-currency accounts (e.g. credit cards)',
-      options: [
-        { value: 'COP', label: 'COP — Colombian Peso' },
-        { value: 'USD', label: 'USD — US Dollar' },
-        { value: 'ARS', label: 'ARS — Argentine Peso' },
-        { value: 'EUR', label: 'EUR — Euro' },
-      ]
+      emptyLabel: '— No currency (multi-currency account) —',
+      options: opcionesMoneda,
     },
     { key: 'propietario', label: 'Owner', type: 'select', required: true,
       options: [
@@ -240,13 +242,22 @@ export default function Catalogos() {
   const [modal,     setModal]     = useState(null)
   const [formVals,  setFormVals]  = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [monedasActivas, setMonedasActivas] = useState([])
 
+  // Se recarga junto con la seccion activa (cambio de tab, guardar, inactivar)
+  // en vez de una sola vez al montar -- si no, queda obsoleta apenas alguien
+  // activa/inactiva una moneda y el dropdown de Currency en Cuentas sigue
+  // mostrando datos viejos.
   const cargar = useCallback(async () => {
     if (seccion === 'pendientes') return
     setLoading(true)
     try {
-      const data = await API[seccion].listar({ solo_activas: false })
+      const [data, monedasData] = await Promise.all([
+        API[seccion].listar({ solo_activas: false }),
+        catalogosApi.getMonedas({ solo_activas: true }),
+      ])
       setItems(Array.isArray(data) ? data : data.items ?? [])
+      setMonedasActivas(monedasData.items ?? [])
     } catch (e) {
       toast.error('Error loading: ' + (e.response?.data?.detail ?? e.message))
     } finally {
@@ -421,7 +432,7 @@ export default function Catalogos() {
           onClose={() => setModal(null)}
           onGuardar={handleGuardar}
           guardando={guardando}
-          extra={items}
+          extra={{ items, monedasActivas }}
           onInactivar={seccion === 'categorias' ? () => setModal({ tipo: 'confirm', item: modal.item }) : undefined}
         />
       )}

@@ -63,8 +63,10 @@ export const NIVEL_MAXIMO = 3
 // Opciones del buscador de categoria padre: todas las categorias activas que
 // todavia admiten hijos (mas la actualmente seleccionada, aunque este inactiva,
 // para que el campo bloqueado en edicion no quede en blanco).
+// extra = { items, monedasActivas } -- items es la lista de la seccion activa
+// (categorias, en este caso).
 function opcionesCategoriaPadre(values, extra) {
-  return buildRutas(extra ?? [])
+  return buildRutas(extra?.items ?? [])
     .filter(c => (c.nivel < NIVEL_MAXIMO && c.activa !== false) || c.id === values.id_padre)
     .map(c => ({ value: c.id, label: c.ruta }))
 }
