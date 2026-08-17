@@ -346,7 +346,7 @@ PRIMARY KEY (id_etiqueta, entidad_tipo, entidad_id)
 id              INTEGER PK autoincrement
 id_documento    TEXT FK->documentos
 id_transaccion  TEXT FK->transacciones
-tipo_vinculo    TEXT           "comprobante" | "extracto" | "factura" | "sms"
+tipo_vinculo    TEXT           "factura" | "extracto"  -- CHECK constraint real, ver schema/finanzas_v1_4.sql
 confianza       REAL
 fecha_vinculo   TEXT           ISO 8601 con offset
 creado_por      TEXT           "claude" | "humano"

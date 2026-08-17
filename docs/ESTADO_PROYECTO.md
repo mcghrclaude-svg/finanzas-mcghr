@@ -1,7 +1,7 @@
 # ESTADO_PROYECTO.md  -- actualizado post-sesion Agosto 2026
 # Plataforma Financiera MCGHR
 
-**Fecha:** 9 Agosto 2026
+**Fecha:** 16 Agosto 2026
 **Proposito:** Documento de handoff para retomar el proyecto en claude.ai con contexto completo.
 
 ---
@@ -42,6 +42,31 @@ URLs:
 - App: http://localhost:3000
 - API: http://localhost:8000
 - Docs: http://localhost:8000/docs
+
+---
+
+## Entornos paralelos (dev / prod)
+
+Desde la sesion 2026-08-16 el stack corre en dos entornos completos y
+paralelos en la misma maquina, cada uno con su propio backend, DB y
+frontend -- ver `.env.dev` / `.env.prod` en la raiz del repo.
+
+| | dev | prod |
+|---|---|---|
+| Backend | http://localhost:8000 | http://localhost:8002 |
+| Frontend | http://localhost:3000 (`npm run dev`) | http://localhost:3002 (`npm run dev:prod`) |
+| DB | `data/dev/finanzas_dev.db` | `C:/Users/ghriz/OneDrive/Finanzas MCGHR/Prod/finanzas.db` |
+| Carpeta OneDrive | `data/dev/onedrive` | `C:/Users/ghriz/OneDrive/Finanzas MCGHR/Prod` |
+
+CORS de cada entorno se controla via `Settings.cors_origins`
+(`CORS_ORIGINS` en el `.env.*` correspondiente) -- ver CITA-016 para el bug
+que este mecanismo tenia hasta esta sesion (origenes hardcodeados en
+`main.py`, nunca conectados a `Settings`).
+
+La Tarea Programada de Windows que corre el import de gastos de la PWA
+(`FinanzasMCGHR_ImportPWA`) es un mecanismo unico, sin distincion de
+ambiente -- ver ADR-017 para la limitacion y CITA-015 para el detalle
+tecnico de como esta implementada.
 
 ---
 
@@ -154,33 +179,35 @@ Pendiente para una sesion futura (registrado como issues, no bloquea esta sesion
 |---|---|
 | Formato JSON OneDrive documentado | COMPLETO  -- docs/ETL_DISENO_FUNCIONAL.md |
 | carpeta OneDrive/PWA/ creada | COMPLETO |
-| catalogos.json generado por backend | DESACTUALIZADO  -- POST /catalogos/export/pwa produce `{categorias, contrapartes, cuentas}` con `{id, nombre}`; la PWA nueva (pwa-gastos/) espera `{categorias, medios_de_pago, monedas}` con `{id, etiqueta}`, incluyendo un catalogo de moneda que todavia no existe en el backend. Ver detalle en "Pendiente: backend PC" abajo |
-| Codigo PWA (React instalable en iPhone) -- `pwa-gastos/`, branch `chat-pwa-gastos` | PARCIAL  -- funcional de punta a punta en localhost, ver detalle abajo |
+| catalogos.json generado por backend | COMPLETO  -- contrato corregido: `{categorias, medios_de_pago, monedas}` con `{id, etiqueta}`, incluye catalogo de Moneda nuevo. Se regenera automaticamente en cada escritura de catalogo. Ver ADR-016 |
+| Codigo PWA (React instalable en iPhone) -- `pwa-gastos/`, mergeada a main (`d98ee9b`) | COMPLETO  -- publicada en GitHub Pages, instalada y usada en iPhone real |
 
-**PWA (`pwa-gastos/`) -- detalle, sesion 2026-08-09:**
+**PWA (`pwa-gastos/`) -- detalle, sesion 2026-08-16:**
 
 | Feature | Estado |
 |---|---|
-| Login MSAL (loginRedirect, scope Files.ReadWrite.All, cuentas personales) | COMPLETO  -- probado en localhost con cuenta Microsoft real |
+| Login MSAL (loginRedirect, scope Files.ReadWrite.All, cuentas personales) | COMPLETO  -- probado con cuenta Microsoft real, local y en produccion |
 | Selector de carpetas de OneDrive (raiz de gastos, catalogos, resumen) | COMPLETO  -- selector propio sobre Graph API, no el widget oficial de Microsoft. Ver ADR-014 y CITA-014 |
-| Alta de gasto (fecha, categoria/moneda/medio de pago con busqueda, monto, quien, foto con compresion) | COMPLETO |
+| Alta de gasto (fecha, categoria/moneda/medio de pago con busqueda, monto, quien, comentarios, foto con compresion) | COMPLETO  -- campo Comentarios agregado (commit `2e3c5f1`), mapeado a `Transaccion.descripcion`, truncado server-side a 1000 caracteres |
 | Botones Limpiar / Grabar y Cerrar / Grabar y Nuevo + mensaje de confirmacion/error de altura fija | COMPLETO |
 | Moneda y medio de pago por default (Configuracion), precargados y editables en cada alta | COMPLETO  -- mismo patron que usuario por default |
 | Guardado local (IndexedDB, sin campo de estado -- presencia = pendiente) | COMPLETO |
-| Sincronizacion IndexedDB -> OneDrive (JSON + foto, borra al exito) | COMPLETO  -- probado con datos de ejemplo; subida real a una carpeta configurada todavia no probada de punta a punta |
+| Sincronizacion IndexedDB -> OneDrive (JSON + foto, borra al exito) | COMPLETO  -- probado de punta a punta con carpeta real configurada |
 | Ver gastos pendientes (listado + borrar) | COMPLETO |
+| Safe area iOS (notch/Dynamic Island, home indicator) + version (hash de commit) visible en Home | COMPLETO  -- commit `716445d`. Ver CITA-017 |
 | Resumen del mes | PENDIENTE (por diseno)  -- placeholder deshabilitado, formato del JSON de resumen no definido todavia |
 | PWA instalable (manifest + service worker, vite-plugin-pwa) | COMPLETO |
-| Workflow GitHub Actions (build + deploy a GitHub Pages) | COMPLETO  -- creado, no ejecutado todavia |
-| Deploy real a GitHub Pages | PENDIENTE  -- accion manual, ver tabla de acciones pendientes abajo |
-| Prueba en iPhone real (Safari, instalada como PWA) | PENDIENTE |
+| Workflow GitHub Actions (build + deploy a GitHub Pages) | COMPLETO  -- base path condicional por comando, ver CITA-018 |
+| Deploy real a GitHub Pages | COMPLETO |
+| Prueba en iPhone real (Safari, instalada como PWA) | COMPLETO  -- alta de gasto y sync probados end-to-end con datos reales |
 
-**Pendiente: backend PC para la PWA (no arranco):**
+**Import de gastos PWA -> DB de escritorio (sesion 2026-08-16, antes "backend PC para la PWA"):**
 
 | Item | Estado |
 |---|---|
-| Script Python que lee `pendientes/`, valida contra schema real, inserta en Inbox, mueve a `procesados/` | PENDIENTE  -- no arranco |
-| Exportador de catalogos actualizado (medios_de_pago desde `cuentas`, catalogo real de moneda) | PENDIENTE  -- no arranco. El export actual no coincide con el contrato que espera la PWA nueva (ver fila de arriba) |
+| Script `scripts/import_pwa_gastos.py`: lee JSONs de OneDrive, valida, inserta transaccion confirmada, mueve a procesados | COMPLETO  -- idempotente via tabla `archivos_mobile_procesados`, corre sin depender del backend levantado. Ver ADR-015 |
+| Exportador de catalogos actualizado (medios_de_pago desde `cuentas`, catalogo real de Moneda) | COMPLETO  -- ver ADR-016 |
+| Tarea Programada de Windows (`FinanzasMCGHR_ImportPWA`) + pantalla de control en modulo PWA del frontend | COMPLETO como mecanismo -- confirmado corriendo sin admin (`Logon Mode: Interactive only`), proceso 5 archivos reales en la ultima corrida. Actualmente **deshabilitada** (pausada), activarla es una accion manual. Es global a la maquina, no por ambiente -- ver ADR-017 y CITA-015 |
 | Generador de JSON de resumen mensual | PENDIENTE  -- formato todavia no definido |
 
 ---
@@ -200,8 +227,8 @@ Pendiente para una sesion futura (registrado como issues, no bloquea esta sesion
 
 | Entrega | Descripcion | Estado |
 |---|---|---|
-| 4A | PWA React: captura rapida de gastos desde iPhone | PARCIAL  -- funcional en localhost (ver Capa 4 arriba), pendiente deploy a GitHub Pages y prueba en iPhone real |
-| 4B | Integracion con ETL via OneDrive (script Python de PC + exportador de catalogos actualizado) | PENDIENTE  -- no arranco |
+| 4A | PWA React: captura rapida de gastos desde iPhone | COMPLETO  -- publicada, instalada y usada en iPhone real (ver Capa 4 arriba) |
+| 4B | Integracion con ETL via OneDrive (script Python de PC + exportador de catalogos actualizado) | COMPLETO como mecanismo -- Tarea Programada implementada y confirmada funcionando, actualmente deshabilitada (activarla es accion manual). Ver ADR-017 |
 
 ### Punto 5  -- Completar routers backend (futuro)
 
@@ -236,9 +263,12 @@ Transacciones, presupuestos, obligaciones, inversiones, reportes, dashboard real
 | 1 | Seed inbox en DB dev | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
 | 2 | Configurar tarea ETL en Claude Desktop | Ver docs/ETL_CONFIGURACION_CLAUDE_DESKTOP.md |
 | 3 | Agregar script arranque a barra de tareas | Ver instrucciones en docs/INSTRUCCIONES_POST_INSTALACION.md |
-| 4 | Habilitar GitHub Pages para pwa-gastos | Settings > Pages > Source: GitHub Actions (una sola vez) |
-| 5 | Agregar Redirect URI de produccion en Azure Portal | Despues del primer deploy, agregar `https://mcghrclaude-svg.github.io/finanzas-mcghr/` (con barra final) al App Registration `GastosApp-MCGHR` |
-| 6 | Probar pwa-gastos en iPhone real | Desde Safari, "Agregar a pantalla de inicio", probar login/selector/alta/sync con cuenta Microsoft real (GHR y luego MC) |
+| 4 | Activar la Tarea Programada `FinanzasMCGHR_ImportPWA` (esta deshabilitada) si se quiere import automatico | Desde el modulo PWA del frontend, o `schtasks /Change /TN FinanzasMCGHR_ImportPWA /ENABLE`. Recordar que es global a la maquina (ADR-017): activarla desde dev pisa la config de prod y viceversa |
+| 5 | Probar pwa-gastos con la cuenta Microsoft de MC (Martha) | Ya probado end-to-end con GHR (Hernan); falta repetir login/selector/alta/sync con la cuenta de MC |
+
+Items resueltos en la sesion 2026-08-16 (ya no requieren accion): habilitar
+GitHub Pages, agregar Redirect URI de produccion en Azure Portal, deploy
+real, prueba en iPhone real con GHR -- ver Capa 4 arriba.
 
 Tokens OAuth Gmail (hernan y malu): resuelto -- confirmado con busquedas reales exitosas en ambas cuentas (sesiones de julio 2026).
 
@@ -252,7 +282,7 @@ Tokens OAuth Gmail (hernan y malu): resuelto -- confirmado con busquedas reales 
 | #5 | Regenerar token GitHub | URGENTE |
 | #8 | Configurar tarea programada ETL Claude Desktop | ALTA |
 | #9 | Implementar routers backend pendientes | MEDIA |
-| #10 | PWA Mobile  -- Entrega 4 | BAJA |
+| #10 | PWA Mobile  -- Entrega 4 | BAJA  -- funcional de punta a punta (ver Capa 4 arriba); revisar si corresponde cerrarlo en GitHub |
 
 ---
 
@@ -300,4 +330,4 @@ main en el commit `36a7bef` (branch `docs/sync-estado-real-proyecto`).
 
 ---
 
-*Ultima actualizacion: 9 Agosto 2026  -- Sesion PWA de captura de gastos, primera etapa funcional (branch chat-pwa-gastos, pendiente de mergear a main)*
+*Ultima actualizacion: 16 Agosto 2026  -- Sesion import de gastos PWA a la DB de escritorio + deploy y prueba real de la PWA (branches chat-pwa-gastos y feature/pwa-import-backend, mergeadas a main). Ver ADR-015 a ADR-017 y CITA-015 a CITA-018.*

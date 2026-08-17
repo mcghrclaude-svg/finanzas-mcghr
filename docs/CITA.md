@@ -33,3 +33,7 @@ el archivo individual de cada CITA.
 | CITA-012 | Divergencia silenciosa entre .claude\skills y el repo | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-012.md |
 | CITA-013 | Hook autogenerador causa conflictos de merge entre branches paralelas | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-013.md |
 | CITA-014 | Widget OneDrive File Picker v8 no viable para cuentas personales (bloqueo AADSTS9002332) | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-014.md |
+| CITA-015 | Tarea Programada de Windows necesita un .bat intermedio (cwd + quoting de schtasks) | 1-AUTOMATIZADO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-015.md |
+| CITA-016 | CORS con origenes hardcodeados en vez de settings.cors_origins | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-016.md |
+| CITA-017 | Safe area en iOS: sin env(safe-area-inset-*) los toques bajo el notch se pierden | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-017.md |
+| CITA-018 | Base path de Vite para GitHub Pages: condicional por comando, no por PROD | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-018.md |

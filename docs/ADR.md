@@ -480,3 +480,147 @@ el resto de la app para subir/leer archivos -- sin scope ni dependencia npm nuev
 AADSTS9002332 confirmado por Microsoft al pedir token de scope SharePoint. Ver CITA-014
 para el detalle paso a paso del debugging.
 
+---
+
+## ADR-015 -- Gastos de la PWA se insertan como transaccion confirmada, no via Inbox
+
+**Fecha:** 2026-08-16
+**Estado:** ACTIVA
+**Origen:** CONSENSO
+
+**Contexto:**
+El ETL de correo/PDF inserta transacciones en estado inicial y las hace
+pasar por el modulo Inbox (revision humana, clasificacion, correlacion de
+eventos) antes de considerarlas confirmadas -- es un canal de baja
+confianza: el LLM interpreta texto no estructurado y puede equivocarse.
+La PWA de captura de gastos (`pwa-gastos/`) es distinta: el usuario elige
+categoria, moneda, medio de pago y monto de forma explicita en un
+formulario, el mismo tipo de interaccion que el alta manual ya existente
+en el frontend de escritorio (`crear_manual()` en
+`backend/repositories/transacciones_repository.py`).
+
+**Decision:**
+`pwa_import_service.py` inserta cada gasto de la PWA directo como
+transaccion `estado='confirmado'`, `revisado_humano=1` -- el mismo patron
+que el alta manual de escritorio. No pasa por Inbox ni por ningun paso de
+revision automatica. Si el usuario se equivoca al cargar (categoria mal
+elegida, monto incorrecto), la correccion se hace despues buscando y
+editando la transaccion en el modulo Transacciones, igual que con
+cualquier alta manual.
+
+**Alternativas descartadas:**
+- Insertar como pendiente y hacerla pasar por Inbox: descartado porque
+  trata la carga manual explicita del propio usuario con la misma
+  desconfianza que una clasificacion automatica de texto no estructurado,
+  agregando friccion (revision extra) sin beneficio real -- el usuario ya
+  eligio cada campo a mano
+
+**Consecuencias:**
+- Un gasto cargado desde la PWA aparece inmediatamente en Transacciones
+  como confirmado, sin paso intermedio
+- La correccion de errores de carga es responsabilidad del usuario despues
+  del hecho (buscar y editar), no un flujo de revision incorporado
+- `pwa_import_service.py` reutiliza los mismos campos y estado que
+  `crear_manual()` -- cualquier cambio futuro al contrato del alta manual
+  de escritorio debe revisar tambien este service
+
+**Evidencia:** Commit `b038795` (feat: importar gastos de la PWA mobile a la
+DB de escritorio), docstring de `backend/services/pwa_import_service.py`.
+
+---
+
+## ADR-016 -- Catalogo de Moneda y contrato real de catalogos.json para la PWA
+
+**Fecha:** 2026-08-16
+**Estado:** ACTIVA
+**Origen:** CONSENSO
+
+**Contexto:**
+La PWA nueva (`pwa-gastos/`) necesita elegir moneda por gasto, pero el
+backend no tenia un catalogo de Moneda -- las monedas estaban implicitas
+en otros campos, sin ABM propio. Ademas, el exportador de catalogos
+(`POST /catalogos/export/pwa`) generaba un JSON con la forma vieja
+`{categorias, contrapartes, cuentas}` usando `{id, nombre}` en cada item,
+pensado para un consumidor distinto; la PWA nueva espera
+`{categorias, medios_de_pago, monedas}` con `{id, etiqueta}` en cada item.
+Este desalineamiento ya estaba senalado como pendiente en
+`docs/ESTADO_PROYECTO.md` (sesion 2026-08-09) antes de resolverse.
+
+**Decision:**
+- Catalogo de Moneda nuevo (codigo, simbolo, nombre), con CRUD completo
+  siguiendo el mismo patron que Categoria/Cuenta (`backend/models/catalogo.py`,
+  router `catalogos.py`).
+- El exportador de catalogos PWA se corrige para producir el contrato real
+  que la PWA consume: `{categorias, medios_de_pago, monedas}`, cada item
+  como `{id, etiqueta}`. `medios_de_pago` sale de `cuentas` (no es un
+  catalogo separado).
+- `catalogos.json` se regenera automaticamente en cada escritura a
+  cualquiera de esos catalogos (alta/baja/modificacion), no solo bajo
+  demanda -- para que la PWA siempre lea un archivo actualizado sin que el
+  usuario tenga que disparar una exportacion manual.
+
+**Alternativas descartadas:**
+- Adaptar la PWA al contrato viejo (`{id, nombre}`, sin monedas):
+  descartado porque el contrato viejo no tiene forma de representar
+  moneda por gasto, que es un requisito real de la PWA
+
+**Consecuencias:**
+- Migracion `schema/finanzas_v1_5.sql` agrega la tabla `monedas`
+- Cualquier consumidor viejo del JSON con la forma `{id, nombre}` (si
+  existiera) se rompe -- a la fecha de esta decision el unico consumidor
+  real es la PWA nueva, que ya espera el contrato corregido
+- El catalogo de medios de pago sigue siendo una vista sobre `cuentas`, no
+  una tabla independiente -- agregar un medio de pago nuevo sigue siendo
+  agregar una cuenta
+
+**Evidencia:** Commit `b038795` (feat: importar gastos de la PWA mobile a la
+DB de escritorio); `docs/ESTADO_PROYECTO.md` sesion 2026-08-09, fila
+"catalogos.json generado por backend -- DESACTUALIZADO".
+
+---
+
+## ADR-017 -- Tarea Programada de Windows es global a la maquina, no por ambiente
+
+**Fecha:** 2026-08-16
+**Estado:** ACTIVA
+**Origen:** CONSENSO
+
+**Contexto:**
+El import de gastos de la PWA a la DB de escritorio corre como una Tarea
+Programada de Windows (`FinanzasMCGHR_ImportPWA`, ver CITA-015) controlada
+desde la pantalla PWA del frontend (`crear_o_actualizar` /
+`pausar` / `reanudar` en `scheduled_task_service.py`). El proyecto tiene
+entornos paralelos dev y prod corriendo en la misma maquina (puertos
+8000/3000 dev, 8002/3002 prod, ver `docs/ESTADO_PROYECTO.md`), cada uno con
+su propio backend y su propia DB. Pero Task Scheduler identifica la tarea
+por un unico nombre fijo (`TASK_NAME = "FinanzasMCGHR_ImportPWA"`), sin
+distincion de ambiente.
+
+**Decision:**
+Se acepta la limitacion tal cual: la Tarea Programada es una sola,
+compartida por toda la maquina. Activarla o reconfigurarla (carpetas,
+intervalo, ambiente destino) desde el backend de dev pisa la configuracion
+que haya dejado el backend de prod, y viceversa -- no hay aislamiento entre
+ambientes para este mecanismo en particular. Es una limitacion de diseno
+conocida, no un bug: no se implementa aislamiento ahora porque el uso real
+es un solo humano operando un ambiente por vez (igual razonamiento que
+ADR-010 para las branches de git).
+
+**Alternativas descartadas:**
+- Nombre de tarea con sufijo de ambiente (`FinanzasMCGHR_ImportPWA_dev` /
+  `_prod`), cada backend controla solo la suya: es la mejora futura
+  identificada, no implementada ahora porque agrega complejidad
+  (dos tareas posibles, UI tiene que dejar claro cual esta activa) sin
+  necesidad real todavia
+
+**Consecuencias:**
+- Si se deja la tarea activa apuntando a prod y despues se usa la pantalla
+  de dev para "probar" la configuracion, se corre el riesgo de pisar la
+  tarea real de prod sin darse cuenta
+- Mejora futura anotada: `TASK_NAME` por ambiente
+  (`FinanzasMCGHR_ImportPWA_{settings.env}`), de forma que dev y prod
+  controlen tareas distintas y no se pisen
+
+**Evidencia:** `backend/services/scheduled_task_service.py`
+(`TASK_NAME` como constante unica, sin sufijo de ambiente), sesion 2026-08-16.
+
