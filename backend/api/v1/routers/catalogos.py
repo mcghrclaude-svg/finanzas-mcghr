@@ -20,73 +20,28 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
 from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona, Moneda, EntidadPotencial
 from backend.models.transaccion import Transaccion
+from backend.schemas.catalogos import (
+    CategoriaCreate,
+    CategoriaUpdate,
+    CuentaCreate,
+    CuentaUpdate,
+    ContraparteCreate,
+    ContraparteUpdate,
+    PersonaCreate,
+    PersonaUpdate,
+    MonedaCreate,
+    MonedaUpdate,
+)
 from backend.services.entidades_potenciales_service import confirmar_ep
 from backend.services.pwa_export_service import exportar_catalogos_pwa as generar_catalogos_pwa
 
 router = APIRouter()
-
-
-# -- Schemas Pydantic --------------------------------------------------
-
-class CategoriaCreate(BaseModel):
-    id: str
-    nombre: str
-    nivel: int = 1
-    id_padre: str | None = None
-    tipo_patron_gasto: str = "variable_frecuente"
-
-class CategoriaUpdate(BaseModel):
-    nombre: str | None = None
-    tipo_patron_gasto: str | None = None
-
-class CuentaCreate(BaseModel):
-    id: str
-    nombre: str
-    tipo: str | None = None
-    banco: str | None = None
-    moneda: str = "COP"
-    es_corporativa: bool = False
-
-class CuentaUpdate(BaseModel):
-    nombre: str | None = None
-    tipo: str | None = None
-    banco: str | None = None
-    moneda: str | None = None
-    es_corporativa: bool | None = None
-
-class ContraparteCreate(BaseModel):
-    id: str
-    nombre: str
-    tipo: str | None = None
-
-class ContraparteUpdate(BaseModel):
-    nombre: str | None = None
-    tipo: str | None = None
-
-class PersonaCreate(BaseModel):
-    id: str
-    nombre: str
-    alias: str | None = None
-
-class PersonaUpdate(BaseModel):
-    nombre: str | None = None
-    alias: str | None = None
-
-class MonedaCreate(BaseModel):
-    codigo: str
-    nombre: str
-    simbolo: str | None = None
-
-class MonedaUpdate(BaseModel):
-    nombre: str | None = None
-    simbolo: str | None = None
 
 
 # -- Categorias --------------------------------------------------------
@@ -439,12 +394,11 @@ async def crear_moneda(
     body: MonedaCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    codigo = body.codigo.strip().upper()
-    existing = await db.get(Moneda, codigo)
+    existing = await db.get(Moneda, body.codigo)
     if existing:
-        raise HTTPException(status_code=409, detail=f"Currency '{codigo}' already exists")
+        raise HTTPException(status_code=409, detail=f"Currency '{body.codigo}' already exists")
     nueva = Moneda(
-        codigo=codigo,
+        codigo=body.codigo,
         nombre=body.nombre,
         simbolo=body.simbolo,
         activa=True,
