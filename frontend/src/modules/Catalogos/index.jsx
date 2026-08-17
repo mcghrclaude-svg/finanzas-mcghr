@@ -18,7 +18,7 @@ import { generarSlugUnico, buildTree, CAMPOS_CATEGORIAS } from './categoriaConfi
 // Opciones del dropdown de Currency en el formulario de Cuentas -- catalogo
 // real de Moneda (solo activas), no una lista fija. extra = { items, monedasActivas }.
 function opcionesMoneda(values, extra) {
-  return (extra?.monedasActivas ?? []).map(m => ({ value: m.id, label: `${m.id} — ${m.nombre}` }))
+  return (extra?.monedasActivas ?? []).map(m => ({ value: m.id, label: `${m.id} - ${m.nombre}` }))
 }
 
 // ── Configuracion ─────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ const CAMPOS = {
     },
     { key: 'banco',  label: 'Bank',     type: 'text' },
     { key: 'moneda', label: 'Currency', type: 'select', hint: 'Optional -- leave blank for multi-currency accounts (e.g. credit cards)',
-      emptyLabel: '— No currency (multi-currency account) —',
+      emptyLabel: '-- No currency (multi-currency account) --',
       options: opcionesMoneda,
     },
     { key: 'propietario', label: 'Owner', type: 'select', required: true,
