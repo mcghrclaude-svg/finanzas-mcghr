@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "generado_en": "2026-08-08T00:00:00Z",
+  "categorias": [
+    { "id": "ALIMENTACION", "etiqueta": "Alimentacion" },
+    { "id": "TRANSPORTE", "etiqueta": "Transporte" },
+    { "id": "SALUD", "etiqueta": "Salud" },
+    { "id": "ENTRETENIMIENTO", "etiqueta": "Entretenimiento" },
+    { "id": "HOGAR", "etiqueta": "Hogar" }
+  ],
+  "medios_de_pago": [
+    { "id": "BCO-CC-GHR", "etiqueta": "Cuenta corriente GHR" },
+    { "id": "BCO-TC-GHR", "etiqueta": "Tarjeta credito GHR" },
+    { "id": "BCO-CC-MC", "etiqueta": "Cuenta corriente MC" },
+    { "id": "EFECTIVO", "etiqueta": "Efectivo" }
+  ],
+  "monedas": [
+    { "id": "COP", "etiqueta": "Peso colombiano" },
+    { "id": "USD", "etiqueta": "Dolar estadounidense" },
+    { "id": "EUR", "etiqueta": "Euro" }
+  ]
+}

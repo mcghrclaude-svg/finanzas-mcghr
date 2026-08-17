@@ -32,3 +32,4 @@ el archivo individual de cada CITA.
 | CITA-011 | Inconsistencia interna entre archivos del mismo entregable | 1-AUTOMATIZADO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-011.md |
 | CITA-012 | Divergencia silenciosa entre .claude\skills y el repo | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-012.md |
 | CITA-013 | Hook autogenerador causa conflictos de merge entre branches paralelas | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-013.md |
+| CITA-014 | Widget OneDrive File Picker v8 no viable para cuentas personales (bloqueo AADSTS9002332) | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-014.md |
