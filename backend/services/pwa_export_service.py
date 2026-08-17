@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.config import settings
@@ -68,8 +68,14 @@ async def exportar_catalogos_pwa(db: AsyncSession) -> dict:
         ],
     }
 
-    onedrive = Path(settings.onedrive_path)
-    pwa_dir = onedrive / "PWA"
+    # La carpeta destino se lee de la config guardada en la pantalla PWA
+    # (config_pwa_import.carpeta_catalogos) -- si todavia no se configuro
+    # nada, se cae al default historico (onedrive_path/PWA) para no romper
+    # instalaciones que no pasaron por esa pantalla.
+    carpeta_configurada = (await db.execute(
+        text("SELECT carpeta_catalogos FROM config_pwa_import WHERE id = 1")
+    )).scalar_one_or_none()
+    pwa_dir = Path(carpeta_configurada) if carpeta_configurada else Path(settings.onedrive_path) / "PWA"
     try:
         pwa_dir.mkdir(parents=True, exist_ok=True)
         ruta_json = pwa_dir / "catalogos.json"
