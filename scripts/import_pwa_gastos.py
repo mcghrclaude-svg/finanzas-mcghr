@@ -11,7 +11,7 @@ Por cada carpeta padre recibida en --carpetas, recorre <carpeta>/pendientes/:
      reprocesar si el script ya corrio sobre ese JSON antes.
   3. Si es valido y no-duplicado: inserta via pwa_import_service, con el
      mismo patron que el alta manual de escritorio (estado='confirmado',
-     revisado_humano=1 -- no pasa por el Inbox, decision de diseño).
+     revisado_humano=1 -- no pasa por el Inbox, decision de diseno).
   4. Si hay foto: la copia a documentos_path.
   5. Mueve JSON (+foto) a <carpeta>/procesados/ si todo salio bien.
   6. Si el JSON es invalido o fallo la insercion: lo deja en pendientes/ y

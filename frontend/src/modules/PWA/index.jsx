@@ -262,7 +262,7 @@ export default function PWA() {
         />
 
         <FolderPickerField
-          label={<>Monthly summary folder <span className="normal-case text-gray-400">(field only — generation not implemented yet)</span></>}
+          label={<>Monthly summary folder <span className="normal-case text-gray-400">(field only -- generation not implemented yet)</span></>}
           value={config.carpeta_resumen_mensual}
           onChange={v => setConfig({ ...config, carpeta_resumen_mensual: v })}
           initialPath={ultimoPathConocido(config)}

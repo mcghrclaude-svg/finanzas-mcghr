@@ -3,7 +3,7 @@ pwa_import_service -- inserta un gasto capturado por la PWA mobile como
 transaccion confirmada, con el mismo patron que el alta manual de escritorio
 (backend/repositories/transacciones_repository.py:crear_manual).
 
-Decision (ver conversacion de diseño): la PWA es un canal de carga manual
+Decision (ver conversacion de diseno): la PWA es un canal de carga manual
 de confianza equivalente al alta de escritorio, no un canal de baja confianza
 como el ETL de correo/PDF. Por eso NO pasa por el Inbox -- nace ya
 'confirmado', igual que crear_manual().
