@@ -1,6 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'node:child_process'
+
+// Hash corto del commit actual, para mostrar en pantalla y poder
+// confirmar desde el celular si una actualizacion ya llego. Si git no
+// esta disponible (build fuera de un checkout) cae a 'dev'.
+function commitHash() {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {
+    return 'dev'
+  }
+}
 
 export default defineConfig(({ command, isPreview }) => ({
   // "command" es 'serve' tanto para "vite dev" como para "vite preview" --
@@ -8,6 +20,9 @@ export default defineConfig(({ command, isPreview }) => ({
   // Pages) y "vite preview" (que sirve ese mismo build) necesitan el
   // mismo base; solo el dev server sirve desde la raiz.
   base: command === 'build' || isPreview ? '/finanzas-mcghr/' : '/',
+  define: {
+    __APP_VERSION__: JSON.stringify(commitHash()),
+  },
   plugins: [
     react(),
     VitePWA({

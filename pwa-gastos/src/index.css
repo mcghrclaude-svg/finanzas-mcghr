@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* viewport-fit=cover (index.html) dibuja el contenido edge-to-edge,
+   por debajo del notch/Dynamic Island y de la home indicator bar en
+   iOS. Se compensa una sola vez aca (no en cada pantalla) porque
+   todos los modulos cuelgan del mismo #root. */
+html, body, #root {
+  background-color: #f9fafb; /* gray-50: mismo fondo que usan las pantallas */
+}
+
+#root {
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}

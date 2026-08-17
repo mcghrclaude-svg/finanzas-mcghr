@@ -32,6 +32,8 @@ export default function Home() {
             Resumen del mes
           </button>
         </div>
+
+        <p className="mt-8 text-center text-xs text-gray-400">v{__APP_VERSION__}</p>
       </div>
     </div>
   )
