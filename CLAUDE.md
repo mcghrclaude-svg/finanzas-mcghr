@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 01:14
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 01:29
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+44186ce feat(frontend): editor jerarquico de categorias reemplaza Catalogs V2
+33648ae docs: auto-update 2026-08-17 01:14
 5bec9ae fix(scripts): guard en iniciar_finanzas.ps1 para no duplicar procesos
 254bfdf docs: auto-update 2026-08-17 01:13
 95fb0f7 fix(backend): eliminar duplicacion de schemas de catalogos
@@ -86,5 +88,3 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 e34492b docs: auto-update 2026-08-16 23:16
 fc31c57 chore: agregar script dev:prod y gitignorar env local de produccion
 4e413da docs: auto-update 2026-08-16 23:16
-61a71fa fix(backend): exportar catalogos.json a la carpeta configurada en Config PWA
-9154817 docs: auto-update 2026-08-16 23:16
