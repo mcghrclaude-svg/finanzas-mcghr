@@ -1,26 +1,21 @@
 /**
  * modules/PWA/index.jsx
  * Configuracion de la importacion automatica de gastos de la PWA mobile:
- * intervalo, on/off (Tarea Programada de Windows), carpetas de OneDrive,
- * carpeta de catalogos, carpeta de resumen mensual (a futuro), e historial
- * de corridas con errores.
+ * intervalo, on/off (Tarea Programada de Windows), raices de OneDrive
+ * (una por persona -- la propia, la de Martha como carpeta compartida,
+ * etc.) e historial de corridas con errores. Cada raiz implica
+ * pendientes/, procesados/, Catalogos/ y Resumen/ debajo -- no son campos
+ * separados (ver ADR-018).
  */
 import { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import { pwaConfigApi } from '@/api/pwaConfig'
 import FolderPickerModal from '@/components/shared/FolderPickerModal'
-import FolderPickerField from '@/components/shared/FolderPickerField'
 
-// Punto de partida comodo para un picker nuevo: cualquier carpeta ya
-// guardada en los tres campos, en vez de arrancar siempre desde las
-// unidades de disco.
+// Punto de partida comodo para un picker nuevo: la ultima raiz ya
+// guardada, en vez de arrancar siempre desde las unidades de disco.
 function ultimoPathConocido(config) {
-  return (
-    config.carpetas_gastos?.[config.carpetas_gastos.length - 1] ??
-    config.carpeta_catalogos ??
-    config.carpeta_resumen_mensual ??
-    undefined
-  )
+  return config.raices?.[config.raices.length - 1] ?? undefined
 }
 
 function fmtFecha(iso) {
@@ -48,7 +43,7 @@ function CarpetasList({ carpetas, onChange, initialPath }) {
   return (
     <div className="space-y-2">
       {carpetas.length === 0 && (
-        <p className="text-sm text-gray-400 italic">No expense folders configured yet.</p>
+        <p className="text-sm text-gray-400 italic">No root folders configured yet.</p>
       )}
       {carpetas.map((c, idx) => (
         <div key={c} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
@@ -160,9 +155,7 @@ export default function PWA() {
     try {
       const actualizado = await pwaConfigApi.actualizar({
         intervalo_minutos: Number(config.intervalo_minutos),
-        carpetas_gastos: config.carpetas_gastos,
-        carpeta_catalogos: config.carpeta_catalogos,
-        carpeta_resumen_mensual: config.carpeta_resumen_mensual,
+        raices: config.raices,
       })
       setConfig(actualizado)
       toast.success('Configuration saved')
@@ -245,28 +238,14 @@ export default function PWA() {
 
         <div>
           <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-            Expense folders (parents of pendientes/ and procesados/)
+            Root folders (one per person -- pendientes/, procesados/, Catalogos/ and Resumen/ are created automatically underneath)
           </label>
           <CarpetasList
-            carpetas={config.carpetas_gastos}
-            onChange={v => setConfig({ ...config, carpetas_gastos: v })}
+            carpetas={config.raices}
+            onChange={v => setConfig({ ...config, raices: v })}
             initialPath={ultimoPathConocido(config)}
           />
         </div>
-
-        <FolderPickerField
-          label="Catalogs folder (where catalogos.json is written)"
-          value={config.carpeta_catalogos}
-          onChange={v => setConfig({ ...config, carpeta_catalogos: v })}
-          initialPath={ultimoPathConocido(config)}
-        />
-
-        <FolderPickerField
-          label={<>Monthly summary folder <span className="normal-case text-gray-400">(field only -- generation not implemented yet)</span></>}
-          value={config.carpeta_resumen_mensual}
-          onChange={v => setConfig({ ...config, carpeta_resumen_mensual: v })}
-          initialPath={ultimoPathConocido(config)}
-        />
 
         <div className="flex justify-end pt-2 border-t border-gray-100">
           <button
