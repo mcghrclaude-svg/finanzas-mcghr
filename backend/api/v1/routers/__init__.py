@@ -11,6 +11,7 @@ from backend.api.v1.routers import (
     backup,
     dashboard,
     tools,
+    pwa_config,
 )
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "backup",
     "dashboard",
     "tools",
+    "pwa_config",
 ]

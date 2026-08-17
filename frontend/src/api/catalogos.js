@@ -66,6 +66,19 @@ export const catalogosApi = {
   descartarPendiente: (id) =>
     client.post(`${BASE}/pendientes/${id}/descartar`).then(r => r.data),
 
+  // Monedas
+  getMonedas: (params = {}) =>
+    client.get(`${BASE}/monedas`, { params }).then(r => r.data),
+
+  crearMoneda: (data) =>
+    client.post(`${BASE}/monedas`, data).then(r => r.data),
+
+  editarMoneda: (id, data) =>
+    client.patch(`${BASE}/monedas/${id}`, data).then(r => r.data),
+
+  inactivarMoneda: (id) =>
+    client.delete(`${BASE}/monedas/${id}`).then(r => r.data),
+
   // Personas
   getPersonas: (params = {}) =>
     client.get(`${BASE}/personas`, { params }).then(r => r.data),

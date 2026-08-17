@@ -15,6 +15,7 @@ import Inversiones from '@/modules/Inversiones'
 import Catalogos from '@/modules/Catalogos'
 import Analitica from '@/modules/Analitica'
 import Backup from '@/modules/Backup'
+import PWA from '@/modules/PWA'
 import Tools from '@/modules/Tools'
 import CatalogsV2 from '@/modules/Tools/CatalogsV2'
 import { Toaster } from 'react-hot-toast'
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/catalogos/*"   element={<Catalogos />} />
           <Route path="/analitica"     element={<Analitica />} />
           <Route path="/backup"        element={<Backup />} />
+          <Route path="/pwa"           element={<PWA />} />
           {import.meta.env.VITE_ENV === 'dev' && (
             <>
               <Route path="/tools" element={<Tools />} />
