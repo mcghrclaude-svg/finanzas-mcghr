@@ -145,31 +145,37 @@ export default function NuevoGasto() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Combobox
-              label="Categoria"
-              options={catalogos.categorias}
-              value={idCategoria}
-              onChange={setIdCategoria}
-              placeholder="Buscar categoria..."
-            />
+            <div>
+              <Combobox
+                label="Categoria"
+                options={catalogos.categorias}
+                value={idCategoria}
+                onChange={setIdCategoria}
+                placeholder="Buscar categoria..."
+              />
+            </div>
 
-            <Combobox
-              label="Medio de pago"
-              options={catalogos.medios_de_pago}
-              value={idMedioPago}
-              onChange={setIdMedioPago}
-              placeholder="Buscar medio de pago..."
-            />
+            <div>
+              <Combobox
+                label="Medio de pago"
+                options={catalogos.medios_de_pago}
+                value={idMedioPago}
+                onChange={setIdMedioPago}
+                placeholder="Buscar medio de pago..."
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Combobox
-              label="Moneda"
-              options={catalogos.monedas}
-              value={idMoneda}
-              onChange={setIdMoneda}
-              placeholder="Buscar moneda..."
-            />
+            <div>
+              <Combobox
+                label="Moneda"
+                options={catalogos.monedas}
+                value={idMoneda}
+                onChange={setIdMoneda}
+                placeholder="Buscar moneda..."
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
