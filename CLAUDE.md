@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+501ebb0 feat(frontend): modulo PWA muestra una lista de raices, no 3 campos
+2f0969e docs: auto-update 2026-08-17 16:15
 024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
 c32c594 docs: auto-update 2026-08-17 16:15
 05f0b44 feat(schema): config_pwa_import usa raiz unica en vez de 3 carpetas
@@ -86,5 +88,3 @@ cb412ca docs: auto-update 2026-08-17 14:45
 5e6b77d fix(catalogos): CITA-009 em-dash en label/emptyLabel de Currency
 cb861ff docs: auto-update 2026-08-17 14:44
 941eb6e fix(catalogos): dropdown de Currency en Cuentas usa catalogo real de Moneda
-2d5bbfe docs: auto-update 2026-08-17 13:44
-87aa398 feat(catalogos): propietario y visibilidad PWA en Cuenta, moneda opcional
