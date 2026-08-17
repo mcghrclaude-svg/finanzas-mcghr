@@ -19,6 +19,7 @@ from pathlib import Path
 
 TASK_NAME = "FinanzasMCGHR_ImportPWA"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+BAT_PATH = REPO_ROOT / "scripts" / "_run_import_pwa.bat"
 
 
 @dataclass
@@ -39,11 +40,28 @@ def _run_schtasks(args: list[str]) -> subprocess.CompletedProcess:
 
 
 def _comando_script(ambiente: str, carpetas: list[str]) -> str:
+    """
+    Task Scheduler NO hereda el directorio de trabajo del repo -- por defecto
+    corre desde la carpeta del ejecutable (venv\\Scripts\\), no desde la raiz
+    del repo, y "-m scripts.import_pwa_gastos" necesita el repo como cwd para
+    resolver el paquete "scripts".
+
+    Probado: pasar "cmd.exe /c "cd /d "X" && ..."" directo como /TR de schtasks
+    NO funciona -- las comillas anidadas confunden el parser de schtasks, que
+    termina ignorando el "cmd.exe /c" y guardando solo el comando de Python
+    pelado (confirmado inspeccionando el XML de la tarea creada). En vez de
+    pelear con el quoting de Windows, se escribe un .bat chico que hace el
+    cd y corre el script, y /TR apunta directo a ese .bat (sin anidamiento).
+    """
     partes_carpetas = " ".join(f'"{c}"' for c in carpetas)
-    return (
+    contenido_bat = (
+        "@echo off\r\n"
+        f'cd /d "{REPO_ROOT}"\r\n'
         f'"{sys.executable}" -m scripts.import_pwa_gastos '
-        f'--ambiente {ambiente} --carpetas {partes_carpetas}'
+        f'--ambiente {ambiente} --carpetas {partes_carpetas}\r\n'
     )
+    BAT_PATH.write_text(contenido_bat, encoding="utf-8")
+    return f'"{BAT_PATH}"'
 
 
 def crear_o_actualizar(intervalo_minutos: int, ambiente: str, carpetas: list[str]) -> None:
