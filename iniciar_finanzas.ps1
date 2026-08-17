@@ -29,6 +29,22 @@ if (-not (Test-Path $LOGDIR)) {
     New-Item -ItemType Directory -Path $LOGDIR | Out-Null
 }
 
+# Chequea si un servicio ya esta corriendo, leyendo su PID file.
+# Devuelve el proceso vivo si lo encuentra, o $null si no hay nada corriendo.
+function Get-ServicioVivo {
+    param([string]$PidFile)
+
+    if (-not (Test-Path $PidFile)) {
+        return $null
+    }
+    $procId = (Get-Content $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
+    if (-not $procId) {
+        return $null
+    }
+    $proc = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
+    return $proc
+}
+
 Write-Host ""
 Write-Host "======================================"
 Write-Host "  Finanzas MCGHR -- Iniciando stack"
@@ -37,31 +53,41 @@ Write-Host ""
 
 # -- Backend --------------------------------------------------------------
 
-Write-Host "Iniciando backend en http://localhost:8000 (background, sin ventana) ..."
-$backendProc = Start-Process -FilePath $UVICORN `
-    -ArgumentList @("backend.main:app", "--reload", "--port", "8000") `
-    -WorkingDirectory $REPO `
-    -WindowStyle Hidden `
-    -RedirectStandardOutput "$LOGDIR\backend.log" `
-    -RedirectStandardError "$LOGDIR\backend.err.log" `
-    -PassThru
-Set-Content -Path "$LOGDIR\backend.pid" -Value $backendProc.Id
-
-Start-Sleep -Seconds 2
+$backendVivo = Get-ServicioVivo -PidFile "$LOGDIR\backend.pid"
+if ($backendVivo) {
+    Write-Host "  AVISO: el backend ya esta corriendo (PID $($backendVivo.Id)). No se arranca uno nuevo."
+    Write-Host "         Si queres reiniciarlo, corre primero .\detener_finanzas.ps1"
+} else {
+    Write-Host "Iniciando backend en http://localhost:8000 (background, sin ventana) ..."
+    $backendProc = Start-Process -FilePath $UVICORN `
+        -ArgumentList @("backend.main:app", "--reload", "--port", "8000") `
+        -WorkingDirectory $REPO `
+        -WindowStyle Hidden `
+        -RedirectStandardOutput "$LOGDIR\backend.log" `
+        -RedirectStandardError "$LOGDIR\backend.err.log" `
+        -PassThru
+    Set-Content -Path "$LOGDIR\backend.pid" -Value $backendProc.Id
+    Start-Sleep -Seconds 2
+}
 
 # -- Frontend -------------------------------------------------------------
 
-Write-Host "Iniciando frontend en http://localhost:3000 (background, sin ventana) ..."
-$frontendProc = Start-Process -FilePath "cmd.exe" `
-    -ArgumentList "/c `"$NODE`" run dev" `
-    -WorkingDirectory "$REPO\frontend" `
-    -WindowStyle Hidden `
-    -RedirectStandardOutput "$LOGDIR\frontend.log" `
-    -RedirectStandardError "$LOGDIR\frontend.err.log" `
-    -PassThru
-Set-Content -Path "$LOGDIR\frontend.pid" -Value $frontendProc.Id
-
-Start-Sleep -Seconds 3
+$frontendVivo = Get-ServicioVivo -PidFile "$LOGDIR\frontend.pid"
+if ($frontendVivo) {
+    Write-Host "  AVISO: el frontend ya esta corriendo (PID $($frontendVivo.Id)). No se arranca uno nuevo."
+    Write-Host "         Si queres reiniciarlo, corre primero .\detener_finanzas.ps1"
+} else {
+    Write-Host "Iniciando frontend en http://localhost:3000 (background, sin ventana) ..."
+    $frontendProc = Start-Process -FilePath "cmd.exe" `
+        -ArgumentList "/c `"$NODE`" run dev" `
+        -WorkingDirectory "$REPO\frontend" `
+        -WindowStyle Hidden `
+        -RedirectStandardOutput "$LOGDIR\frontend.log" `
+        -RedirectStandardError "$LOGDIR\frontend.err.log" `
+        -PassThru
+    Set-Content -Path "$LOGDIR\frontend.pid" -Value $frontendProc.Id
+    Start-Sleep -Seconds 3
+}
 
 # -- Abrir browser ----------------------------------------------------------
 
