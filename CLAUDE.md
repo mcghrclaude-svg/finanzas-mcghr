@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 13:43
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 13:44
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+87aa398 feat(catalogos): propietario y visibilidad PWA en Cuenta, moneda opcional
+0d66753 docs: auto-update 2026-08-17 13:43
 cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
 8da19e2 docs: auto-update 2026-08-17 01:29
 44186ce feat(frontend): editor jerarquico de categorias reemplaza Catalogs V2
@@ -86,5 +88,3 @@ cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
 254bfdf docs: auto-update 2026-08-17 01:13
 95fb0f7 fix(backend): eliminar duplicacion de schemas de catalogos
 4f1d138 docs: auto-update 2026-08-16 23:20
-296502d docs: consolidar aprendizaje de PWA gastos, import backend y deploy a prod
-e34492b docs: auto-update 2026-08-16 23:16
