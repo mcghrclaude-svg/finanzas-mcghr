@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMsal, useIsAuthenticated } from '@azure/msal-react'
 import Combobox from '../../components/Combobox'
@@ -36,6 +36,20 @@ export default function NuevoGasto() {
   const [fotoKey, setFotoKey] = useState(0)
   const [guardado, setGuardado] = useState(false)
   const [error, setError] = useState(null)
+
+  const mediosFiltrados = catalogos.medios_de_pago.filter(
+    (m) => m.propietario === quien || m.propietario === 'Ambos'
+  )
+
+  // Si cambia "quien" y el medio de pago elegido deja de ser valido para
+  // el nuevo propietario, se limpia para forzar reeleccion. No toca la
+  // seleccion mientras el catalogo todavia no cargo (lista vacia).
+  useEffect(() => {
+    if (!idMedioPago || catalogos.medios_de_pago.length === 0) return
+    const actual = catalogos.medios_de_pago.find((m) => m.id === idMedioPago)
+    const sigueValido = actual && (actual.propietario === quien || actual.propietario === 'Ambos')
+    if (!sigueValido) setIdMedioPago(null)
+  }, [quien, catalogos.medios_de_pago])
 
   function validar() {
     if (!fecha || !idCategoria || !monto || !idMoneda || !idMedioPago || !quien) {
@@ -158,7 +172,7 @@ export default function NuevoGasto() {
             <div>
               <Combobox
                 label="Medio de pago"
-                options={catalogos.medios_de_pago}
+                options={mediosFiltrados}
                 value={idMedioPago}
                 onChange={setIdMedioPago}
                 placeholder="Buscar medio de pago..."

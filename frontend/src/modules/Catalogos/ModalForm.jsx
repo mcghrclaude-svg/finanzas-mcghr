@@ -26,11 +26,24 @@ export default function ModalForm({ titulo, campos, values, onChange, isEdit, on
 
             return (
               <div key={campo.key}>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                  {campo.label}{campo.required && <span className="text-danger-500 ml-0.5">*</span>}
-                </label>
+                {campo.type !== 'checkbox' && (
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                    {campo.label}{campo.required && <span className="text-danger-500 ml-0.5">*</span>}
+                  </label>
+                )}
 
-                {campo.type === 'buscador' ? (
+                {campo.type === 'checkbox' ? (
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={values[campo.key] ?? false}
+                      onChange={e => onChange(campo.key, e.target.checked)}
+                      disabled={disabled}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-400"
+                    />
+                    {campo.label}
+                  </label>
+                ) : campo.type === 'buscador' ? (
                   <SelectorBusqueda
                     value={values[campo.key] ?? null}
                     onChange={v => onChange(campo.key, v)}

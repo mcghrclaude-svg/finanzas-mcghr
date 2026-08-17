@@ -7,6 +7,12 @@ Cada item tiene forma {id, etiqueta}.
 
 Se llama desde el endpoint POST /catalogos/export/pwa y, automaticamente,
 despues de cada alta/edicion/inactivacion de categoria, cuenta o moneda.
+
+NOTA -- cambio de contrato pendiente de documentar en ADR-016:
+medios_de_pago ahora excluye cuentas con visible_pwa=False y cada item
+suma el campo "propietario" (GHR | MC | Ambos) ademas de {id, etiqueta}.
+Pendiente: actualizar la entrada de ADR-016 en la proxima sesion de
+consolidacion de docs.
 """
 
 from __future__ import annotations
@@ -33,7 +39,7 @@ async def exportar_catalogos_pwa(db: AsyncSession) -> dict:
 
     cuentas_result = await db.execute(
         select(Cuenta)
-        .where(Cuenta.activa == True)  # noqa: E712
+        .where(Cuenta.activa == True, Cuenta.visible_pwa == True)  # noqa: E712
         .order_by(Cuenta.nombre)
     )
     cuentas = cuentas_result.scalars().all()
@@ -59,7 +65,7 @@ async def exportar_catalogos_pwa(db: AsyncSession) -> dict:
             for c in cats
         ],
         "medios_de_pago": [
-            {"id": c.id, "etiqueta": c.nombre}
+            {"id": c.id, "etiqueta": c.nombre, "propietario": c.propietario}
             for c in cuentas
         ],
         "monedas": [

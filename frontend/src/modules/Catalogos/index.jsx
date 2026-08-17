@@ -67,7 +67,7 @@ const CAMPOS = {
       ]
     },
     { key: 'banco',  label: 'Bank',     type: 'text' },
-    { key: 'moneda', label: 'Currency', type: 'select',
+    { key: 'moneda', label: 'Currency', type: 'select', hint: 'Optional -- leave blank for multi-currency accounts (e.g. credit cards)',
       options: [
         { value: 'COP', label: 'COP — Colombian Peso' },
         { value: 'USD', label: 'USD — US Dollar' },
@@ -75,6 +75,14 @@ const CAMPOS = {
         { value: 'EUR', label: 'EUR — Euro' },
       ]
     },
+    { key: 'propietario', label: 'Owner', type: 'select', required: true,
+      options: [
+        { value: 'GHR',   label: 'GHR' },
+        { value: 'MC',    label: 'MC' },
+        { value: 'Ambos', label: 'Both' },
+      ]
+    },
+    { key: 'visible_pwa', label: 'Visible in PWA', type: 'checkbox' },
   ],
   contrapartes: [
     { key: 'nombre', label: 'Name', type: 'text', required: true },
@@ -258,7 +266,7 @@ export default function Catalogos() {
   const inactivos = total - activos
 
   function abrirCrear() {
-    setFormVals({ tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO' })
+    setFormVals({ tipo_patron_gasto: 'variable_frecuente', moneda: 'COP', tipo: 'COMERCIO', propietario: 'Ambos', visible_pwa: true })
     setModal({ tipo: 'form', item: null })
   }
 

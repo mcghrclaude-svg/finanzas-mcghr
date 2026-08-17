@@ -9,10 +9,10 @@
     { "id": "HOGAR", "etiqueta": "Hogar" }
   ],
   "medios_de_pago": [
-    { "id": "BCO-CC-GHR", "etiqueta": "Cuenta corriente GHR" },
-    { "id": "BCO-TC-GHR", "etiqueta": "Tarjeta credito GHR" },
-    { "id": "BCO-CC-MC", "etiqueta": "Cuenta corriente MC" },
-    { "id": "EFECTIVO", "etiqueta": "Efectivo" }
+    { "id": "BCO-CC-GHR", "etiqueta": "Cuenta corriente GHR", "propietario": "GHR" },
+    { "id": "BCO-TC-GHR", "etiqueta": "Tarjeta credito GHR", "propietario": "GHR" },
+    { "id": "BCO-CC-MC", "etiqueta": "Cuenta corriente MC", "propietario": "MC" },
+    { "id": "EFECTIVO", "etiqueta": "Efectivo", "propietario": "Ambos" }
   ],
   "monedas": [
     { "id": "COP", "etiqueta": "Peso colombiano" },

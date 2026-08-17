@@ -77,12 +77,33 @@ class CategoriaUpdate(BaseModel):
 
 # -- Cuenta --------------------------------------------------------------
 
+PROPIETARIOS = {"GHR", "MC", "Ambos"}
+
+def moneda_vacia_a_none(v: str | None) -> str | None:
+    # El <select> del formulario de escritorio manda '' cuando no se elige
+    # moneda; se normaliza a None para que quede NULL en DB, no ''.
+    return v or None
+
 class CuentaBase(BaseModel):
     nombre: str
     tipo: Optional[str] = None
     banco: Optional[str] = None
-    moneda: str = "COP"
+    moneda: Optional[str] = None
     es_corporativa: bool = False
+    propietario: str = "Ambos"
+    visible_pwa: bool = True
+
+    @field_validator("moneda")
+    @classmethod
+    def moneda_normalizada(cls, v):
+        return moneda_vacia_a_none(v)
+
+    @field_validator("propietario")
+    @classmethod
+    def propietario_valido(cls, v):
+        if v not in PROPIETARIOS:
+            raise ValueError(f"propietario debe ser uno de: {PROPIETARIOS}")
+        return v
 
 class CuentaCreate(CuentaBase):
     id: str
@@ -98,6 +119,20 @@ class CuentaUpdate(BaseModel):
     banco: Optional[str] = None
     moneda: Optional[str] = None
     es_corporativa: Optional[bool] = None
+    propietario: Optional[str] = None
+    visible_pwa: Optional[bool] = None
+
+    @field_validator("moneda")
+    @classmethod
+    def moneda_normalizada(cls, v):
+        return moneda_vacia_a_none(v)
+
+    @field_validator("propietario")
+    @classmethod
+    def propietario_valido(cls, v):
+        if v is not None and v not in PROPIETARIOS:
+            raise ValueError(f"propietario debe ser uno de: {PROPIETARIOS}")
+        return v
 
 
 # -- Contraparte -----------------------------------------------------------

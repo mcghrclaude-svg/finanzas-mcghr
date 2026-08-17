@@ -167,6 +167,8 @@ async def listar_cuentas(
                 "moneda": c.moneda,
                 "es_corporativa": c.es_corporativa,
                 "activa": c.activa,
+                "propietario": c.propietario,
+                "visible_pwa": c.visible_pwa,
             }
             for c in cuentas
         ]
@@ -188,6 +190,8 @@ async def crear_cuenta(
         banco=body.banco,
         moneda=body.moneda,
         es_corporativa=body.es_corporativa,
+        propietario=body.propietario,
+        visible_pwa=body.visible_pwa,
         activa=True,
     )
     db.add(nueva)
@@ -206,7 +210,11 @@ async def editar_cuenta(
     cuenta = await db.get(Cuenta, cuenta_id)
     if not cuenta:
         raise HTTPException(status_code=404, detail="Account not found")
-    campos = body.model_dump(exclude_none=True)
+    # exclude_unset (no exclude_none): el frontend manda el objeto completo
+    # en cada edicion, incluyendo moneda=None cuando el usuario la vacia --
+    # con exclude_none ese None se descartaria y moneda nunca se podria
+    # "limpiar" de vuelta a NULL via edicion.
+    campos = body.model_dump(exclude_unset=True)
     for k, v in campos.items():
         setattr(cuenta, k, v)
     await db.commit()
