@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 01:29
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 13:43
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -49,7 +49,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
-| Catalogos | IMPLEMENTADO | 427 lineas |
+| Catalogos | IMPLEMENTADO | 435 lineas |
 | Dashboard | IMPLEMENTADO | 182 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
@@ -64,7 +64,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | analitica.py | IMPLEMENTADO | 72 lineas |
 | backup.py | IMPLEMENTADO | 92 lineas |
-| catalogos.py | IMPLEMENTADO | 510 lineas |
+| catalogos.py | IMPLEMENTADO | 518 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
+8da19e2 docs: auto-update 2026-08-17 01:29
 44186ce feat(frontend): editor jerarquico de categorias reemplaza Catalogs V2
 33648ae docs: auto-update 2026-08-17 01:14
 5bec9ae fix(scripts): guard en iniciar_finanzas.ps1 para no duplicar procesos
@@ -86,5 +88,3 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 4f1d138 docs: auto-update 2026-08-16 23:20
 296502d docs: consolidar aprendizaje de PWA gastos, import backend y deploy a prod
 e34492b docs: auto-update 2026-08-16 23:16
-fc31c57 chore: agregar script dev:prod y gitignorar env local de produccion
-4e413da docs: auto-update 2026-08-16 23:16
