@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 16:15
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 16:16
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+3ae0d77 feat(pwa-gastos): un solo selector de carpeta raiz en Configuracion
+e094bb6 docs: auto-update 2026-08-17 16:15
 501ebb0 feat(frontend): modulo PWA muestra una lista de raices, no 3 campos
 2f0969e docs: auto-update 2026-08-17 16:15
 024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
@@ -86,5 +88,3 @@ c32c594 docs: auto-update 2026-08-17 16:15
 95cc583 merge: chat-fix-catalogos-schemas-reload-guard -- propietario/visibilidad PWA en Cuenta, moneda opcional, fix dropdown Currency, editor jerarquico de categorias
 cb412ca docs: auto-update 2026-08-17 14:45
 5e6b77d fix(catalogos): CITA-009 em-dash en label/emptyLabel de Currency
-cb861ff docs: auto-update 2026-08-17 14:44
-941eb6e fix(catalogos): dropdown de Currency en Cuentas usa catalogo real de Moneda
