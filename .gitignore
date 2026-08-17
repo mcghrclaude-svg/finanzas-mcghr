@@ -56,4 +56,5 @@ Thumbs.db
 *.user
 .fix-backup-*/
 frontend/.env.local
+frontend/.env.prod.local
 *.bak

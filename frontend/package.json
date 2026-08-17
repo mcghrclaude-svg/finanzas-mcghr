@@ -6,6 +6,7 @@
                     "dev":  "vite --port 3000",
                     "dev:test":  "vite --port 3001 --mode test",
                     "dev:staging":  "vite --port 3003 --mode staging",
+                    "dev:prod":  "vite --port 3002 --mode prod",
                     "build":  "vite build",
                     "preview":  "vite preview",
                     "lint":  "eslint src --ext js,jsx",
