@@ -7,15 +7,15 @@ import { getAccessToken, ensureFolder, uploadFile } from '../api/graphClient'
 // borra el registro local. Si falla cualquier paso, el registro queda
 // intacto para reintentar en la proxima sincronizacion.
 export async function syncPendientes(account) {
-  const { carpetaGastos } = useSettingsStore.getState()
-  if (!carpetaGastos) return { subidos: 0, fallidos: 0, motivo: 'sin-carpeta-configurada' }
+  const { carpetaRaiz } = useSettingsStore.getState()
+  if (!carpetaRaiz) return { subidos: 0, fallidos: 0, motivo: 'sin-carpeta-configurada' }
   if (!account) return { subidos: 0, fallidos: 0, motivo: 'sin-sesion' }
 
   const pendientes = await db.gastosPendientes.toArray()
   if (pendientes.length === 0) return { subidos: 0, fallidos: 0 }
 
   const token = await getAccessToken(account)
-  const pendientesFolder = await ensureFolder(token, carpetaGastos.driveId, carpetaGastos.itemId, 'pendientes')
+  const pendientesFolder = await ensureFolder(token, carpetaRaiz.driveId, carpetaRaiz.itemId, 'pendientes')
 
   let subidos = 0
   let fallidos = 0
@@ -23,7 +23,7 @@ export async function syncPendientes(account) {
   for (const gasto of pendientes) {
     try {
       if (gasto.imagenBlob && gasto.imagenNombre) {
-        await uploadFile(token, carpetaGastos.driveId, pendientesFolder.id, gasto.imagenNombre, gasto.imagenBlob)
+        await uploadFile(token, carpetaRaiz.driveId, pendientesFolder.id, gasto.imagenNombre, gasto.imagenBlob)
       }
 
       const payload = {
@@ -40,7 +40,7 @@ export async function syncPendientes(account) {
       }
       const jsonBlob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
       const nombreJson = `${gasto.archivoBase ?? `gasto_${gasto.id}`}.json`
-      await uploadFile(token, carpetaGastos.driveId, pendientesFolder.id, nombreJson, jsonBlob)
+      await uploadFile(token, carpetaRaiz.driveId, pendientesFolder.id, nombreJson, jsonBlob)
 
       await db.gastosPendientes.delete(gasto.localId)
       subidos += 1
