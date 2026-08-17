@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+fc31c57 chore: agregar script dev:prod y gitignorar env local de produccion
+4e413da docs: auto-update 2026-08-16 23:16
 61a71fa fix(backend): exportar catalogos.json a la carpeta configurada en Config PWA
 9154817 docs: auto-update 2026-08-16 23:16
 526fb0f fix(pwa-import-backend): Tarea Programada corre via .bat intermedio
@@ -86,5 +88,3 @@ bd7ece4 fix(backend): conectar CORS a settings.cors_origins en vez de origenes h
 b36f991 docs: auto-update 2026-08-16 22:19
 716445d fix(pwa-gastos): safe area en iOS (notch/Dynamic Island) + version visible en Home
 2086f34 docs: auto-update 2026-08-16 19:58
-d98ee9b merge: chat-pwa-gastos -- PWA de captura de gastos + layout/comentarios
-ba89126 merge: feature/pwa-import-backend -- import de gastos PWA a la DB de escritorio
