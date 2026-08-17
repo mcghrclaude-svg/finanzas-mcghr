@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
+c32c594 docs: auto-update 2026-08-17 16:15
 05f0b44 feat(schema): config_pwa_import usa raiz unica en vez de 3 carpetas
 95cc583 merge: chat-fix-catalogos-schemas-reload-guard -- propietario/visibilidad PWA en Cuenta, moneda opcional, fix dropdown Currency, editor jerarquico de categorias
 cb412ca docs: auto-update 2026-08-17 14:45
@@ -86,5 +88,3 @@ cb861ff docs: auto-update 2026-08-17 14:44
 941eb6e fix(catalogos): dropdown de Currency en Cuentas usa catalogo real de Moneda
 2d5bbfe docs: auto-update 2026-08-17 13:44
 87aa398 feat(catalogos): propietario y visibilidad PWA en Cuenta, moneda opcional
-0d66753 docs: auto-update 2026-08-17 13:43
-cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
