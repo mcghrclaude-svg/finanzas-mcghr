@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-08 23:47
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-16 19:00
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260808.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260816.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -49,12 +49,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
-| Catalogos | IMPLEMENTADO | 402 lineas |
+| Catalogos | IMPLEMENTADO | 421 lineas |
 | Dashboard | IMPLEMENTADO | 182 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
+| PWA | IMPLEMENTADO | 293 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
 | Transacciones | IMPLEMENTADO | 1287 lineas |
 
@@ -63,19 +64,22 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 |--------|--------|---------|
 | analitica.py | IMPLEMENTADO | 72 lineas |
 | backup.py | IMPLEMENTADO | 92 lineas |
-| catalogos.py | IMPLEMENTADO | 536 lineas |
+| catalogos.py | IMPLEMENTADO | 556 lineas |
 | dashboard.py | IMPLEMENTADO | 120 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
+| pwa_config.py | IMPLEMENTADO | 187 lineas |
 | reglas.py | IMPLEMENTADO | 73 lineas |
 | reportes.py | IMPLEMENTADO | 86 lineas |
 | tools.py | IMPLEMENTADO | 434 lineas |
 | transacciones.py | IMPLEMENTADO | 155 lineas |
-| __init__.py | IMPLEMENTADO | 29 lineas |
+| __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+2e3c5f1 feat(pwa-gastos): reordenar layout Agregar gasto y agregar campo Comentarios
+3ba0369 docs: auto-update 2026-08-08 23:47
 ff41417 fix(pwa-gastos): caracteres no-ASCII detectados por CITA-009
 1140e0f docs: auto-update 2026-08-08 23:44
 a0f31aa feat: PWA de captura de gastos (pwa-gastos) -- primera etapa funcional
@@ -84,5 +88,3 @@ a0f31aa feat: PWA de captura de gastos (pwa-gastos) -- primera etapa funcional
 36a7bef merge: docs/sync-estado-real-proyecto -- sync documentacion con estado real (README, schema_v1, ETL_DISENO_FUNCIONAL, finanzas_v1_2, ESTADO_PROYECTO, PENDIENTES PEN-004)
 8d65762 docs: auto-update 2026-07-07 20:30
 933a6d9 docs: completar fecha de titulo y tabla entidades_potenciales faltante en schema_v1
-5debd9c docs: auto-update 2026-07-07 19:50
-521eb54 docs: sincronizar documentacion con estado real del proyecto (README, schema_v1, ETL_DISENO_FUNCIONAL, finanzas_v1_2 comentario, ESTADO_PROYECTO, PENDIENTES PEN-004)
