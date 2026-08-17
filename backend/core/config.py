@@ -40,6 +40,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3003",
+        "http://127.0.0.1:3000",
         "http://192.168.1.0/24",  # red local para iPhone
     ]
 

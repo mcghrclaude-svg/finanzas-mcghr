@@ -42,14 +42,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS — permite el frontend en dev (localhost:3000) y staging (localhost:3003)
+# CORS — origenes permitidos, uno por entorno (ver Settings.cors_origins)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3003",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
