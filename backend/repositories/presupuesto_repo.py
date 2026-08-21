@@ -137,6 +137,7 @@ class PresupuestoRepository:
                     Transaccion.id_categoria == id_categoria,
                     Transaccion.tipo == "gasto",
                     Transaccion.estado == "confirmado",
+                    func.coalesce(Transaccion.es_reembolsable, 0) == 0,
                     Transaccion.fecha >= fecha_inicio.isoformat(),
                     Transaccion.fecha <= fecha_hasta.isoformat(),
                 )
@@ -149,7 +150,11 @@ class PresupuestoRepository:
         fecha_inicio: date,
         fecha_hasta: date,
     ) -> Decimal:
-        """Total de gastos confirmados en el periodo (todas las categorias)."""
+        """Total de gastos confirmados en el periodo (todas las categorias).
+
+        Excluye gastos marcados como Business Expense (es_reembolsable=1):
+        son un adelanto a nombre de la familia que el empleador reembolsa,
+        no un gasto familiar real -- no deben inflar este total."""
         result = await self.db.execute(
             select(func.coalesce(func.sum(Tramo.monto_origen), 0))
             .join(Transaccion, and_(
@@ -160,6 +165,7 @@ class PresupuestoRepository:
                 and_(
                     Transaccion.tipo == "gasto",
                     Transaccion.estado == "confirmado",
+                    func.coalesce(Transaccion.es_reembolsable, 0) == 0,
                     Transaccion.fecha >= fecha_inicio.isoformat(),
                     Transaccion.fecha <= fecha_hasta.isoformat(),
                 )

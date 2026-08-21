@@ -29,6 +29,7 @@ export default function NuevoGasto() {
   const [idMoneda, setIdMoneda] = useState(monedaDefault)
   const [idMedioPago, setIdMedioPago] = useState(medioPagoDefault)
   const [quien, setQuien] = useState(usuarioDispositivo)
+  const [esReembolsable, setEsReembolsable] = useState(false)
   const [comentarios, setComentarios] = useState('')
   const [foto, setFoto] = useState(null)
   // PhotoInput guarda su propio preview interno -- para descartar la foto
@@ -70,6 +71,7 @@ export default function NuevoGasto() {
     setIdMoneda(monedaDefault)
     setIdMedioPago(medioPagoDefault)
     setQuien(usuarioDispositivo)
+    setEsReembolsable(false)
     setComentarios('')
     setFoto(null)
     setFotoKey((k) => k + 1)
@@ -100,6 +102,7 @@ export default function NuevoGasto() {
       id_moneda: idMoneda,
       id_medio_pago: idMedioPago,
       quien,
+      es_reembolsable: esReembolsable,
       comentarios: comentarios.trim() || null,
       archivoBase,
       imagenBlob: foto ?? null,
@@ -148,14 +151,37 @@ export default function NuevoGasto() {
         )}
 
         <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+              <input
+                type="date"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Business Expense</label>
+              <div className="flex gap-2">
+                {[
+                  { value: false, label: 'No' },
+                  { value: true, label: 'Yes' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setEsReembolsable(value)}
+                    className={`flex-1 rounded-lg py-2 text-sm font-medium ${
+                      esReembolsable === value ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
