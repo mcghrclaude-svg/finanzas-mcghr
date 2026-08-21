@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 14:45
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 16:16
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -55,7 +55,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
-| PWA | IMPLEMENTADO | 293 lineas |
+| PWA | IMPLEMENTADO | 272 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
 | Transacciones | IMPLEMENTADO | 1287 lineas |
 
@@ -70,7 +70,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | inversiones.py | IMPLEMENTADO | 98 lineas |
 | obligaciones.py | IMPLEMENTADO | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
-| pwa_config.py | IMPLEMENTADO | 187 lineas |
+| pwa_config.py | IMPLEMENTADO | 191 lineas |
 | reglas.py | IMPLEMENTADO | 73 lineas |
 | reportes.py | IMPLEMENTADO | 86 lineas |
 | tools.py | IMPLEMENTADO | 434 lineas |
@@ -78,13 +78,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+3ae0d77 feat(pwa-gastos): un solo selector de carpeta raiz en Configuracion
+e094bb6 docs: auto-update 2026-08-17 16:15
+501ebb0 feat(frontend): modulo PWA muestra una lista de raices, no 3 campos
+2f0969e docs: auto-update 2026-08-17 16:15
+024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
+c32c594 docs: auto-update 2026-08-17 16:15
+05f0b44 feat(schema): config_pwa_import usa raiz unica en vez de 3 carpetas
+95cc583 merge: chat-fix-catalogos-schemas-reload-guard -- propietario/visibilidad PWA en Cuenta, moneda opcional, fix dropdown Currency, editor jerarquico de categorias
+cb412ca docs: auto-update 2026-08-17 14:45
 5e6b77d fix(catalogos): CITA-009 em-dash en label/emptyLabel de Currency
-cb861ff docs: auto-update 2026-08-17 14:44
-941eb6e fix(catalogos): dropdown de Currency en Cuentas usa catalogo real de Moneda
-2d5bbfe docs: auto-update 2026-08-17 13:44
-87aa398 feat(catalogos): propietario y visibilidad PWA en Cuenta, moneda opcional
-0d66753 docs: auto-update 2026-08-17 13:43
-cb36439 fix(scripts): CITA-009 no marca emojis de icono como violacion ASCII
-8da19e2 docs: auto-update 2026-08-17 01:29
-44186ce feat(frontend): editor jerarquico de categorias reemplaza Catalogs V2
-33648ae docs: auto-update 2026-08-17 01:14

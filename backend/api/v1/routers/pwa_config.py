@@ -1,9 +1,11 @@
 """
 Router: /api/v1/pwa-config
 Configuracion de la importacion automatica de gastos de la PWA mobile:
-intervalo, carpetas de OneDrive a leer, carpeta de catalogos, carpeta de
-resumen mensual (a futuro), y control de la Tarea Programada de Windows
-que corre scripts/import_pwa_gastos.py.
+intervalo, raices de OneDrive (una por persona -- la propia, la de Martha
+como carpeta compartida, etc.), y control de la Tarea Programada de Windows
+que corre scripts/import_pwa_gastos.py. Cada raiz implica pendientes/,
+procesados/, Catalogos/ y Resumen/ debajo -- no son campos separados
+(ver ADR-018).
 
 La tabla config_pwa_import (fila unica id=1) y log_ejecuciones_mobile no
 tienen modelo SQLAlchemy -- mismo criterio que log_ejecuciones/tools.py:
@@ -31,9 +33,7 @@ router = APIRouter()
 
 class PwaConfigUpdate(BaseModel):
     intervalo_minutos: int
-    carpetas_gastos: list[str]
-    carpeta_catalogos: str | None = None
-    carpeta_resumen_mensual: str | None = None
+    raices: list[str]
 
 
 class ToggleRequest(BaseModel):
@@ -47,7 +47,7 @@ async def _leer_config(db: AsyncSession) -> dict:
     if row is None:
         raise HTTPException(status_code=500, detail="config_pwa_import sin fila inicial -- revisar migracion v1.5")
     data = dict(row)
-    data["carpetas_gastos"] = json.loads(data["carpetas_gastos"] or "[]")
+    data["raices"] = json.loads(data["raices"] or "[]")
     return data
 
 
@@ -72,27 +72,31 @@ async def actualizar_config(body: PwaConfigUpdate, db: AsyncSession = Depends(ge
         text("""
             UPDATE config_pwa_import
             SET intervalo_minutos = :intervalo,
-                carpetas_gastos = :carpetas,
-                carpeta_catalogos = :carpeta_catalogos,
-                carpeta_resumen_mensual = :carpeta_resumen,
+                raices = :raices,
                 actualizado_en = datetime('now')
             WHERE id = 1
         """),
         {
             "intervalo": body.intervalo_minutos,
-            "carpetas": json.dumps(body.carpetas_gastos),
-            "carpeta_catalogos": body.carpeta_catalogos,
-            "carpeta_resumen": body.carpeta_resumen_mensual,
+            "raices": json.dumps(body.raices),
         },
     )
     await db.commit()
+
+    # Cada raiz es padre de pendientes/ y procesados/ (import_pwa_gastos.py)
+    # y de Catalogos/ (pwa_export_service.py) -- se crean eagerly aca para
+    # que la primera corrida de la tarea programada no tire el alerta
+    # "Carpeta pendientes/ no encontrada" sobre una raiz recien elegida.
+    for raiz in body.raices:
+        for subcarpeta in ("pendientes", "procesados", "Catalogos", "Resumen"):
+            (Path(raiz) / subcarpeta).mkdir(parents=True, exist_ok=True)
 
     # Si ya existia una tarea, se recrea con la config nueva (schtasks no
     # permite cambiar comando/intervalo con /Change) preservando si estaba
     # pausada.
     if estado_previo.existe:
         await asyncio.to_thread(
-            sched.crear_o_actualizar, body.intervalo_minutos, settings.env, body.carpetas_gastos
+            sched.crear_o_actualizar, body.intervalo_minutos, settings.env, body.raices
         )
         if not estado_previo.habilitada:
             await asyncio.to_thread(sched.pausar)
@@ -107,10 +111,10 @@ async def toggle_tarea(body: ToggleRequest, db: AsyncSession = Depends(get_db)):
     if body.habilitado:
         if not estado.existe:
             config = await _leer_config(db)
-            if not config["carpetas_gastos"]:
-                raise HTTPException(status_code=422, detail="Configura al menos una carpeta de gastos antes de activar")
+            if not config["raices"]:
+                raise HTTPException(status_code=422, detail="Configura al menos una carpeta raiz antes de activar")
             await asyncio.to_thread(
-                sched.crear_o_actualizar, config["intervalo_minutos"], settings.env, config["carpetas_gastos"]
+                sched.crear_o_actualizar, config["intervalo_minutos"], settings.env, config["raices"]
             )
         else:
             await asyncio.to_thread(sched.reanudar)

@@ -74,21 +74,30 @@ async def exportar_catalogos_pwa(db: AsyncSession) -> dict:
         ],
     }
 
-    # La carpeta destino se lee de la config guardada en la pantalla PWA
-    # (config_pwa_import.carpeta_catalogos) -- si todavia no se configuro
-    # nada, se cae al default historico (onedrive_path/PWA) para no romper
-    # instalaciones que no pasaron por esa pantalla.
-    carpeta_configurada = (await db.execute(
-        text("SELECT carpeta_catalogos FROM config_pwa_import WHERE id = 1")
+    # Las raices se leen de la config guardada en la pantalla PWA
+    # (config_pwa_import.raices) -- una carpeta de OneDrive por persona
+    # (la propia, la de Martha como carpeta compartida, etc.). El JSON se
+    # escribe en cada raiz, no en un unico lugar -- si solo se escribiera
+    # en una, cualquier celular que lea desde otra raiz nunca veria
+    # catalogos actualizados (bug real que motivo este diseno, ver ADR-018).
+    # Si todavia no se configuro ninguna raiz, se cae al default historico
+    # (onedrive_path/Catalogos) para no romper instalaciones sin configurar.
+    raices_json = (await db.execute(
+        text("SELECT raices FROM config_pwa_import WHERE id = 1")
     )).scalar_one_or_none()
-    pwa_dir = Path(carpeta_configurada) if carpeta_configurada else Path(settings.onedrive_path) / "PWA"
+    raices = json.loads(raices_json) if raices_json else []
+    if not raices:
+        raices = [str(Path(settings.onedrive_path))]
+
+    contenido = json.dumps(payload, ensure_ascii=False, indent=2)
+    rutas_archivo: list[str] = []
     try:
-        pwa_dir.mkdir(parents=True, exist_ok=True)
-        ruta_json = pwa_dir / "catalogos.json"
-        ruta_json.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        for raiz in raices:
+            catalogos_dir = Path(raiz) / "Catalogos"
+            catalogos_dir.mkdir(parents=True, exist_ok=True)
+            ruta_json = catalogos_dir / "catalogos.json"
+            ruta_json.write_text(contenido, encoding="utf-8")
+            rutas_archivo.append(str(ruta_json))
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -97,7 +106,7 @@ async def exportar_catalogos_pwa(db: AsyncSession) -> dict:
 
     return {
         "ok": True,
-        "ruta_archivo": str(ruta_json),
+        "rutas_archivo": rutas_archivo,
         "generado_en": payload["generado_en"],
         "categorias": len(cats),
         "medios_de_pago": len(cuentas),

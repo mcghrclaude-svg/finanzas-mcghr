@@ -13,19 +13,19 @@ export function useCatalogos() {
   const { accounts } = useMsal()
   const isAuthenticated = useIsAuthenticated()
   const account = accounts[0]
-  const { carpetaCatalogos } = useSettingsStore()
+  const { carpetaRaiz } = useSettingsStore()
   const [catalogos, setCatalogos] = useState(VACIO)
 
   useEffect(() => {
     (async () => {
       const cache = await getCatalogosCache()
       setCatalogos(cache)
-      if (isAuthenticated && carpetaCatalogos) {
-        const fresh = await sincronizarCatalogos(account, carpetaCatalogos)
+      if (isAuthenticated && carpetaRaiz) {
+        const fresh = await sincronizarCatalogos(account, carpetaRaiz)
         setCatalogos(fresh)
       }
     })()
-  }, [isAuthenticated, carpetaCatalogos, account])
+  }, [isAuthenticated, carpetaRaiz, account])
 
   async function cargarEjemplo() {
     const data = await cargarCatalogosDeEjemplo()

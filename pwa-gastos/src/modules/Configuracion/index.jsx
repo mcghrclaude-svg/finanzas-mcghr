@@ -27,19 +27,17 @@ function FolderRow({ label, carpeta, onElegir }) {
   )
 }
 
-// Claves posibles de pickerTarget: null (cerrado) | 'gastos' | 'catalogos' | 'resumen'
 export default function Configuracion() {
   const { instance, accounts } = useMsal()
   const isAuthenticated = useIsAuthenticated()
   const account = accounts[0]
   const [error, setError] = useState(null)
   const [cargando, setCargando] = useState(false)
-  const [pickerTarget, setPickerTarget] = useState(null)
+  const [pickerAbierto, setPickerAbierto] = useState(false)
 
   const {
-    carpetaGastos, setCarpetaGastos,
-    carpetaCatalogos, setCarpetaCatalogos,
-    carpetaResumen, setCarpetaResumen,
+    carpetaRaiz, setCarpetaRaiz,
+    configuracionMigradaDesdeVieja,
     usuarioDispositivo, setUsuarioDispositivo,
     monedaDefault, setMonedaDefault,
     medioPagoDefault, setMedioPagoDefault,
@@ -58,29 +56,25 @@ export default function Configuracion() {
     instance.logoutRedirect()
   }
 
-  function abrirPicker(target) {
+  function abrirPicker() {
     if (!isAuthenticated) {
       setError('Inicia sesion con Microsoft antes de elegir una carpeta')
       return
     }
     setError(null)
-    setPickerTarget(target)
+    setPickerAbierto(true)
   }
 
   async function handlePick(carpeta) {
-    setPickerTarget(null)
+    setPickerAbierto(false)
     setCargando(true)
     try {
-      if (pickerTarget === 'gastos') {
-        const token = await getAccessToken(account)
-        await ensureFolder(token, carpeta.driveId, carpeta.itemId, 'pendientes')
-        await ensureFolder(token, carpeta.driveId, carpeta.itemId, 'procesados')
-        setCarpetaGastos(carpeta)
-      } else if (pickerTarget === 'catalogos') {
-        setCarpetaCatalogos(carpeta)
-      } else if (pickerTarget === 'resumen') {
-        setCarpetaResumen(carpeta)
-      }
+      const token = await getAccessToken(account)
+      await ensureFolder(token, carpeta.driveId, carpeta.itemId, 'pendientes')
+      await ensureFolder(token, carpeta.driveId, carpeta.itemId, 'procesados')
+      await ensureFolder(token, carpeta.driveId, carpeta.itemId, 'Catalogos')
+      await ensureFolder(token, carpeta.driveId, carpeta.itemId, 'Resumen')
+      setCarpetaRaiz(carpeta)
     } catch (err) {
       setError(String(err))
     } finally {
@@ -89,7 +83,7 @@ export default function Configuracion() {
   }
 
   function handleCancelPicker() {
-    setPickerTarget(null)
+    setPickerAbierto(false)
   }
 
   return (
@@ -118,10 +112,20 @@ export default function Configuracion() {
           </div>
         </div>
 
+        {configuracionMigradaDesdeVieja && !carpetaRaiz && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+            <p className="text-sm font-medium text-amber-800">Simplificamos la configuracion de carpetas</p>
+            <p className="text-sm text-amber-700 mt-1">
+              Antes elegias 3 carpetas por separado. Ahora alcanza con una sola
+              carpeta raiz -- las subcarpetas se crean solas debajo. Elegi tu
+              carpeta raiz de nuevo aca abajo; es un cambio de una sola vez, la
+              app no se rompio.
+            </p>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-sm px-4 mb-4">
-          <FolderRow label="Carpeta de gastos" carpeta={carpetaGastos} onElegir={() => abrirPicker('gastos')} />
-          <FolderRow label="Carpeta de catalogos" carpeta={carpetaCatalogos} onElegir={() => abrirPicker('catalogos')} />
-          <FolderRow label="Carpeta de resumen mensual" carpeta={carpetaResumen} onElegir={() => abrirPicker('resumen')} />
+          <FolderRow label="Carpeta raiz" carpeta={carpetaRaiz} onElegir={abrirPicker} />
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
@@ -165,7 +169,7 @@ export default function Configuracion() {
         {error && <p className="text-sm text-red-600 break-words">{error}</p>}
       </div>
 
-      {pickerTarget && (
+      {pickerAbierto && (
         <OneDrivePickerModal account={account} onPick={handlePick} onCancel={handleCancelPicker} />
       )}
     </div>

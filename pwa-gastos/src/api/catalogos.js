@@ -13,18 +13,21 @@ async function setCatalogosCache(data) {
   await db.catalogosCache.put({ key: CACHE_KEY, data, actualizadoEn: new Date().toISOString() })
 }
 
-// Descarga catalogos.json desde la carpeta de catalogos configurada y la
-// cachea en IndexedDB. Si falla (sin conexion, carpeta sin configurar,
-// archivo inexistente), devuelve la ultima version cacheada.
-export async function sincronizarCatalogos(account, carpetaCatalogos) {
-  if (!carpetaCatalogos) return getCatalogosCache()
+// Descarga catalogos.json desde la subcarpeta Catalogos/ de la raiz
+// configurada y la cachea en IndexedDB. Si falla (sin conexion, raiz sin
+// configurar, archivo inexistente), devuelve la ultima version cacheada.
+export async function sincronizarCatalogos(account, carpetaRaiz) {
+  if (!carpetaRaiz) return getCatalogosCache()
 
   try {
     const token = await getAccessToken(account)
-    const item = await findChildByName(token, carpetaCatalogos.driveId, carpetaCatalogos.itemId, 'catalogos.json')
-    if (!item) throw new Error('catalogos.json no existe en la carpeta configurada')
+    const carpetaCatalogos = await findChildByName(token, carpetaRaiz.driveId, carpetaRaiz.itemId, 'Catalogos')
+    if (!carpetaCatalogos) throw new Error('La carpeta Catalogos no existe todavia bajo la raiz configurada')
 
-    const res = await downloadItemContent(token, carpetaCatalogos.driveId, item.id)
+    const item = await findChildByName(token, carpetaRaiz.driveId, carpetaCatalogos.id, 'catalogos.json')
+    if (!item) throw new Error('catalogos.json no existe en la carpeta Catalogos')
+
+    const res = await downloadItemContent(token, carpetaRaiz.driveId, item.id)
     const data = await res.json()
     await setCatalogosCache(data)
     return data
