@@ -23,7 +23,7 @@ export default function Home() {
             to="/pendientes"
             className="rounded-xl bg-white text-gray-900 text-lg font-medium py-5 text-center shadow-sm border border-gray-200 hover:bg-gray-50"
           >
-            Ver gastos pendientes
+            Gastos sin Replicar
           </Link>
           <button
             disabled

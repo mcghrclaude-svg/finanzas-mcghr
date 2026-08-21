@@ -54,7 +54,7 @@ export default function GastosPendientes() {
       <div className="mx-auto max-w-md">
         <div className="flex items-center gap-3 mb-6">
           <Link to="/" className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
-          <h1 className="text-xl font-semibold text-gray-900">Gastos pendientes</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Gastos sin Replicar</h1>
         </div>
 
         <button
@@ -67,7 +67,7 @@ export default function GastosPendientes() {
         {mensaje && <p className="text-sm text-gray-600 mb-4">{mensaje}</p>}
 
         {gastos.length === 0 ? (
-          <p className="text-sm text-gray-500">No hay gastos pendientes de subir.</p>
+          <p className="text-sm text-gray-500">No hay gastos sin replicar -- todo esta subido a OneDrive.</p>
         ) : (
           <div className="flex flex-col gap-2">
             {gastos.map((g) => (
