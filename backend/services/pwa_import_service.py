@@ -80,6 +80,12 @@ async def validar_catalogos(db: AsyncSession, gasto: dict[str, Any]) -> str | No
     return None
 
 
+def _normalizar_es_reembolsable(gasto: dict[str, Any]) -> bool:
+    """es_reembolsable es opcional -- por compatibilidad con JSONs subidos
+    antes de que este campo existiera en la PWA (ver _normalizar_comentarios)."""
+    return bool(gasto.get("es_reembolsable", False))
+
+
 def _normalizar_comentarios(gasto: dict[str, Any]) -> str | None:
     """comentarios es opcional -- por compatibilidad con JSONs subidos antes
     de que este campo existiera. Se trunca server-side a MAX_LEN_COMENTARIOS
@@ -123,6 +129,7 @@ async def importar_gasto(
         return ResultadoImport(ok=False, motivo="duplicado", id_transaccion=id_gasto)
 
     ahora = datetime.now(timezone.utc)
+    es_reembolsable = _normalizar_es_reembolsable(gasto)
 
     tx = Transaccion(
         id=id_gasto,
@@ -137,6 +144,8 @@ async def importar_gasto(
         origen="mobile",
         fuente="mobile",
         id_categoria=gasto["id_categoria"],
+        es_reembolsable=es_reembolsable,
+        estado_reembolso="pendiente" if es_reembolsable else None,
         creado_en=ahora,
         actualizado_en=ahora,
     )
