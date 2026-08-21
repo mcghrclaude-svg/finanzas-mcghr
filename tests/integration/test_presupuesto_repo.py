@@ -46,6 +46,7 @@ async def _insertar_tx_con_tramo(
     estado: str = "confirmado",
     fecha: str = "2026-06-15",
     id_categoria: str = "CAT-ALIM",
+    es_reembolsable: bool = False,
 ) -> tuple[Transaccion, Tramo]:
     tx_id = _id()
     tx = Transaccion(
@@ -57,6 +58,8 @@ async def _insertar_tx_con_tramo(
         confianza=0.9,
         completitud="completo",
         id_categoria=id_categoria,
+        es_reembolsable=es_reembolsable,
+        estado_reembolso="pendiente" if es_reembolsable else None,
         fuente="gmail_hernan",
         creado_en=datetime.now(timezone.utc),
         actualizado_en=datetime.now(timezone.utc),
@@ -152,6 +155,43 @@ async def test_gastos_totales_suma_todas_categorias(client, db_session):
         date(2026, 6, 1), date(2026, 6, 30)
     )
     assert total == Decimal("65000")
+
+
+@pytest.mark.asyncio
+async def test_gasto_acumulado_excluye_business_expense(client, db_session):
+    """Un gasto marcado es_reembolsable=1 (Business Expense) no debe sumarse
+    en los totales familiares: lo reembolsa el empleador, no es gasto real."""
+    await _setup_catalogo(db_session)
+    await _insertar_tx_con_tramo(db_session, monto=45000.0, tipo="gasto",
+                                  estado="confirmado", fecha="2026-06-15")
+    await _insertar_tx_con_tramo(db_session, monto=200000.0, tipo="gasto",
+                                  estado="confirmado", fecha="2026-06-15",
+                                  es_reembolsable=True)
+    await db_session.commit()
+
+    repo = PresupuestoRepository(db_session)
+    total = await repo.obtener_gasto_acumulado_periodo(
+        "CAT-ALIM", date(2026, 6, 1), date(2026, 6, 30)
+    )
+    assert total == Decimal("45000")
+
+
+@pytest.mark.asyncio
+async def test_gastos_totales_excluye_business_expense(client, db_session):
+    """Igual que arriba pero para el total sin filtrar por categoria."""
+    await _setup_catalogo(db_session)
+    await _insertar_tx_con_tramo(db_session, monto=45000.0, tipo="gasto",
+                                  estado="confirmado", fecha="2026-06-15")
+    await _insertar_tx_con_tramo(db_session, monto=200000.0, tipo="gasto",
+                                  estado="confirmado", fecha="2026-06-15",
+                                  es_reembolsable=True)
+    await db_session.commit()
+
+    repo = PresupuestoRepository(db_session)
+    total = await repo.obtener_gastos_totales_periodo(
+        date(2026, 6, 1), date(2026, 6, 30)
+    )
+    assert total == Decimal("45000")
 
 
 @pytest.mark.asyncio
