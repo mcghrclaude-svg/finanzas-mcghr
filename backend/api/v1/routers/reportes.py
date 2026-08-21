@@ -70,7 +70,7 @@ async def evolucion_patrimonio(
 async def reembolsos_pendientes(db: AsyncSession = Depends(get_db)):
     """
     Gastos marcados como Business Expense con estado_reembolso en
-    pendiente|gestionado -- todavia no llego el reembolso del empleador.
+    pendiente|solicitado -- todavia no llego el reembolso del empleador.
 
     Replica en SQLAlchemy la logica de la vista v_reembolsos_pendientes
     (schema/finanzas_v1_1.sql) en vez de consultarla directo: la vista es
@@ -102,7 +102,7 @@ async def reembolsos_pendientes(db: AsyncSession = Depends(get_db)):
         .outerjoin(Cuenta, Tramo.id_cuenta_origen == Cuenta.id)
         .where(
             Transaccion.es_reembolsable == True,  # noqa: E712
-            Transaccion.estado_reembolso.in_(["pendiente", "gestionado"]),
+            Transaccion.estado_reembolso.in_(["pendiente", "solicitado"]),
         )
         .order_by(Transaccion.fecha.desc())
     )

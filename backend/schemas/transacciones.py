@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
-ESTADOS_REEMBOLSO = {"pendiente", "gestionado", "reembolsado"}
+ESTADOS_REEMBOLSO = {"pendiente", "solicitado", "recibido"}
 
 
 class TransaccionCreate(BaseModel):

@@ -16,7 +16,7 @@ from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional
 
-ESTADOS_REEMBOLSO = {"pendiente", "gestionado", "reembolsado"}
+ESTADOS_REEMBOLSO = {"pendiente", "solicitado", "recibido"}
 
 
 class TransaccionBase(BaseModel):

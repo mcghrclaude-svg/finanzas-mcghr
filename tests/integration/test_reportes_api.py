@@ -70,7 +70,7 @@ async def test_reembolsos_pendientes_vacio(client):
 
 
 @pytest.mark.asyncio
-async def test_reembolsos_pendientes_incluye_pendiente_y_gestionado(client, db_session):
+async def test_reembolsos_pendientes_incluye_pendiente_y_solicitado(client, db_session):
     db_session.add(Categoria(id="CAT-ALIM", nombre="Alimentacion", nivel=1, activa=True))
     db_session.add(Cuenta(id="CTA-BC", nombre="BC CC", tipo="CC", banco="Bancolombia",
                            moneda="COP", activa=True))
@@ -79,7 +79,7 @@ async def test_reembolsos_pendientes_incluye_pendiente_y_gestionado(client, db_s
     await db_session.flush()
 
     await _insertar_reembolsable(db_session, monto=45000.0, estado_reembolso="pendiente")
-    await _insertar_reembolsable(db_session, monto=30000.0, estado_reembolso="gestionado")
+    await _insertar_reembolsable(db_session, monto=30000.0, estado_reembolso="solicitado")
     await db_session.commit()
 
     resp = await client.get("/api/v1/reportes/reembolsos-pendientes")
@@ -92,7 +92,7 @@ async def test_reembolsos_pendientes_incluye_pendiente_y_gestionado(client, db_s
 
 
 @pytest.mark.asyncio
-async def test_reembolsos_pendientes_excluye_ya_reembolsado(client, db_session):
+async def test_reembolsos_pendientes_excluye_ya_recibido(client, db_session):
     db_session.add(Categoria(id="CAT-ALIM", nombre="Alimentacion", nivel=1, activa=True))
     db_session.add(Cuenta(id="CTA-BC", nombre="BC CC", tipo="CC", banco="Bancolombia",
                            moneda="COP", activa=True))
@@ -100,7 +100,7 @@ async def test_reembolsos_pendientes_excluye_ya_reembolsado(client, db_session):
     db_session.add(Contraparte(id="CP-REST", nombre="Restaurante X", tipo="COMERCIO", activa=True))
     await db_session.flush()
 
-    await _insertar_reembolsable(db_session, monto=45000.0, estado_reembolso="reembolsado")
+    await _insertar_reembolsable(db_session, monto=45000.0, estado_reembolso="recibido")
     await db_session.commit()
 
     resp = await client.get("/api/v1/reportes/reembolsos-pendientes")
