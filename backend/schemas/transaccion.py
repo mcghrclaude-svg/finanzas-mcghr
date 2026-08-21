@@ -12,9 +12,11 @@ NOTA: monto y moneda NO estan en transacciones -- viven en tramos.monto_origen.
 completitud es TEXT: 'minimo' | 'parcial' | 'completo' (ADR-008, nunca float).
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional
+
+ESTADOS_REEMBOLSO = {"pendiente", "gestionado", "reembolsado"}
 
 
 class TransaccionBase(BaseModel):
@@ -50,6 +52,13 @@ class TransaccionUpdate(BaseModel):
     estado_reembolso: Optional[str] = None
     estado: Optional[str] = None
     notas: Optional[str] = None
+
+    @field_validator("estado_reembolso")
+    @classmethod
+    def estado_reembolso_valido(cls, v):
+        if v is not None and v not in ESTADOS_REEMBOLSO:
+            raise ValueError(f"estado_reembolso debe ser uno de: {ESTADOS_REEMBOLSO}")
+        return v
 
 
 class TransaccionSummary(BaseModel):

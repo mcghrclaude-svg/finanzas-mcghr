@@ -4,7 +4,9 @@ completitud es STRING ('minimo'|'parcial'|'completo'), no float (ADR-008).
 """
 from __future__ import annotations
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+ESTADOS_REEMBOLSO = {"pendiente", "gestionado", "reembolsado"}
 
 
 class TransaccionCreate(BaseModel):
@@ -21,6 +23,13 @@ class TransaccionCreate(BaseModel):
     es_reembolsable: bool = False
     estado_reembolso: Optional[str] = None
     notas: Optional[str] = None
+
+    @field_validator("estado_reembolso")
+    @classmethod
+    def estado_reembolso_valido(cls, v):
+        if v is not None and v not in ESTADOS_REEMBOLSO:
+            raise ValueError(f"estado_reembolso debe ser uno de: {ESTADOS_REEMBOLSO}")
+        return v
 
 
 class TransaccionCreateResponse(BaseModel):

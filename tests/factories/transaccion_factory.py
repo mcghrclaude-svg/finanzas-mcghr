@@ -38,6 +38,7 @@ class TransaccionFactory(factory.Factory):
     origen = 'manual'
     es_recurrente = False
     es_reembolsable = False
+    estado_reembolso = None
 
 
 class TransaccionGastoFactory(TransaccionFactory):
