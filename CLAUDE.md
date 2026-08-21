@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-21 18:31
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-21 18:32
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+e7c71dc feat(backend): pwa_import_service persiste es_reembolsable desde la PWA
+da359aa docs: auto-update 2026-08-21 18:31
 de5f54f feat(pwa-gastos): captura Business Expense en Nuevo Gasto
 830f1c6 merge: chat-pwa-raiz-unica -- PWA usa una sola carpeta raiz de OneDrive en vez de 3 carpetas separadas
 280544a docs: auto-update 2026-08-17 16:16
@@ -86,5 +88,3 @@ e094bb6 docs: auto-update 2026-08-17 16:15
 501ebb0 feat(frontend): modulo PWA muestra una lista de raices, no 3 campos
 2f0969e docs: auto-update 2026-08-17 16:15
 024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
-c32c594 docs: auto-update 2026-08-17 16:15
-05f0b44 feat(schema): config_pwa_import usa raiz unica en vez de 3 carpetas
