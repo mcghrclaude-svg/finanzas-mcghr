@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+dc12c34 fix(reportes): excluir Business Expense de los totales familiares
+9b1015c docs: auto-update 2026-08-21 18:32
 e7c71dc feat(backend): pwa_import_service persiste es_reembolsable desde la PWA
 da359aa docs: auto-update 2026-08-21 18:31
 de5f54f feat(pwa-gastos): captura Business Expense en Nuevo Gasto
@@ -86,5 +88,3 @@ de5f54f feat(pwa-gastos): captura Business Expense en Nuevo Gasto
 3ae0d77 feat(pwa-gastos): un solo selector de carpeta raiz en Configuracion
 e094bb6 docs: auto-update 2026-08-17 16:15
 501ebb0 feat(frontend): modulo PWA muestra una lista de raices, no 3 campos
-2f0969e docs: auto-update 2026-08-17 16:15
-024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
