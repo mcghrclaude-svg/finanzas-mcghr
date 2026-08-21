@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-21 18:33
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-21 18:36
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+866ac54 fix(schemas): estado_reembolso real usa pendiente|solicitado|recibido
+25edb6d docs: auto-update 2026-08-21 18:33
 52a23cd fix(schemas): validar enum de estado_reembolso
 d0c005f docs: auto-update 2026-08-21 18:32
 dc12c34 fix(reportes): excluir Business Expense de los totales familiares
@@ -86,5 +88,3 @@ e7c71dc feat(backend): pwa_import_service persiste es_reembolsable desde la PWA
 da359aa docs: auto-update 2026-08-21 18:31
 de5f54f feat(pwa-gastos): captura Business Expense en Nuevo Gasto
 830f1c6 merge: chat-pwa-raiz-unica -- PWA usa una sola carpeta raiz de OneDrive en vez de 3 carpetas separadas
-280544a docs: auto-update 2026-08-17 16:16
-3ae0d77 feat(pwa-gastos): un solo selector de carpeta raiz en Configuracion
