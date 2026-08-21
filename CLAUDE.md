@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-17 16:16
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-21 18:31
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260817.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260821.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -72,12 +72,15 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
 | pwa_config.py | IMPLEMENTADO | 191 lineas |
 | reglas.py | IMPLEMENTADO | 73 lineas |
-| reportes.py | IMPLEMENTADO | 86 lineas |
+| reportes.py | IMPLEMENTADO | 135 lineas |
 | tools.py | IMPLEMENTADO | 434 lineas |
 | transacciones.py | IMPLEMENTADO | 155 lineas |
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+de5f54f feat(pwa-gastos): captura Business Expense en Nuevo Gasto
+830f1c6 merge: chat-pwa-raiz-unica -- PWA usa una sola carpeta raiz de OneDrive en vez de 3 carpetas separadas
+280544a docs: auto-update 2026-08-17 16:16
 3ae0d77 feat(pwa-gastos): un solo selector de carpeta raiz en Configuracion
 e094bb6 docs: auto-update 2026-08-17 16:15
 501ebb0 feat(frontend): modulo PWA muestra una lista de raices, no 3 campos
@@ -85,6 +88,3 @@ e094bb6 docs: auto-update 2026-08-17 16:15
 024861a feat(pwa-config): backend usa raices en vez de 3 carpetas separadas
 c32c594 docs: auto-update 2026-08-17 16:15
 05f0b44 feat(schema): config_pwa_import usa raiz unica en vez de 3 carpetas
-95cc583 merge: chat-fix-catalogos-schemas-reload-guard -- propietario/visibilidad PWA en Cuenta, moneda opcional, fix dropdown Currency, editor jerarquico de categorias
-cb412ca docs: auto-update 2026-08-17 14:45
-5e6b77d fix(catalogos): CITA-009 em-dash en label/emptyLabel de Currency
