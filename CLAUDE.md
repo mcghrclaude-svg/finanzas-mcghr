@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-22 16:55
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-22 17:13
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+bd3fabb docs: pausar BUG C, documentado en issue #51
+f9f7f1c docs: auto-update 2026-08-22 16:55
 a61456d fix(pwa-gastos): BUG C segundo intento -- position:fixed en body para rubber-band iOS
 b4c5c9e docs: auto-update 2026-08-22 16:19
 1f8c246 fix(pwa-gastos): SimpleSelect truncate, layout Fecha/Business Expense, rubber-band iOS + fecha de build
@@ -86,5 +88,3 @@ b4c5c9e docs: auto-update 2026-08-22 16:19
 38fb07b docs: auto-update 2026-08-22 13:19
 e493b2a fix(pwa-gastos): UX Setup + Agregar gasto (toggles, selects, filtro por usuario)
 35577ec docs: auto-update 2026-08-21 19:20
-53b68aa fix(scripts): import_pwa_gastos lee carpetas desde config_pwa_import.raices
-4539075 merge: feat/gasto-reembolsable-pwa -- gasto Business Expense capturado en la PWA
