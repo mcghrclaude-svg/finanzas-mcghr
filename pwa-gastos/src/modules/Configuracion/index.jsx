@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom'
 import { useMsal, useIsAuthenticated } from '@azure/msal-react'
 import { loginRequest } from '../../auth/msalConfig'
 import OneDrivePickerModal from '../../components/OneDrivePickerModal'
-import Combobox from '../../components/Combobox'
+import SimpleSelect from '../../components/SimpleSelect'
 import { ensureFolder, getAccessToken } from '../../api/graphClient'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useCatalogos } from '../../hooks/useCatalogos'
+import { useMedioPagoFiltrado } from '../../hooks/useMedioPagoFiltrado'
 
 function FolderRow({ label, carpeta, onElegir }) {
   return (
@@ -43,6 +44,12 @@ export default function Configuracion() {
     medioPagoDefault, setMedioPagoDefault,
   } = useSettingsStore()
   const { catalogos } = useCatalogos()
+  const mediosFiltrados = useMedioPagoFiltrado(
+    catalogos.medios_de_pago,
+    usuarioDispositivo,
+    medioPagoDefault,
+    setMedioPagoDefault
+  )
 
   async function login() {
     try {
@@ -135,8 +142,10 @@ export default function Configuracion() {
               <button
                 key={u}
                 onClick={() => setUsuarioDispositivo(u)}
-                className={`flex-1 rounded-lg py-2 text-sm font-medium ${
-                  usuarioDispositivo === u ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+                className={`flex-1 rounded-lg border py-2 text-sm font-medium ${
+                  usuarioDispositivo === u
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300'
                 }`}
               >
                 {u}
@@ -147,21 +156,21 @@ export default function Configuracion() {
 
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <p className="text-sm font-medium text-gray-700 mb-2">Moneda por default</p>
-          <Combobox
+          <SimpleSelect
             options={catalogos.monedas}
             value={monedaDefault}
             onChange={setMonedaDefault}
-            placeholder="Buscar moneda..."
+            placeholder="Seleccionar..."
           />
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <p className="text-sm font-medium text-gray-700 mb-2">Medio de pago por default</p>
-          <Combobox
-            options={catalogos.medios_de_pago}
+          <SimpleSelect
+            options={mediosFiltrados}
             value={medioPagoDefault}
             onChange={setMedioPagoDefault}
-            placeholder="Buscar medio de pago..."
+            placeholder="Seleccionar..."
           />
         </div>
 

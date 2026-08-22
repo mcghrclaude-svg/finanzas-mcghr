@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMsal, useIsAuthenticated } from '@azure/msal-react'
 import Combobox from '../../components/Combobox'
+import SimpleSelect from '../../components/SimpleSelect'
 import PhotoInput from '../../components/PhotoInput'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useCatalogos } from '../../hooks/useCatalogos'
+import { useMedioPagoFiltrado } from '../../hooks/useMedioPagoFiltrado'
 import { db } from '../../db/db'
 import { uuid, fileTimestamp } from '../../utils/ids'
 import { syncPendientes } from '../../utils/sync'
@@ -38,19 +40,7 @@ export default function NuevoGasto() {
   const [guardado, setGuardado] = useState(false)
   const [error, setError] = useState(null)
 
-  const mediosFiltrados = catalogos.medios_de_pago.filter(
-    (m) => m.propietario === quien || m.propietario === 'Ambos'
-  )
-
-  // Si cambia "quien" y el medio de pago elegido deja de ser valido para
-  // el nuevo propietario, se limpia para forzar reeleccion. No toca la
-  // seleccion mientras el catalogo todavia no cargo (lista vacia).
-  useEffect(() => {
-    if (!idMedioPago || catalogos.medios_de_pago.length === 0) return
-    const actual = catalogos.medios_de_pago.find((m) => m.id === idMedioPago)
-    const sigueValido = actual && (actual.propietario === quien || actual.propietario === 'Ambos')
-    if (!sigueValido) setIdMedioPago(null)
-  }, [quien, catalogos.medios_de_pago])
+  const mediosFiltrados = useMedioPagoFiltrado(catalogos.medios_de_pago, quien, idMedioPago, setIdMedioPago)
 
   function validar() {
     if (!fecha || !idCategoria || !monto || !idMoneda || !idMedioPago || !quien) {
@@ -158,7 +148,7 @@ export default function NuevoGasto() {
                 type="date"
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -173,8 +163,10 @@ export default function NuevoGasto() {
                     key={label}
                     type="button"
                     onClick={() => setEsReembolsable(value)}
-                    className={`flex-1 rounded-lg py-2 text-sm font-medium ${
-                      esReembolsable === value ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+                    className={`flex-1 rounded-lg border py-2 text-sm font-medium ${
+                      esReembolsable === value
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-300'
                     }`}
                   >
                     {label}
@@ -196,24 +188,24 @@ export default function NuevoGasto() {
             </div>
 
             <div>
-              <Combobox
+              <SimpleSelect
                 label="Medio de pago"
                 options={mediosFiltrados}
                 value={idMedioPago}
                 onChange={setIdMedioPago}
-                placeholder="Buscar medio de pago..."
+                placeholder="Seleccionar..."
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Combobox
+              <SimpleSelect
                 label="Moneda"
                 options={catalogos.monedas}
                 value={idMoneda}
                 onChange={setIdMoneda}
-                placeholder="Buscar moneda..."
+                placeholder="Seleccionar..."
               />
             </div>
 
@@ -226,7 +218,7 @@ export default function NuevoGasto() {
                 step="0.01"
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base focus:border-blue-500 focus:ring-blue-500"
                 placeholder="0.00"
               />
             </div>
@@ -243,7 +235,7 @@ export default function NuevoGasto() {
               maxLength={MAX_LEN_COMENTARIOS}
               rows={3}
               placeholder="Notas opcionales..."
-              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 resize-none"
+              className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base focus:border-blue-500 focus:ring-blue-500 resize-none"
             />
           </div>
 
@@ -255,8 +247,10 @@ export default function NuevoGasto() {
                   key={u}
                   type="button"
                   onClick={() => setQuien(u)}
-                  className={`flex-1 rounded-lg py-2 text-sm font-medium ${
-                    quien === u ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+                  className={`flex-1 rounded-lg border py-2 text-sm font-medium ${
+                    quien === u
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-gray-300'
                   }`}
                 >
                   {u}

@@ -13,11 +13,11 @@ export default function Combobox({ label, options, value, onChange, placeholder 
   const seleccionada = options.find((o) => o.id === value) ?? null
 
   return (
-    <HuiCombobox value={seleccionada} onChange={(opt) => onChange(opt?.id ?? null)}>
+    <HuiCombobox immediate value={seleccionada} onChange={(opt) => onChange(opt?.id ?? null)}>
       {label && <HuiCombobox.Label className="block text-sm font-medium text-gray-700 mb-1">{label}</HuiCombobox.Label>}
       <div className="relative">
         <HuiCombobox.Input
-          className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+          className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base focus:border-blue-500 focus:ring-blue-500"
           displayValue={(opt) => opt?.etiqueta ?? ''}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}

@@ -316,6 +316,37 @@ main en el commit `36a7bef` (branch `docs/sync-estado-real-proyecto`).
 
 ---
 
+## Sesion 2026-08-22 -- UX Setup + Agregar gasto (PWA)
+
+4 cambios de UX en `pwa-gastos/`, reportados desde iPhone real (Safari):
+toggle con tratamiento visual inconsistente, combobox de texto libre para
+catalogos chicos y estables, zoom de iOS en inputs con font-size menor a
+16px, y filtro de Medio de pago por propietario (GHR/MC/Ambos). El campo
+`propietario` ya existia de punta a punta (DB, export, `catalogos.json`);
+no hizo falta migracion de schema. Probado en vivo con el dev server
+(`npm run dev`, puerto 5173) en ambas pantallas.
+
+**Archivos nuevos:**
+
+| Archivo | Contenido |
+|---|---|
+| `pwa-gastos/src/components/SimpleSelect.jsx` | Select simple (Headless UI `Listbox`) sin texto libre ni filtro: tocar despliega la lista completa, un tap selecciona y cierra. Reemplaza a `Combobox` en Moneda y Medio de pago (catalogos chicos y estables) en ambas pantallas. `text-base` desde el inicio (evita zoom iOS) |
+| `pwa-gastos/src/hooks/useMedioPagoFiltrado.js` | Filtra medios de pago por propietario (GHR ve GHR+Ambos, MC ve MC+Ambos) y resetea la seleccion a `null` si deja de ser valida al cambiar de usuario (mantiene si es "Ambos"). Compartido entre `NuevoGasto` (usuario = "quien realizo el gasto") y `Configuracion` (usuario = "usuario de este dispositivo") |
+
+**Archivos modificados:**
+
+| Archivo | Cambio |
+|---|---|
+| `pwa-gastos/src/modules/NuevoGasto/index.jsx` | Toggle Business Expense y Quien realizo el gasto: `border` consistente con el resto de los campos en vez de fill solido sin borde. Medio de pago y Moneda migrados a `SimpleSelect`. Filtro de medio de pago centralizado en `useMedioPagoFiltrado` (mismo comportamiento que antes, ahora reusable). Fecha, Monto y Comentarios a `text-base` |
+| `pwa-gastos/src/modules/Configuracion/index.jsx` | Toggle Usuario de este dispositivo: mismo ajuste de `border`. Moneda por default y Medio de pago por default migrados a `SimpleSelect`. Medio de pago por default ahora filtrado por `usuarioDispositivo` via `useMedioPagoFiltrado` (antes mostraba el catalogo completo sin filtrar) -- unico gap real de CAMBIO 4, `NuevoGasto` ya filtraba |
+| `pwa-gastos/src/components/Combobox.jsx` | Prop `immediate` agregado al `Combobox` de Headless UI: abre la lista completa al enfocar/tocar (antes quedaba en blanco hasta escribir), sin perder el filtro por tipeo. `text-base` en el input. Unico consumidor que queda: Categoria (Moneda y Medio de pago pasaron a `SimpleSelect`) |
+
+No se toco backend, modelos, schema de DB, export de catalogos ni
+`frontend/src/modules/Catalogos` (admin de catalogos, app y fuente de
+datos distinta -- DB via API, no el JSON de la PWA).
+
+---
+
 ## Documentacion del Punto 3
 
 | Documento | Contenido |
@@ -330,4 +361,4 @@ main en el commit `36a7bef` (branch `docs/sync-estado-real-proyecto`).
 
 ---
 
-*Ultima actualizacion: 16 Agosto 2026  -- Sesion import de gastos PWA a la DB de escritorio + deploy y prueba real de la PWA (branches chat-pwa-gastos y feature/pwa-import-backend, mergeadas a main). Ver ADR-015 a ADR-017 y CITA-015 a CITA-018.*
+*Ultima actualizacion: 22 Agosto 2026 -- Sesion UX Setup + Agregar gasto en la PWA (toggle, select simple, zoom iOS, filtro de medio de pago por propietario). Ver detalle arriba.*
