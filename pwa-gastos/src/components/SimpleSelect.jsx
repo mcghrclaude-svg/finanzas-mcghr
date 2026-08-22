@@ -13,7 +13,7 @@ export default function SimpleSelect({ label, options, value, onChange, placehol
       {label && <Listbox.Label className="block text-sm font-medium text-gray-700 mb-1">{label}</Listbox.Label>}
       <div className="relative">
         <Listbox.Button className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base text-left focus:border-blue-500 focus:ring-blue-500">
-          <span className={seleccionada ? 'text-gray-900' : 'text-gray-400'}>
+          <span className={`block truncate ${seleccionada ? 'text-gray-900' : 'text-gray-400'}`}>
             {seleccionada ? seleccionada.etiqueta : (placeholder ?? 'Seleccionar...')}
           </span>
         </Listbox.Button>

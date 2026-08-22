@@ -5,13 +5,26 @@
 /* viewport-fit=cover (index.html) dibuja el contenido edge-to-edge,
    por debajo del notch/Dynamic Island y de la home indicator bar en
    iOS. Se compensa una sola vez aca (no en cada pantalla) porque
-   todos los modulos cuelgan del mismo #root. */
-html, body, #root {
+   todos los modulos cuelgan del mismo #root.
+
+   html/body quedan fijos (sin scroll propio) para que el gesto
+   elastico (rubber-band) de iOS no arrastre toda la pagina -- y con
+   ella el padding-top que compensa el notch -- por detras del status
+   bar translucido. El scroll real vive contenido en #root, con
+   overscroll-behavior-y: contain para que tampoco rebote hacia afuera
+   de su propia caja. */
+html, body {
+  height: 100%;
+  overflow: hidden;
   background-color: #f9fafb; /* gray-50: mismo fondo que usan las pantallas */
 }
 
 #root {
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  background-color: #f9fafb;
 }

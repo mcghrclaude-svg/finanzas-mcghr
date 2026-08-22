@@ -14,6 +14,17 @@ function commitHash() {
   }
 }
 
+// Fecha/hora del commit actual en ISO 8601 (con el offset propio del
+// autor) -- se normaliza a America/Bogota recien al mostrarla en
+// pantalla (Home/index.jsx), no aca.
+function commitDate() {
+  try {
+    return execSync('git log -1 --format=%cI').toString().trim()
+  } catch {
+    return ''
+  }
+}
+
 export default defineConfig(({ command, isPreview }) => ({
   // "command" es 'serve' tanto para "vite dev" como para "vite preview" --
   // hay que usar "isPreview" para distinguirlos. El build real (GitHub
@@ -22,6 +33,7 @@ export default defineConfig(({ command, isPreview }) => ({
   base: command === 'build' || isPreview ? '/finanzas-mcghr/' : '/',
   define: {
     __APP_VERSION__: JSON.stringify(commitHash()),
+    __APP_BUILD_DATE__: JSON.stringify(commitDate()),
   },
   plugins: [
     react(),

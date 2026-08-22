@@ -384,6 +384,60 @@ anterior.
 
 ---
 
+## Sesion 2026-08-22 (3) -- Fixes UX PWA (SimpleSelect, layout Fecha/Business Expense, rubber-band iOS) + fecha de build
+
+4 items reportados desde iPhone real (Safari) sobre `pwa-gastos/`, investigados
+y confirmados con evidencia de inspector (dev server + JS en vivo) antes de
+tocar codigo:
+
+- **BUG A -- wordwrap en SimpleSelect:** el `<span>` que muestra el valor
+  seleccionado no truncaba texto largo (ej. "COP - Peso Colombiano"), lo
+  empujaba a 2-3 lineas y agrandaba el boton. Confirmado con inspector:
+  sin `truncate` el span pasaba de 21px a 69px de alto con texto largo
+  simulado. Afecta a los 4 usos del componente (Moneda y Medio de pago,
+  en Agregar gasto y en Configuracion).
+- **BUG B -- toggle Business Expense superpuesto con Fecha:** se aplico un
+  parche defensivo (`min-w-0 overflow-hidden` en el wrapper de Fecha,
+  `min-w-0` en el wrapper de Business Expense), NO un fix de causa raiz
+  confirmada. La causa real no se pudo confirmar en este entorno porque
+  se probo en Chromium (dev server), que no reproduce el ancho minimo
+  intrinseco que `input[type=date]` puede tener en iOS Safari -- la
+  hipotesis (ese ancho intrinseco fuerza el desborde de la columna de
+  Fecha sobre la de Business Expense) queda sin verificar. Pendiente de
+  validacion en iPhone real post-deploy: si el parche no resuelve el
+  overlap ahi, la hipotesis queda descartada y corresponde investigar de
+  nuevo antes de un segundo intento (no encadenar fixes).
+- **BUG C -- rubber-band de iOS tapaba el titulo bajo el notch:** `html`/
+  `body` no tenian scroll propio contenido, por lo que el gesto elastico
+  arrastraba toda la pagina (incluido el padding-top que compensa el
+  notch). Fix global en `index.css`, afecta por igual a los 5 modulos
+  (Home, Configuracion, NuevoGasto, GastosPendientes, ResumenMes), todos
+  cuelgan del mismo `#root`.
+- **FEATURE D -- fecha/hora de build debajo del hash:** mismo patron que
+  `__APP_VERSION__` (build-time define en Vite via `git log`), normalizada
+  a America/Bogota con `Intl.DateTimeFormat`.
+
+Verificado en vivo con el dev server (puerto 5173, JS en la consola del
+navegador): truncado del span confirmado con texto largo simulado; clases
+`min-w-0`/`overflow-hidden` aplicadas en el grid de NuevoGasto; `html`/
+`body` con `overflow:hidden` y `#root` con `overflow-y:auto` +
+`overscroll-behavior-y:contain` confirmados via `getComputedStyle`; Home
+muestra `v2d386de` + `22/08/2026 15:33` (coincide con `git log -1
+--format=%cI` del commit vigente al momento del build). Ver nota de BUG B
+arriba: ese fix es el unico de los 4 sin causa raiz confirmada.
+
+**Archivos modificados:**
+
+| Archivo | Cambio |
+|---|---|
+| `pwa-gastos/src/components/SimpleSelect.jsx` | `<span>` del valor seleccionado: agrega `block truncate` (BUG A) |
+| `pwa-gastos/src/modules/NuevoGasto/index.jsx` | Wrapper de Fecha: `min-w-0 overflow-hidden`; wrapper de Business Expense: `min-w-0` (BUG B, parche defensivo) |
+| `pwa-gastos/src/index.css` | `html`/`body` fijos (`height:100%; overflow:hidden`); `#root` pasa a ser el unico contenedor de scroll (`overflow-y:auto; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch`), mantiene el padding-top/bottom de `env(safe-area-inset-*)` (BUG C) |
+| `pwa-gastos/vite.config.js` | Nueva funcion `commitDate()` (`git log -1 --format=%cI`) y define `__APP_BUILD_DATE__` (FEATURE D) |
+| `pwa-gastos/src/modules/Home/index.jsx` | Nueva funcion `formatearFechaBuild()` (normaliza `__APP_BUILD_DATE__` a America/Bogota, formato `dd/mm/aaaa hh:mm`); se muestra debajo del hash de version (FEATURE D) |
+
+---
+
 ## Documentacion del Punto 3
 
 | Documento | Contenido |
@@ -398,4 +452,4 @@ anterior.
 
 ---
 
-*Ultima actualizacion: 22 Agosto 2026 -- Fix Quien Pago / Paid With vacios en detalle de transaccion (Transacciones/index.jsx). Ver detalle arriba.*
+*Ultima actualizacion: 22 Agosto 2026 -- Fixes UX PWA (SimpleSelect truncate, layout Fecha/Business Expense, rubber-band iOS) + fecha de build. Ver detalle arriba.*

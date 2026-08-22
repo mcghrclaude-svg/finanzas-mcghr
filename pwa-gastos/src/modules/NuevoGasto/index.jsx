@@ -142,7 +142,7 @@ export default function NuevoGasto() {
 
         <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
               <input
                 type="date"
@@ -152,7 +152,7 @@ export default function NuevoGasto() {
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="block text-sm font-medium text-gray-700 mb-1">Business Expense</label>
               <div className="flex gap-2">
                 {[
