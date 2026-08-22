@@ -472,6 +472,15 @@ casos/versiones de iOS -- si este intento resuelve parcialmente (mejora
 pero no desaparece del todo), el proximo paso seria interceptar
 `touchmove` con JS, no aplicado todavia.
 
+Confirmado con video real en iPhone (iOS 26.5.2, modo standalone): el
+segundo intento tampoco resolvio. Causa raiz confirmada: en pantallas
+cortas (Home, Setup) ningun elemento tiene overflow real, por lo que
+`overscroll-behavior-y:contain` en `#root` nunca se activa -- el gesto
+va directo al documento. Intento 3 (intercept de `touchmove` a nivel
+`document`, patron iNoBounce) investigado y propuesto, pendiente de
+implementar. **BUG C pausado, documentado en [issue #51](https://github.com/mcghrclaude-svg/finanzas-mcghr/issues/51)
+de GitHub -- retomar desde intento 3 (hook `usePreventRubberBand`).**
+
 ---
 
 ## Documentacion del Punto 3
