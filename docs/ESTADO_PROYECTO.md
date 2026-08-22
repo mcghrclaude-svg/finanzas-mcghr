@@ -412,7 +412,8 @@ tocar codigo:
   arrastraba toda la pagina (incluido el padding-top que compensa el
   notch). Fix global en `index.css`, afecta por igual a los 5 modulos
   (Home, Configuracion, NuevoGasto, GastosPendientes, ResumenMes), todos
-  cuelgan del mismo `#root`.
+  cuelgan del mismo `#root`. **Primer intento (este commit) NO resolvio
+  -- ver actualizacion mas abajo con el segundo intento.**
 - **FEATURE D -- fecha/hora de build debajo del hash:** mismo patron que
   `__APP_VERSION__` (build-time define en Vite via `git log`), normalizada
   a America/Bogota con `Intl.DateTimeFormat`.
@@ -435,6 +436,41 @@ arriba: ese fix es el unico de los 4 sin causa raiz confirmada.
 | `pwa-gastos/src/index.css` | `html`/`body` fijos (`height:100%; overflow:hidden`); `#root` pasa a ser el unico contenedor de scroll (`overflow-y:auto; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch`), mantiene el padding-top/bottom de `env(safe-area-inset-*)` (BUG C) |
 | `pwa-gastos/vite.config.js` | Nueva funcion `commitDate()` (`git log -1 --format=%cI`) y define `__APP_BUILD_DATE__` (FEATURE D) |
 | `pwa-gastos/src/modules/Home/index.jsx` | Nueva funcion `formatearFechaBuild()` (normaliza `__APP_BUILD_DATE__` a America/Bogota, formato `dd/mm/aaaa hh:mm`); se muestra debajo del hash de version (FEATURE D) |
+
+**Actualizacion BUG C -- primer intento no resolvio, segundo intento pendiente de validar:**
+
+Primer intento (`html`/`body` con `overflow:hidden` + `#root` con
+`overscroll-behavior-y:contain`, deployado en el commit de esta sesion)
+**confirmado NO resuelto** con evidencia de video real en iPhone (iOS
+26.5.2): en pantallas cortas que no llenan el viewport (ej. Home, "Gastos
+MCGHR"), un swipe hacia arriba dispara el bounce directo del documento --
+se ve el fondo del boton "Agregar gasto" y texto asomando detras del
+status bar/Dynamic Island. Causa raiz confirmada por investigacion con
+fuentes externas: en iOS Safari, `overflow:hidden` suprime la
+scrollbar/el scroll programatico pero NO saca al elemento del mecanismo
+nativo de pan/bounce por gesto tactil -- es una distincion documentada
+(ver Ben Frain, "Preventing body scroll for modals in iOS") entre "no
+tiene scrollbar" y "no participa del scroll del documento en absoluto".
+
+Segundo intento (aplicado en este commit, **pendiente de confirmar en
+iPhone real post-deploy**): `body` pasa a `position: fixed; width: 100%`
+(lo saca del flujo normal del documento, no solo le oculta el overflow);
+`#root` pasa a `position: absolute; inset: 0` para volver a ocupar el
+espacio como scroll container real (mantiene `overflow-y:auto`,
+`overscroll-behavior-y:contain`, el padding de `env(safe-area-inset-*)`).
+Verificado en Chromium (dev server, viewport 393x852) que el layout no se
+rompe: `getComputedStyle` confirma `body` fijo en 0/0/393/852 sin moverse
+al scrollear, y con contenido largo simulado (2000px, ej. una lista larga
+de transacciones) `#root` scrollea correctamente sin overflow horizontal
+y sin que `body`/`html` se desplacen. **La limitacion de esta
+verificacion:** Chromium no reproduce el motor de fisica del bounce
+elastico nativo de iOS Safari, asi que el gesto real (lo unico que
+importa para este bug) sigue sin poder confirmarse fuera de un iPhone
+real. Ademas, la evidencia externa consultada indica que ni siquiera
+`position:fixed` garantiza eliminar el bounce del todo en todos los
+casos/versiones de iOS -- si este intento resuelve parcialmente (mejora
+pero no desaparece del todo), el proximo paso seria interceptar
+`touchmove` con JS, no aplicado todavia.
 
 ---
 

@@ -12,15 +12,29 @@
    ella el padding-top que compensa el notch -- por detras del status
    bar translucido. El scroll real vive contenido en #root, con
    overscroll-behavior-y: contain para que tampoco rebote hacia afuera
-   de su propia caja. */
+   de su propia caja.
+
+   iOS Safari: overflow:hidden NO alcanza para sacar a body del gesto
+   nativo de pan/bounce -- solo suprime la scrollbar/el scroll
+   programatico. En pantallas cortas (que no llenan el viewport) un
+   swipe dispara el bounce directo del documento. position:fixed en
+   body si lo saca del flujo normal, evitando que participe de ese
+   gesto; #root pasa a position:absolute para volver a ocupar el
+   espacio como scroll container real. */
 html, body {
   height: 100%;
   overflow: hidden;
   background-color: #f9fafb; /* gray-50: mismo fondo que usan las pantallas */
 }
 
+body {
+  position: fixed;
+  width: 100%;
+}
+
 #root {
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
