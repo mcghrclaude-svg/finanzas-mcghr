@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-22 13:19
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-22 15:33
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -57,7 +57,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Presupuesto | STUB | 4 lineas |
 | PWA | IMPLEMENTADO | 272 lineas |
 | Tools | IMPLEMENTADO | 410 lineas |
-| Transacciones | IMPLEMENTADO | 1287 lineas |
+| Transacciones | IMPLEMENTADO | 1315 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+7bd1454 fix(transacciones): resuelve quien_pago y paid_with vacios en detalle
+38fb07b docs: auto-update 2026-08-22 13:19
 e493b2a fix(pwa-gastos): UX Setup + Agregar gasto (toggles, selects, filtro por usuario)
 35577ec docs: auto-update 2026-08-21 19:20
 53b68aa fix(scripts): import_pwa_gastos lee carpetas desde config_pwa_import.raices
@@ -86,5 +88,3 @@ e493b2a fix(pwa-gastos): UX Setup + Agregar gasto (toggles, selects, filtro por 
 e930168 fix(pwa-gastos): renombra "Ver gastos pendientes" a "Gastos sin Replicar"
 cc23f6c docs: auto-update 2026-08-21 18:36
 866ac54 fix(schemas): estado_reembolso real usa pendiente|solicitado|recibido
-25edb6d docs: auto-update 2026-08-21 18:33
-52a23cd fix(schemas): validar enum de estado_reembolso
