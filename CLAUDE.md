@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-21 19:20
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-22 13:19
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260821.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260822.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+e493b2a fix(pwa-gastos): UX Setup + Agregar gasto (toggles, selects, filtro por usuario)
+35577ec docs: auto-update 2026-08-21 19:20
 53b68aa fix(scripts): import_pwa_gastos lee carpetas desde config_pwa_import.raices
 4539075 merge: feat/gasto-reembolsable-pwa -- gasto Business Expense capturado en la PWA
 1f6d77d docs: auto-update 2026-08-21 18:53
@@ -86,5 +88,3 @@ cc23f6c docs: auto-update 2026-08-21 18:36
 866ac54 fix(schemas): estado_reembolso real usa pendiente|solicitado|recibido
 25edb6d docs: auto-update 2026-08-21 18:33
 52a23cd fix(schemas): validar enum de estado_reembolso
-d0c005f docs: auto-update 2026-08-21 18:32
-dc12c34 fix(reportes): excluir Business Expense de los totales familiares
