@@ -5,7 +5,20 @@ No depende de que el backend FastAPI este corriendo (igual que restore.py
 de Backup): solo necesita el paquete backend/ importable en el mismo venv.
 Pensado para correr via Tarea Programada de Windows.
 
-Por cada carpeta padre recibida en --carpetas, recorre <carpeta>/pendientes/:
+Las carpetas a recorrer se resuelven asi (en orden de prioridad):
+  1. --carpetas si se paso explicito en la linea de comandos (override manual,
+     util para probar una carpeta puntual sin tocar la config).
+  2. Si no se paso, se leen de config_pwa_import.raices -- la misma fuente
+     que ya usa pwa_export_service.py para exportar catalogos.json. Antes
+     este script tenia --carpetas como obligatorio y la Tarea Programada
+     lo invocaba con una ruta fija en scripts/_run_import_pwa.bat, sin
+     ninguna relacion con lo que el usuario configura en la pantalla PWA
+     del escritorio -- agregar una carpeta ahi actualizaba el export pero
+     nunca hacia que este script la mirara. Ahora agregar una raiz en esa
+     pantalla alimenta ambas direcciones (export de catalogos e import de
+     gastos) desde el mismo lugar.
+
+Por cada carpeta padre resuelta, recorre <carpeta>/pendientes/:
   1. Valida el JSON contra el schema esperado y contra los catalogos reales.
   2. Chequea archivos_mobile_procesados (por nombre de archivo) para no
      reprocesar si el script ya corrio sobre ese JSON antes.
@@ -19,8 +32,9 @@ Por cada carpeta padre recibida en --carpetas, recorre <carpeta>/pendientes/:
   7. Registra la corrida completa en log_ejecuciones_mobile.
 
 Ejecucion:
-    python -m scripts.import_pwa_gastos --ambiente dev --carpetas "C:\\ruta\\Gastos Hernan" "C:\\ruta\\Gastos Martha"
-    python -m scripts.import_pwa_gastos --ambiente prod --carpetas "C:\\ruta\\Gastos Hernan"
+    python -m scripts.import_pwa_gastos --ambiente dev
+    python -m scripts.import_pwa_gastos --ambiente prod
+    python -m scripts.import_pwa_gastos --ambiente dev --carpetas "C:\\ruta\\puntual"   (override manual)
 
 Nota operativa: si OneDrive tiene "Ahorrar espacio" (Files On-Demand)
 activo, la carpeta raiz de gastos debe estar marcada "Mantener siempre en
@@ -43,9 +57,25 @@ from pathlib import Path
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Importa gastos de la PWA mobile a la DB.")
     parser.add_argument("--ambiente", choices=["dev", "prod"], required=True)
-    parser.add_argument("--carpetas", nargs="+", required=True,
-                         help="Una o mas carpetas padre (cada una contiene pendientes/ y procesados/)")
+    parser.add_argument("--carpetas", nargs="+", default=None,
+                         help="Override manual: una o mas carpetas padre (cada una contiene "
+                              "pendientes/ y procesados/). Si se omite, se leen de "
+                              "config_pwa_import.raices.")
     return parser.parse_args()
+
+
+async def resolver_carpetas(db, carpetas_cli: list[str] | None) -> list[str]:
+    """Resuelve la lista de carpetas a procesar: el override de --carpetas
+    si vino explicito, o config_pwa_import.raices (misma fuente que usa
+    pwa_export_service.py para el export de catalogos.json)."""
+    if carpetas_cli:
+        return carpetas_cli
+
+    from sqlalchemy import text
+    raices_json = (await db.execute(
+        text("SELECT raices FROM config_pwa_import WHERE id = 1")
+    )).scalar_one_or_none()
+    return json.loads(raices_json) if raices_json else []
 
 
 async def procesar_carpeta(db, carpeta: str, documentos_dir: Path, alertas: list[dict], contadores: dict):
@@ -176,7 +206,7 @@ async def _registrar_archivo_procesado(db, nombre_archivo: str, gasto: dict | No
     )
 
 
-async def run(ambiente: str, carpetas: list[str]):
+async def run(ambiente: str, carpetas_cli: list[str] | None):
     # CRITICO: fijar ENV_FILE antes de importar backend.core.config -- ese
     # modulo lee la variable al definirse la clase Settings.Config.
     os.environ["ENV_FILE"] = ".env.dev" if ambiente == "dev" else ".env.prod"
@@ -194,6 +224,11 @@ async def run(ambiente: str, carpetas: list[str]):
     alertas: list[dict] = []
 
     async with SessionLocal() as db:
+        carpetas = await resolver_carpetas(db, carpetas_cli)
+        if not carpetas:
+            alertas.append({"archivo": None, "motivo": "config_pwa_import.raices esta vacio -- "
+                                                          "configura al menos una carpeta raiz en "
+                                                          "Configuracion > PWA (o pasa --carpetas)."})
         for carpeta in carpetas:
             await procesar_carpeta(db, carpeta, Path(settings.documentos_path), alertas, contadores)
 
