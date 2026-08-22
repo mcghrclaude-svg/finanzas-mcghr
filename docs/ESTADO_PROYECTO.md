@@ -347,6 +347,43 @@ datos distinta -- DB via API, no el JSON de la PWA).
 
 ---
 
+## Sesion 2026-08-22 (2) -- Fix: Quien Pago / Paid With vacios en detalle de transaccion
+
+Bug reportado (3 casos reales en produccion): al abrir el detalle de un gasto
+proveniente del ETL/mobile, `quien_pago` y el medio de pago (`id_cuenta_origen`
+del tramo 1) quedaban siempre vacios en el panel, aunque el dato si estaba en
+la DB. `id_categoria` y el resto de los campos resolvian bien.
+
+**Causa raiz:** `DetailPanel` inicializaba `vals` directo desde el `item`
+seleccionado, que es el objeto de la lista (`GET /inbox/` -> `InboxItemSummary`).
+Ese schema no incluye `quien_pago` ni `tramos` (solo `InboxItemRead`, la
+respuesta de `GET /inbox/{id}`, los tiene) -- el frontend nunca llamaba a ese
+endpoint para completar el detalle. `id_categoria` resolvia bien porque si
+esta en el summary.
+
+**Fix:** `DetailPanel` ahora llama a `GET /inbox/{id}` al seleccionar una
+transaccion y mergea el resultado sobre el summary ya cargado (`{...item,
+...detalle}`) para no perder campos que solo trae el summary. Incluye
+indicador de carga sutil ("loading details...") en el header del panel,
+fallback silencioso si el fetch falla (deja los campos en su estado vacio
+actual, sin romper el panel), y guard contra condicion de carrera por id
+seleccionado (si el usuario cambia de transaccion antes de que responda el
+fetch anterior, esa respuesta tardia se descarta).
+
+Verificado en dev (`npm run dev` + backend dev) contra datos reales de PWA
+import (`quien_pago='GHR'`, `id_cuenta_origen='BBVA-CC-GHR'`): ambos campos
+resuelven correctamente en el panel tras el fix. Probado tambien el cambio
+rapido entre transacciones sin que se filtre estado de una transaccion
+anterior.
+
+**Archivo modificado:**
+
+| Archivo | Cambio |
+|---|---|
+| `frontend/src/modules/Transacciones/index.jsx` | `api.getDetalle` nuevo (llama `GET /inbox/{id}`). `DetailPanel`: useEffect inicializa `vals` con el summary y luego lo completa con el detalle mergeado; agrega `cargandoDetalle` (indicador en header) y `selectedIdRef` (guard de carrera) |
+
+---
+
 ## Documentacion del Punto 3
 
 | Documento | Contenido |
@@ -361,4 +398,4 @@ datos distinta -- DB via API, no el JSON de la PWA).
 
 ---
 
-*Ultima actualizacion: 22 Agosto 2026 -- Sesion UX Setup + Agregar gasto en la PWA (toggle, select simple, zoom iOS, filtro de medio de pago por propietario). Ver detalle arriba.*
+*Ultima actualizacion: 22 Agosto 2026 -- Fix Quien Pago / Paid With vacios en detalle de transaccion (Transacciones/index.jsx). Ver detalle arriba.*

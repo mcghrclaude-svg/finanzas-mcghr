@@ -76,6 +76,7 @@ const api = {
   getCategorias:        () => client.get('/catalogos/categorias?solo_activas=true').then(r => r.data),
   getContrapartes:      () => client.get('/catalogos/contrapartes?solo_activas=true').then(r => r.data),
   getCuentas:           () => client.get('/catalogos/cuentas?solo_activas=true').then(r => r.data),
+  getDetalle:           (id) => client.get(`/inbox/${id}`).then(r => r.data),
   getEPs:               (id) => client.get(`/inbox/${id}/entidades-potenciales`).then(r => r.data),
   confirmarEP:          (trxId, epId) => client.post(`/inbox/${trxId}/entidades-potenciales/${epId}/confirmar`).then(r => r.data),
   getVinculos:          (id) => client.get(`/inbox/${id}/vinculos`).then(r => r.data),
@@ -598,24 +599,50 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
   const [saving, setSaving] = useState(false)
   const [eps,      setEps]      = useState([])
   const [vinculos, setVinculos] = useState([])
+  const [cargandoDetalle, setCargandoDetalle] = useState(false)
+  const selectedIdRef = useRef(null)
+
+  function valsDesde(fuente) {
+    const tramo1 = fuente.tramos?.length >= 1 ? fuente.tramos[0] : null
+    return {
+      descripcion:             fuente.descripcion             ?? '',
+      fecha:                   fuente.fecha                   ? fuente.fecha.slice(0, 10) : '',
+      id_categoria:            fuente.id_categoria            ?? null,
+      id_contraparte:          fuente.id_contraparte          ?? null,
+      tipo:                    fuente.tipo                    ?? '',
+      quien_pago:              fuente.quien_pago              ?? '',
+      es_recurrente:           fuente.es_recurrente           ?? false,
+      notas:                   fuente.notas                   ?? '',
+      es_reembolsable:         fuente.es_reembolsable         ?? false,
+      estado_reembolso:        fuente.estado_reembolso        ?? '',
+      id_cuenta_origen_tramo1: tramo1?.id_cuenta_origen       ?? null,
+    }
+  }
 
   useEffect(() => {
     if (!item) return
-    const tramo1 = item.tramos?.length >= 1 ? item.tramos[0] : null
-    setVals({
-      descripcion:             item.descripcion             ?? '',
-      fecha:                   item.fecha                   ? item.fecha.slice(0, 10) : '',
-      id_categoria:            item.id_categoria            ?? null,
-      id_contraparte:          item.id_contraparte          ?? null,
-      tipo:                    item.tipo                    ?? '',
-      quien_pago:              item.quien_pago              ?? '',
-      es_recurrente:           item.es_recurrente           ?? false,
-      notas:                   item.notas                   ?? '',
-      es_reembolsable:         item.es_reembolsable         ?? false,
-      estado_reembolso:        item.estado_reembolso        ?? '',
-      id_cuenta_origen_tramo1: tramo1?.id_cuenta_origen     ?? null,
-    })
+    selectedIdRef.current = item.id
+
+    // Inicializa con lo que ya tenemos (el summary de la lista) para que la
+    // pantalla no arranque vacia; luego se completa con el detalle completo
+    // (quien_pago, tramos) que el summary no trae -- Issue: bug quien/medio pago.
+    setVals(valsDesde(item))
     setDirty(false)
+    setCargandoDetalle(true)
+
+    api.getDetalle(item.id)
+      .then(detalle => {
+        if (selectedIdRef.current !== item.id) return
+        setVals(valsDesde({ ...item, ...detalle }))
+      })
+      .catch(() => {
+        // El summary ya quedo cargado como fallback; los campos que solo trae
+        // el detalle (quien_pago, tramos) se quedan en su estado vacio.
+      })
+      .finally(() => {
+        if (selectedIdRef.current === item.id) setCargandoDetalle(false)
+      })
+
     api.getEPs(item.id).then(d => setEps(d.items ?? [])).catch(() => setEps([]))
     api.getVinculos(item.id).then(d => setVinculos(d.items ?? [])).catch(() => setVinculos([]))
   }, [item?.id])
@@ -692,6 +719,7 @@ function DetailPanel({ item, categorias, contrapartes, cuentas, onConfirmar, onD
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-white flex-shrink-0">
         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
           {ORIGEN_LABEL[item.origen] ?? item.origen}
+          {cargandoDetalle && <span className="ml-2 text-gray-300 normal-case">loading details...</span>}
         </span>
         <div className="flex items-center gap-1">
           <button onClick={undo} disabled={!undoStack.length} title="Undo (Ctrl+Z)"
