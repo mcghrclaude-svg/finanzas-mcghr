@@ -483,6 +483,25 @@ de GitHub -- retomar desde intento 3 (hook `usePreventRubberBand`).**
 
 ---
 
+## Sesion 2026-09-04 -- Fix patrimonio neto (presupuesto_repo) + bootstrap de DB prod desde cero
+
+**Fix `presupuesto_repo.py`:** el calculo de patrimonio neto usaba columnas
+que no existen en el modelo actual (`Valuacion.valor_usd`, `Inversion.estado`).
+Corregido a `Valuacion.valor` y `Inversion.activa` (boolean), verificado
+columna por columna contra el schema real de produccion via
+`PRAGMA table_info` antes de commitear. Pasivos (obligaciones) ahora
+devuelve `0` en vez de una cifra fabricada: `Obligacion` solo tiene
+`capital_inicial` (monto original del prestamo), sin logica de amortizacion,
+por lo que no hay forma de calcular el saldo pendiente real.
+
+**Bootstrap de DB de produccion desde cero:** agregados `schema/init_prod_desde_cero.sql`,
+`scripts/_bootstrap_prod_db.py` y `scripts/_run_import_pwa.bat` como
+herramienta de recuperacion ante desastre (crear una DB de produccion nueva
+y vacia: `Base.metadata.create_all()` + tablas/vistas que solo existen como
+SQL crudo). Documentado, no ejecutado contra produccion en esta sesion.
+
+---
+
 ## Documentacion del Punto 3
 
 | Documento | Contenido |
