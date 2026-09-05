@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-08-22 17:13
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-04 23:00
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260822.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260904.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+228611a fix: corrige calculo de patrimonio neto en presupuesto_repo
+f74d377 docs: auto-update 2026-08-22 17:13
 bd3fabb docs: pausar BUG C, documentado en issue #51
 f9f7f1c docs: auto-update 2026-08-22 16:55
 a61456d fix(pwa-gastos): BUG C segundo intento -- position:fixed en body para rubber-band iOS
@@ -86,5 +88,3 @@ b4c5c9e docs: auto-update 2026-08-22 16:19
 2d386de docs: auto-update 2026-08-22 15:33
 7bd1454 fix(transacciones): resuelve quien_pago y paid_with vacios en detalle
 38fb07b docs: auto-update 2026-08-22 13:19
-e493b2a fix(pwa-gastos): UX Setup + Agregar gasto (toggles, selects, filtro por usuario)
-35577ec docs: auto-update 2026-08-21 19:20
