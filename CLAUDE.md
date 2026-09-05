@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-04 23:16
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-05 14:36
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260904.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260905.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -56,28 +56,39 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | STUB | 4 lineas |
 | PWA | IMPLEMENTADO | 272 lineas |
-| Tools | IMPLEMENTADO | 410 lineas |
-| Transacciones | IMPLEMENTADO | 1315 lineas |
+| Tools | PARCIAL | 410 lineas |
+| Transacciones | PARCIAL | 1315 lineas |
+
+## Estado real de modulos PWA (pwa-gastos/src/modules)
+| Modulo | Estado | Detalle |
+|--------|--------|---------|
+| Configuracion | IMPLEMENTADO | 186 lineas |
+| GastosPendientes | PARCIAL | 93 lineas |
+| Home | IMPLEMENTADO | 66 lineas |
+| NuevoGasto | IMPLEMENTADO | 299 lineas |
+| ResumenMes | STUB | 18 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
 |--------|--------|---------|
-| analitica.py | IMPLEMENTADO | 72 lineas |
-| backup.py | IMPLEMENTADO | 92 lineas |
+| analitica.py | PARCIAL | 72 lineas |
+| backup.py | PARCIAL | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 518 lineas |
-| dashboard.py | IMPLEMENTADO | 120 lineas |
+| dashboard.py | PARCIAL | 120 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
-| inversiones.py | IMPLEMENTADO | 98 lineas |
-| obligaciones.py | IMPLEMENTADO | 89 lineas |
+| inversiones.py | PARCIAL | 98 lineas |
+| obligaciones.py | PARCIAL | 89 lineas |
 | presupuestos.py | IMPLEMENTADO | 150 lineas |
 | pwa_config.py | IMPLEMENTADO | 191 lineas |
-| reglas.py | IMPLEMENTADO | 73 lineas |
-| reportes.py | IMPLEMENTADO | 135 lineas |
-| tools.py | IMPLEMENTADO | 434 lineas |
-| transacciones.py | IMPLEMENTADO | 155 lineas |
+| reglas.py | PARCIAL | 73 lineas |
+| reportes.py | PARCIAL | 135 lineas |
+| tools.py | PARCIAL | 434 lineas |
+| transacciones.py | PARCIAL | 155 lineas |
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+6a78421 fix: cerrar-sesion.ps1 -- clasificacion STUB/PARCIAL/IMPLEMENTADO y escaneo de PWA
+4c8187b docs: auto-update 2026-09-04 23:16
 04a8ecf chore: agrega pwa-gastos/.vite al gitignore
 aeb3a69 docs: auto-update 2026-09-04 23:07
 fe02dd9 docs: actualiza ESTADO_PROYECTO.md tras fix presupuesto_repo y bootstrap prod
@@ -86,5 +97,3 @@ fe02dd9 docs: actualiza ESTADO_PROYECTO.md tras fix presupuesto_repo y bootstrap
 d5e2fee docs: auto-update 2026-09-04 23:00
 228611a fix: corrige calculo de patrimonio neto en presupuesto_repo
 f74d377 docs: auto-update 2026-08-22 17:13
-bd3fabb docs: pausar BUG C, documentado en issue #51
-f9f7f1c docs: auto-update 2026-08-22 16:55
