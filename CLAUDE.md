@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-04 23:07
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-04 23:16
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+04a8ecf chore: agrega pwa-gastos/.vite al gitignore
+aeb3a69 docs: auto-update 2026-09-04 23:07
 fe02dd9 docs: actualiza ESTADO_PROYECTO.md tras fix presupuesto_repo y bootstrap prod
 5909da5 docs: auto-update 2026-09-04 23:06
 1f0a294 chore: agrega scripts de bootstrap de DB de produccion desde cero
@@ -86,5 +88,3 @@ d5e2fee docs: auto-update 2026-09-04 23:00
 f74d377 docs: auto-update 2026-08-22 17:13
 bd3fabb docs: pausar BUG C, documentado en issue #51
 f9f7f1c docs: auto-update 2026-08-22 16:55
-a61456d fix(pwa-gastos): BUG C segundo intento -- position:fixed en body para rubber-band iOS
-b4c5c9e docs: auto-update 2026-08-22 16:19
