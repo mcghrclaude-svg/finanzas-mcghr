@@ -55,12 +55,20 @@ function Get-EstadoArchivo {
     $lines = @(Get-Content $path -ErrorAction SilentlyContinue)
     $count = $lines.Count
     $content = $lines -join "`n"
-    $esStub = ($count -le 10) -or
-              ($content -match "TODO" -and $count -lt 30) -or
-              ($content -match "en desarrollo")
+    $tieneTodo = $content -match "TODO"
+    $esStubChico = ($count -le 10) -or ($content -match "en desarrollo") -or ($content -match "Proximamente")
+
+    $estado = if ($esStubChico) {
+        "STUB"
+    } elseif ($tieneTodo) {
+        "PARCIAL"
+    } else {
+        "IMPLEMENTADO"
+    }
+
     return [PSCustomObject]@{
         Lineas = $count
-        Estado = if ($esStub) { "STUB" } else { "IMPLEMENTADO" }
+        Estado = $estado
     }
 }
 
@@ -72,6 +80,18 @@ if (Test-Path $modPath) {
         $info = Get-EstadoArchivo $idx
         if ($info) {
             $frontendMods += "| $($dir.Name) | $($info.Estado) | $($info.Lineas) lineas |"
+        }
+    }
+}
+
+$pwaMods = @()
+$pwaModPath = Join-Path $RepoPath "pwa-gastos\src\modules"
+if (Test-Path $pwaModPath) {
+    foreach ($dir in @(Get-ChildItem $pwaModPath -Directory -ErrorAction SilentlyContinue)) {
+        $idx = Join-Path $dir.FullName "index.jsx"
+        $info = Get-EstadoArchivo $idx
+        if ($info) {
+            $pwaMods += "| $($dir.Name) | $($info.Estado) | $($info.Lineas) lineas |"
         }
     }
 }
@@ -212,6 +232,11 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Modulo | Estado | Detalle |
 |--------|--------|---------|
 $($frontendMods -join "`n")
+
+## Estado real de modulos PWA (pwa-gastos/src/modules)
+| Modulo | Estado | Detalle |
+|--------|--------|---------|
+$($pwaMods -join "`n")
 
 ## Estado real de routers backend (api/v1/routers/)
 | Router | Estado | Detalle |
