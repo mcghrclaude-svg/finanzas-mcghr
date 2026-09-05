@@ -19,7 +19,6 @@ from backend.models.periodo import PeriodoFinanciero
 from backend.models.velocidad_historica import VelocidadHistorica
 from backend.models.transaccion import Transaccion, Tramo
 from backend.models.inversion import Inversion, Valuacion
-from backend.models.obligacion import Obligacion
 
 
 class PresupuestoRepository:
@@ -241,17 +240,17 @@ class PresupuestoRepository:
         """
         # Activos: ultima valuacion de cada inversion
         result_activos = await self.db.execute(
-            select(func.coalesce(func.sum(Valuacion.valor_usd), 0))
+            select(func.coalesce(func.sum(Valuacion.valor), 0))
             .join(Inversion, Valuacion.id_inversion == Inversion.id)
-            .where(Inversion.estado == "activa")
+            .where(Inversion.activa == True)  # noqa: E712
         )
         activos = Decimal(str(result_activos.scalar() or 0))
 
-        # Pasivos: obligaciones vigentes
-        result_pasivos = await self.db.execute(
-            select(func.coalesce(func.sum(Obligacion.saldo_pendiente), 0))
-            .where(Obligacion.estado == "vigente")
-        )
-        pasivos = Decimal(str(result_pasivos.scalar() or 0))
+        # Pasivos: Obligacion no tiene un campo de saldo pendiente actual --
+        # solo capital_inicial (el monto original del prestamo). Sin logica
+        # de amortizacion no hay forma de calcular cuanto queda por pagar,
+        # asi que devuelve 0 en vez de una cifra fabricada (capital_inicial
+        # sobreestimaria el pasivo real de cualquier deuda en pago).
+        pasivos = Decimal("0")
 
         return activos, pasivos
