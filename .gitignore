@@ -17,6 +17,7 @@ htmlcov/
 node_modules/
 frontend/dist/
 frontend/.vite/
+pwa-gastos/.vite/
 
 # Entornos (NUNCA commitear valores reales)
 .env.prod
