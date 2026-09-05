@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-04 23:00
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-04 23:06
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -78,6 +78,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+1f0a294 chore: agrega scripts de bootstrap de DB de produccion desde cero
+d5e2fee docs: auto-update 2026-09-04 23:00
 228611a fix: corrige calculo de patrimonio neto en presupuesto_repo
 f74d377 docs: auto-update 2026-08-22 17:13
 bd3fabb docs: pausar BUG C, documentado en issue #51
@@ -86,5 +88,3 @@ a61456d fix(pwa-gastos): BUG C segundo intento -- position:fixed en body para ru
 b4c5c9e docs: auto-update 2026-08-22 16:19
 1f8c246 fix(pwa-gastos): SimpleSelect truncate, layout Fecha/Business Expense, rubber-band iOS + fecha de build
 2d386de docs: auto-update 2026-08-22 15:33
-7bd1454 fix(transacciones): resuelve quien_pago y paid_with vacios en detalle
-38fb07b docs: auto-update 2026-08-22 13:19
