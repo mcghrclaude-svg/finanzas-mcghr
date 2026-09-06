@@ -17,6 +17,23 @@ export function FolderIcon(props) {
   )
 }
 
+export function CloudIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z" />
+    </svg>
+  )
+}
+
+export function InboxIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c0-.399.078-.794.23-1.162l1.348-3.26a3 3 0 0 1 2.77-1.854h8.104a3 3 0 0 1 2.77 1.854l1.349 3.26c.152.368.23.763.23 1.162v.443c0 .864-.7 1.564-1.564 1.564h-3.586c-.463 0-.898.219-1.176.591l-.708.944a1.5 1.5 0 0 1-1.176.592h-1.122a1.5 1.5 0 0 1-1.176-.592l-.708-.944a1.5 1.5 0 0 0-1.176-.591H5.314c-.864 0-1.564-.7-1.564-1.564v-.443Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75v4.5A2.25 2.25 0 0 0 6.75 19.5h10.5a2.25 2.25 0 0 0 2.25-2.25v-4.5" />
+    </svg>
+  )
+}
+
 export function ExclamationTriangleIcon(props) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" {...props}>

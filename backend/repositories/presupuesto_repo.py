@@ -19,6 +19,7 @@ from backend.models.periodo import PeriodoFinanciero
 from backend.models.velocidad_historica import VelocidadHistorica
 from backend.models.transaccion import Transaccion, Tramo
 from backend.models.inversion import Inversion, Valuacion
+from backend.models.catalogo import Categoria
 
 
 class PresupuestoRepository:
@@ -194,6 +195,45 @@ class PresupuestoRepository:
             )
         )
         return Decimal(str(result.scalar() or 0))
+
+    # ── Categorias ────────────────────────────────────────────────────────────
+
+    async def listar_categorias_activas(self) -> list[Categoria]:
+        result = await self.db.execute(
+            select(Categoria)
+            .where(Categoria.activa == True)  # noqa: E712
+            .order_by(Categoria.nivel, Categoria.nombre)
+        )
+        return list(result.scalars().all())
+
+    # ── Gasto por categoria en un rango de fechas (mes calendario) ───────────
+    # Usado por el resumen de Home de la PWA: gasto acumulado del mes y
+    # promedio de los ultimos 3 meses, ambos por categoria individual (el
+    # rollup nivel1/nivel2/nivel3 lo arma PresupuestoService, no esta query).
+
+    async def obtener_gasto_por_categoria_rango(
+        self,
+        fecha_inicio: date,
+        fecha_hasta: date,
+    ) -> dict[str, Decimal]:
+        result = await self.db.execute(
+            select(Transaccion.id_categoria, func.coalesce(func.sum(Tramo.monto_origen), 0))
+            .join(Tramo, and_(
+                Tramo.id_transaccion == Transaccion.id,
+                Tramo.numero_orden == 1,
+            ))
+            .where(
+                and_(
+                    Transaccion.tipo == "gasto",
+                    Transaccion.estado == "confirmado",
+                    func.coalesce(Transaccion.es_reembolsable, 0) == 0,
+                    Transaccion.fecha >= fecha_inicio.isoformat(),
+                    Transaccion.fecha <= fecha_hasta.isoformat(),
+                )
+            )
+            .group_by(Transaccion.id_categoria)
+        )
+        return {id_categoria: Decimal(str(total)) for id_categoria, total in result.all()}
 
     # ── Velocidad historica ───────────────────────────────────────────────────
 

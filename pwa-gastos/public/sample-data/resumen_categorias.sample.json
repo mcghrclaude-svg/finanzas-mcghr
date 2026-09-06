@@ -1,0 +1,23 @@
+{
+  "generado_en": "2026-09-06T00:00:00Z",
+  "mes": { "anio": 2026, "mes": 9 },
+  "total": {
+    "gasto_acumulado": 3120000.0,
+    "presupuesto": 4200000.0,
+    "promedio_ultimos_3_meses": 3480000.0
+  },
+  "categorias": [
+    { "id_categoria": "ALIMENTACION", "nivel": 1, "id_padre": null, "nombre": "Alimentacion", "gasto_acumulado": 1050000.0, "presupuesto": 1400000.0, "promedio_ultimos_3_meses": 1200000.0 },
+    { "id_categoria": "ALIMENTACION-MERCADO", "nivel": 2, "id_padre": "ALIMENTACION", "nombre": "Mercado", "gasto_acumulado": 700000.0, "presupuesto": 900000.0, "promedio_ultimos_3_meses": 780000.0 },
+    { "id_categoria": "ALIMENTACION-RESTAURANTES", "nivel": 2, "id_padre": "ALIMENTACION", "nombre": "Restaurantes", "gasto_acumulado": 350000.0, "presupuesto": 500000.0, "promedio_ultimos_3_meses": 420000.0 },
+    { "id_categoria": "ALIMENTACION-RESTAURANTES-DELIVERY", "nivel": 3, "id_padre": "ALIMENTACION-RESTAURANTES", "nombre": "Delivery", "gasto_acumulado": 150000.0, "presupuesto": 200000.0, "promedio_ultimos_3_meses": 180000.0 },
+    { "id_categoria": "TRANSPORTE", "nivel": 1, "id_padre": null, "nombre": "Transporte", "gasto_acumulado": 620000.0, "presupuesto": 800000.0, "promedio_ultimos_3_meses": 700000.0 },
+    { "id_categoria": "TRANSPORTE-COMBUSTIBLE", "nivel": 2, "id_padre": "TRANSPORTE", "nombre": "Combustible", "gasto_acumulado": 400000.0, "presupuesto": 500000.0, "promedio_ultimos_3_meses": 450000.0 },
+    { "id_categoria": "TRANSPORTE-TAXI", "nivel": 2, "id_padre": "TRANSPORTE", "nombre": "Taxi / apps", "gasto_acumulado": 220000.0, "presupuesto": 300000.0, "promedio_ultimos_3_meses": 250000.0 },
+    { "id_categoria": "SALUD", "nivel": 1, "id_padre": null, "nombre": "Salud", "gasto_acumulado": 300000.0, "presupuesto": 600000.0, "promedio_ultimos_3_meses": 380000.0 },
+    { "id_categoria": "SALUD-MEDICAMENTOS", "nivel": 2, "id_padre": "SALUD", "nombre": "Medicamentos", "gasto_acumulado": 300000.0, "presupuesto": 600000.0, "promedio_ultimos_3_meses": 380000.0 },
+    { "id_categoria": "ENTRETENIMIENTO", "nivel": 1, "id_padre": null, "nombre": "Entretenimiento", "gasto_acumulado": 450000.0, "presupuesto": 400000.0, "promedio_ultimos_3_meses": 500000.0 },
+    { "id_categoria": "HOGAR", "nivel": 1, "id_padre": null, "nombre": "Hogar", "gasto_acumulado": 700000.0, "presupuesto": 1000000.0, "promedio_ultimos_3_meses": 700000.0 },
+    { "id_categoria": "HOGAR-SERVICIOS", "nivel": 2, "id_padre": "HOGAR", "nombre": "Servicios publicos", "gasto_acumulado": 700000.0, "presupuesto": 1000000.0, "promedio_ultimos_3_meses": 700000.0 }
+  ]
+}

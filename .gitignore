@@ -44,6 +44,7 @@ backups/
 !package.json
 !package-lock.json
 !pwa-gastos/public/sample-data/catalogos.sample.json
+!pwa-gastos/public/sample-data/resumen_categorias.sample.json
 
 # OS
 .DS_Store

@@ -3,6 +3,7 @@ import Home from './modules/Home'
 import Configuracion from './modules/Configuracion'
 import NuevoGasto from './modules/NuevoGasto'
 import Actividad from './modules/Actividad'
+import Bandeja from './modules/Bandeja'
 import ResumenMes from './modules/ResumenMes'
 
 // HashRouter: sirve bien tanto en localhost como en GitHub Pages sin
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/nuevo-gasto" element={<NuevoGasto />} />
         <Route path="/nuevo-gasto/:id" element={<NuevoGasto />} />
         <Route path="/actividad" element={<Actividad />} />
+        <Route path="/bandeja" element={<Bandeja />} />
         <Route path="/resumen" element={<ResumenMes />} />
       </Routes>
     </HashRouter>

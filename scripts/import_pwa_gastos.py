@@ -231,6 +231,16 @@ async def run(ambiente: str, carpetas_cli: list[str] | None):
         for carpeta in carpetas:
             await procesar_carpeta(db, carpeta, Path(settings.documentos_path), alertas, contadores)
 
+        # Regenera resumen_categorias.json (Home de la PWA, Bloque 4) al
+        # mismo ritmo que ya corre esta tarea programada -- sin mecanismo de
+        # scheduling nuevo. Un fallo aca no debe tumbar el import de gastos,
+        # que ya termino e hizo commit por archivo.
+        try:
+            from backend.services.pwa_export_service import exportar_resumen_categorias_pwa
+            await exportar_resumen_categorias_pwa(db)
+        except Exception as e:
+            alertas.append({"archivo": None, "motivo": f"No se pudo exportar resumen_categorias.json: {e}"})
+
         fecha_fin = datetime.now(timezone.utc).isoformat()
         notas = (
             f"Import PWA completado. Archivos: {contadores['archivos_leidos']}. "

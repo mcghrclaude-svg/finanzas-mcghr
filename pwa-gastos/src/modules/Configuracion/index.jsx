@@ -9,6 +9,20 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useCatalogos } from '../../hooks/useCatalogos'
 import { useMedioPagoFiltrado } from '../../hooks/useMedioPagoFiltrado'
 
+function Toggle({ checked, onChange, label }) {
+  return (
+    <label className="flex items-center justify-between py-2 cursor-pointer">
+      <span className="text-sm text-gray-700">{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+      />
+    </label>
+  )
+}
+
 function FolderRow({ label, carpeta, onElegir }) {
   return (
     <div className="flex items-center justify-between gap-3 py-3 border-b border-gray-200">
@@ -42,6 +56,7 @@ export default function Configuracion() {
     usuarioDispositivo, setUsuarioDispositivo,
     monedaDefault, setMonedaDefault,
     medioPagoDefault, setMedioPagoDefault,
+    categoriasOcultasHome, toggleCategoriaOcultaHome,
   } = useSettingsStore()
   const { catalogos } = useCatalogos()
   const mediosFiltrados = useMedioPagoFiltrado(
@@ -50,6 +65,7 @@ export default function Configuracion() {
     medioPagoDefault,
     setMedioPagoDefault
   )
+  const categoriasNivel1 = catalogos.categorias.filter((c) => c.nivel === 1)
 
   async function login() {
     try {
@@ -172,6 +188,24 @@ export default function Configuracion() {
             onChange={setMedioPagoDefault}
             placeholder="Seleccionar..."
           />
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <p className="text-sm font-medium text-gray-700 mb-1">Categorias visibles en inicio</p>
+          {categoriasNivel1.length === 0 ? (
+            <p className="text-sm text-gray-500">No hay categorias cargadas todavia.</p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {categoriasNivel1.map((cat) => (
+                <Toggle
+                  key={cat.id}
+                  label={cat.etiqueta}
+                  checked={!categoriasOcultasHome.includes(cat.id)}
+                  onChange={() => toggleCategoriaOcultaHome(cat.id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {cargando && <p className="text-sm text-gray-500">Procesando...</p>}

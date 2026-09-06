@@ -21,10 +21,21 @@ export const useSettingsStore = create(
       medioPagoDefault: null, // id del catalogo, o null si no se configuro
       configuracionMigradaDesdeVieja: false,
 
+      // ids de categoria nivel 1 ocultas en los indicadores del Home (ver
+      // Bloque 4). Default vacio = mostrar todas -- guardamos las OCULTAS
+      // en vez de las visibles para que una categoria nueva que se agregue
+      // al catalogo aparezca visible sin tocar esta config.
+      categoriasOcultasHome: [],
+
       setCarpetaRaiz: (carpeta) => set({ carpetaRaiz: carpeta, configuracionMigradaDesdeVieja: false }),
       setUsuarioDispositivo: (usuario) => set({ usuarioDispositivo: usuario }),
       setMonedaDefault: (id) => set({ monedaDefault: id }),
       setMedioPagoDefault: (id) => set({ medioPagoDefault: id }),
+      toggleCategoriaOcultaHome: (id) => set((state) => ({
+        categoriasOcultasHome: state.categoriasOcultasHome.includes(id)
+          ? state.categoriasOcultasHome.filter((x) => x !== id)
+          : [...state.categoriasOcultasHome, id],
+      })),
     }),
     {
       name: 'pwa-gastos:settings',
