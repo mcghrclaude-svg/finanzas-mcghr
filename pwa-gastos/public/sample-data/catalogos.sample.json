@@ -2,11 +2,18 @@
   "version": "1.0",
   "generado_en": "2026-08-08T00:00:00Z",
   "categorias": [
-    { "id": "ALIMENTACION", "etiqueta": "Alimentacion" },
-    { "id": "TRANSPORTE", "etiqueta": "Transporte" },
-    { "id": "SALUD", "etiqueta": "Salud" },
-    { "id": "ENTRETENIMIENTO", "etiqueta": "Entretenimiento" },
-    { "id": "HOGAR", "etiqueta": "Hogar" }
+    { "id": "ALIMENTACION", "etiqueta": "Alimentacion", "nivel": 1, "id_padre": null, "tipo_patron_gasto": "variable" },
+    { "id": "ALIMENTACION-MERCADO", "etiqueta": "Mercado", "nivel": 2, "id_padre": "ALIMENTACION", "tipo_patron_gasto": "variable" },
+    { "id": "ALIMENTACION-RESTAURANTES", "etiqueta": "Restaurantes", "nivel": 2, "id_padre": "ALIMENTACION", "tipo_patron_gasto": "variable" },
+    { "id": "ALIMENTACION-RESTAURANTES-DELIVERY", "etiqueta": "Delivery", "nivel": 3, "id_padre": "ALIMENTACION-RESTAURANTES", "tipo_patron_gasto": "variable" },
+    { "id": "TRANSPORTE", "etiqueta": "Transporte", "nivel": 1, "id_padre": null, "tipo_patron_gasto": "variable" },
+    { "id": "TRANSPORTE-COMBUSTIBLE", "etiqueta": "Combustible", "nivel": 2, "id_padre": "TRANSPORTE", "tipo_patron_gasto": "variable" },
+    { "id": "TRANSPORTE-TAXI", "etiqueta": "Taxi / apps", "nivel": 2, "id_padre": "TRANSPORTE", "tipo_patron_gasto": "variable" },
+    { "id": "SALUD", "etiqueta": "Salud", "nivel": 1, "id_padre": null, "tipo_patron_gasto": "fijo" },
+    { "id": "SALUD-MEDICAMENTOS", "etiqueta": "Medicamentos", "nivel": 2, "id_padre": "SALUD", "tipo_patron_gasto": "variable" },
+    { "id": "ENTRETENIMIENTO", "etiqueta": "Entretenimiento", "nivel": 1, "id_padre": null, "tipo_patron_gasto": "variable" },
+    { "id": "HOGAR", "etiqueta": "Hogar", "nivel": 1, "id_padre": null, "tipo_patron_gasto": "fijo" },
+    { "id": "HOGAR-SERVICIOS", "etiqueta": "Servicios publicos", "nivel": 2, "id_padre": "HOGAR", "tipo_patron_gasto": "fijo" }
   ],
   "medios_de_pago": [
     { "id": "BCO-CC-GHR", "etiqueta": "Cuenta corriente GHR", "propietario": "GHR" },

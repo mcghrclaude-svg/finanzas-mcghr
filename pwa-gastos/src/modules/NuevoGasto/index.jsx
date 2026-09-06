@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMsal, useIsAuthenticated } from '@azure/msal-react'
-import Combobox from '../../components/Combobox'
+import CategoriaTreeSelect from '../../components/CategoriaTreeSelect'
 import SimpleSelect from '../../components/SimpleSelect'
 import PhotoInput from '../../components/PhotoInput'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -205,12 +205,11 @@ export default function NuevoGasto() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Combobox
-                label="Categoria"
+              <CategoriaTreeSelect
                 options={catalogos.categorias}
                 value={idCategoria}
                 onChange={setIdCategoria}
-                placeholder="Buscar categoria..."
+                placeholder="Seleccionar..."
               />
             </div>
 
