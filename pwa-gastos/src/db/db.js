@@ -9,4 +9,12 @@ db.version(1).stores({
   catalogosCache: 'key',
 })
 
+// Tabla de diagnostico para errores de autenticacion MSAL (sesion de
+// OneDrive que se corta a las pocas horas) -- ver src/utils/authLog.js.
+db.version(2).stores({
+  gastosPendientes: '++localId, id, fecha',
+  catalogosCache: 'key',
+  logSync: '++id, timestamp, errorCode',
+})
+
 export default db
