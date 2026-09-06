@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMsal, useIsAuthenticated } from '@azure/msal-react'
 import CategoriaTreeSelect from '../../components/CategoriaTreeSelect'
 import SimpleSelect from '../../components/SimpleSelect'
@@ -46,6 +46,7 @@ function formatearMontoMostrado(monto, idMoneda) {
 
 export default function NuevoGasto() {
   const navigate = useNavigate()
+  const { id: idEditar } = useParams()
   const { instance, accounts } = useMsal()
   const isAuthenticated = useIsAuthenticated()
   const account = accounts[0]
@@ -66,6 +67,35 @@ export default function NuevoGasto() {
   const [fotoKey, setFotoKey] = useState(0)
   const [guardado, setGuardado] = useState(false)
   const [error, setError] = useState(null)
+
+  // Modo edicion: localId != null significa que estamos regrabando un
+  // registro existente de la tabla "gastos" (ver PASO B del Bloque 3),
+  // no creando uno nuevo. idOriginal/creadoEnOriginal se preservan del
+  // registro cargado -- solo cambia el contenido y se genera un
+  // archivoBase nuevo (no se puede reescribir un JSON ya movido a
+  // procesados/ en OneDrive).
+  const [localId, setLocalId] = useState(null)
+  const [idOriginal, setIdOriginal] = useState(null)
+  const [creadoEnOriginal, setCreadoEnOriginal] = useState(null)
+
+  useEffect(() => {
+    if (!idEditar) return
+    ;(async () => {
+      const existente = await db.gastos.where('id').equals(idEditar).first()
+      if (!existente) return
+      setLocalId(existente.localId)
+      setIdOriginal(existente.id)
+      setCreadoEnOriginal(existente.creadoEn)
+      setFecha(existente.fecha)
+      setIdCategoria(existente.id_categoria)
+      setMonto(String(existente.monto))
+      setIdMoneda(existente.id_moneda)
+      setIdMedioPago(existente.id_medio_pago)
+      setQuien(existente.quien)
+      setEsReembolsable(existente.es_reembolsable)
+      setComentarios(existente.comentarios ?? '')
+    })()
+  }, [idEditar])
 
   const mediosFiltrados = useMedioPagoFiltrado(catalogos.medios_de_pago, quien, idMedioPago, setIdMedioPago)
 
@@ -111,8 +141,7 @@ export default function NuevoGasto() {
     setError(null)
 
     const archivoBase = `gasto_${fileTimestamp()}`
-    const registro = {
-      id: uuid(),
+    const camposComunes = {
       fecha,
       id_categoria: idCategoria,
       monto: Number(monto),
@@ -124,14 +153,30 @@ export default function NuevoGasto() {
       archivoBase,
       imagenBlob: foto ?? null,
       imagenNombre: foto ? `${archivoBase}.jpg` : null,
-      creadoEn: new Date().toISOString(),
     }
 
-    await db.gastosPendientes.add(registro)
+    if (localId) {
+      await db.gastos.update(localId, {
+        ...camposComunes,
+        id: idOriginal,
+        creadoEn: creadoEnOriginal,
+        estado: 'pendiente',
+        ultimoError: null,
+      })
+    } else {
+      await db.gastos.add({
+        id: uuid(),
+        ...camposComunes,
+        estado: 'pendiente',
+        ultimoIntentoEn: null,
+        ultimoError: null,
+        creadoEn: new Date().toISOString(),
+      })
+    }
     setGuardado(true)
 
-    // Intento de subida en background; si falla queda pendiente y se
-    // reintenta despues (boton manual en Ver Pendientes, o proxima carga).
+    // Intento de subida en background; si falla queda en estado='error' y
+    // se reintenta despues (boton manual en Actividad, o proxima carga).
     if (isAuthenticated) {
       syncPendientes(account).catch((err) => console.warn('Sync en background fallo:', err))
     }
@@ -142,7 +187,7 @@ export default function NuevoGasto() {
 
   async function grabarYCerrar() {
     const ok = await guardarGasto()
-    if (ok) navigate('/')
+    if (ok) navigate(localId ? '/actividad' : '/')
   }
 
   async function grabarYNuevo() {
@@ -154,8 +199,8 @@ export default function NuevoGasto() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-md">
         <div className="flex items-center gap-3 mb-6">
-          <Link to="/" className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
-          <h1 className="text-xl font-semibold text-gray-900">Agregar gasto</h1>
+          <Link to={localId ? '/actividad' : '/'} className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
+          <h1 className="text-xl font-semibold text-gray-900">{localId ? 'Editar gasto' : 'Agregar gasto'}</h1>
         </div>
 
         {catalogos.categorias.length === 0 && (

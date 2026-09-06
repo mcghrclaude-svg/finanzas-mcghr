@@ -146,19 +146,18 @@ async def procesar_carpeta(db, carpeta: str, documentos_dir: Path, alertas: list
         # 4. Insertar
         resultado = await importar_gasto(db, gasto, ruta_imagen_disco, nombre_imagen_final, tipo_mime_imagen)
 
-        if resultado.ok:
-            contadores["transacciones_nuevas"] += 1
+        if resultado.ok and resultado.motivo == "actualizado":
+            contadores["actualizadas"] += 1
             await _registrar_archivo_procesado(
-                db, nombre_archivo, gasto, resultado="ok", dispositivo=dispositivo,
+                db, nombre_archivo, gasto, resultado="actualizado", dispositivo=dispositivo,
                 id_transaccion_creada=resultado.id_transaccion,
             )
             await db.commit()
             _mover_a_procesados(json_path, nombre_imagen_json, pendientes_dir, procesados_dir)
-        elif resultado.motivo == "duplicado":
-            contadores["duplicados"] += 1
-            await db.rollback()
+        elif resultado.ok:
+            contadores["transacciones_nuevas"] += 1
             await _registrar_archivo_procesado(
-                db, nombre_archivo, gasto, resultado="duplicado", dispositivo=dispositivo,
+                db, nombre_archivo, gasto, resultado="ok", dispositivo=dispositivo,
                 id_transaccion_creada=resultado.id_transaccion,
             )
             await db.commit()
@@ -220,7 +219,7 @@ async def run(ambiente: str, carpetas_cli: list[str] | None):
     SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     fecha_inicio = datetime.now(timezone.utc).isoformat()
-    contadores = {"archivos_leidos": 0, "transacciones_nuevas": 0, "duplicados": 0, "errores": 0}
+    contadores = {"archivos_leidos": 0, "transacciones_nuevas": 0, "actualizadas": 0, "duplicados": 0, "errores": 0}
     alertas: list[dict] = []
 
     async with SessionLocal() as db:
@@ -236,17 +235,19 @@ async def run(ambiente: str, carpetas_cli: list[str] | None):
         notas = (
             f"Import PWA completado. Archivos: {contadores['archivos_leidos']}. "
             f"Nuevas: {contadores['transacciones_nuevas']}. "
+            f"Actualizadas: {contadores['actualizadas']}. "
             f"Duplicados: {contadores['duplicados']}. Errores: {contadores['errores']}."
         )
         await db.execute(
             text("""
                 INSERT INTO log_ejecuciones_mobile
-                    (fecha_inicio, fecha_fin, archivos_leidos, transacciones_nuevas, duplicados, errores, alertas, notas)
-                VALUES (:fi, :ff, :al, :tn, :du, :er, :alertas, :notas)
+                    (fecha_inicio, fecha_fin, archivos_leidos, transacciones_nuevas, actualizadas, duplicados, errores, alertas, notas)
+                VALUES (:fi, :ff, :al, :tn, :ac, :du, :er, :alertas, :notas)
             """),
             {
                 "fi": fecha_inicio, "ff": fecha_fin,
                 "al": contadores["archivos_leidos"], "tn": contadores["transacciones_nuevas"],
+                "ac": contadores["actualizadas"],
                 "du": contadores["duplicados"], "er": contadores["errores"],
                 "alertas": json.dumps({"errores": alertas}, ensure_ascii=False),
                 "notas": notas,

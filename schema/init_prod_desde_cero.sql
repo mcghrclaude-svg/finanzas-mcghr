@@ -32,7 +32,8 @@
 --          schema/finanzas_v1_3.sql (correos_procesados, log_ejecuciones),
 --          schema/finanzas_v1_5.sql (archivos_mobile_procesados,
 --          log_ejecuciones_mobile), schema/finanzas_v1_6.sql (config_pwa_import,
---          forma final con "raices").
+--          forma final con "raices"), schema/finanzas_v1_7.sql
+--          (log_ejecuciones_mobile.actualizadas).
 --
 -- NOTA: v_reembolsos_pendientes se corrige aca -- la version original en
 -- finanzas_v1_1.sql filtraba estado_reembolso IN ('pendiente', 'gestionado'),
@@ -124,6 +125,7 @@ CREATE TABLE IF NOT EXISTS log_ejecuciones_mobile (
     fecha_fin               TEXT,
     archivos_leidos         INTEGER NOT NULL DEFAULT 0,
     transacciones_nuevas    INTEGER NOT NULL DEFAULT 0,
+    actualizadas            INTEGER NOT NULL DEFAULT 0,
     duplicados              INTEGER NOT NULL DEFAULT 0,
     errores                 INTEGER NOT NULL DEFAULT 0,
     alertas                 TEXT    NOT NULL DEFAULT '{}',

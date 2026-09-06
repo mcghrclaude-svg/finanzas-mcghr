@@ -17,4 +17,17 @@ db.version(2).stores({
   logSync: '++id, timestamp, errorCode',
 })
 
+// Reemplaza el uso activo de gastosPendientes (que queda deprecada, no se
+// borra todavia): "gastos" guarda TODOS los gastos, no solo los pendientes
+// de subir -- un registro sincronizado se actualiza a estado='sincronizado'
+// en vez de borrarse, y solo se purga si tiene mas de 7 dias Y esta
+// sincronizado (nunca si esta en 'pendiente' o 'error'). Ver utils/sync.js
+// y modules/Actividad.
+db.version(3).stores({
+  gastosPendientes: '++localId, id, fecha',
+  catalogosCache: 'key',
+  logSync: '++id, timestamp, errorCode',
+  gastos: '++localId, id, fecha, estado',
+})
+
 export default db
