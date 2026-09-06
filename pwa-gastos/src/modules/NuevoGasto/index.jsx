@@ -17,6 +17,33 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
+// Limpia lo que el usuario tipeo/pego: saca prefijo de moneda, comas de
+// miles, y cualquier caracter que no sea digito o punto. Colapsa puntos
+// de mas si el usuario pega algo raro.
+function limpiarMonto(valorMostrado) {
+  if (!valorMostrado) return ''
+  const sinMoneda = valorMostrado.replace(/^[A-Za-z]+\s*/, '')
+  const sinComas = sinMoneda.replace(/,/g, '')
+  const limpio = sinComas.replace(/[^0-9.]/g, '')
+  const partes = limpio.split('.')
+  if (partes.length <= 1) return limpio
+  return `${partes[0]}.${partes.slice(1).join('')}`
+}
+
+// "monto" (crudo, el mismo que usa validar()/payload) -> texto mostrado
+// con separador de miles y codigo de moneda antepuesto. No redondea: el
+// redondeo a 2 decimales pasa por onBlur, que reescribe "monto" mismo.
+function formatearMontoMostrado(monto, idMoneda) {
+  if (!monto) return ''
+  const numero = Number(monto)
+  if (Number.isNaN(numero)) return monto
+  const [enteroStr, decimalStr] = monto.split('.')
+  const entero = enteroStr === '' || enteroStr === '-' ? '0' : enteroStr
+  const enteroFormateado = new Intl.NumberFormat('en-US').format(Number(entero))
+  const decimales = decimalStr !== undefined ? `.${decimalStr}` : ''
+  return `${idMoneda} ${enteroFormateado}${decimales}`
+}
+
 export default function NuevoGasto() {
   const navigate = useNavigate()
   const { instance, accounts } = useMsal()
@@ -212,12 +239,15 @@ export default function NuevoGasto() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
               <input
-                type="number"
+                type="text"
                 inputMode="decimal"
-                min="0"
-                step="0.01"
-                value={monto}
-                onChange={(e) => setMonto(e.target.value)}
+                value={formatearMontoMostrado(monto, idMoneda)}
+                onChange={(e) => setMonto(limpiarMonto(e.target.value))}
+                onBlur={() => {
+                  if (!monto) return
+                  const numero = Number(monto)
+                  if (!Number.isNaN(numero)) setMonto(numero.toFixed(2))
+                }}
                 className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base focus:border-blue-500 focus:ring-blue-500"
                 placeholder="0.00"
               />
