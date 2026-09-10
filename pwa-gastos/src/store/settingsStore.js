@@ -21,11 +21,26 @@ export const useSettingsStore = create(
       medioPagoDefault: null, // id del catalogo, o null si no se configuro
       configuracionMigradaDesdeVieja: false,
 
-      // ids de categoria nivel 1 ocultas en los indicadores del Home (ver
-      // Bloque 4). Default vacio = mostrar todas -- guardamos las OCULTAS
-      // en vez de las visibles para que una categoria nueva que se agregue
-      // al catalogo aparezca visible sin tocar esta config.
+      // ids de categoria (cualquier nivel) ocultas en los indicadores del
+      // Home (ver Bloque 4). Default vacio = mostrar todas -- guardamos
+      // las OCULTAS en vez de las visibles para que una categoria nueva
+      // que se agregue al catalogo aparezca visible sin tocar esta config.
       categoriasOcultasHome: [],
+
+      // Color de la barra de gasto por categoria en el bullet chart del
+      // Home, elegido en Configuracion (arbol de categorias). Categoria
+      // sin color propio cae al default de BulletChart (teal).
+      coloresCategorias: {},
+
+      // Color de la barra del total ("Gasto acumulado") del Home,
+      // elegido aparte porque no es una categoria del arbol.
+      colorTotalHome: '#7c5cd9',
+
+      // Umbrales (% del presupuesto) para el icono de atencion junto al
+      // titulo de cada bullet chart -- configurables en Configuracion
+      // (tab Indicadores). Independientes del color de la barra.
+      umbralAdvertencia: 95, // desde aca se muestra el triangulo ambar
+      umbralExcedido: 100, // desde aca se muestra el triangulo rojo
 
       setCarpetaRaiz: (carpeta) => set({ carpetaRaiz: carpeta, configuracionMigradaDesdeVieja: false }),
       setUsuarioDispositivo: (usuario) => set({ usuarioDispositivo: usuario }),
@@ -36,6 +51,12 @@ export const useSettingsStore = create(
           ? state.categoriasOcultasHome.filter((x) => x !== id)
           : [...state.categoriasOcultasHome, id],
       })),
+      setColorCategoria: (id, color) => set((state) => ({
+        coloresCategorias: { ...state.coloresCategorias, [id]: color },
+      })),
+      setColorTotalHome: (color) => set({ colorTotalHome: color }),
+      setUmbralAdvertencia: (v) => set({ umbralAdvertencia: v }),
+      setUmbralExcedido: (v) => set({ umbralExcedido: v }),
     }),
     {
       name: 'pwa-gastos:settings',
