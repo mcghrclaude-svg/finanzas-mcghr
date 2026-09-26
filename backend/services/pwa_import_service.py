@@ -39,7 +39,8 @@ DISPOSITIVO_POR_QUIEN = {
 @dataclass
 class ResultadoImport:
     ok: bool
-    motivo: str = ""          # solo si ok=False: "invalido" | "duplicado" | "error"
+    motivo: str = ""          # "actualizado" si ok=True y era un upsert;
+                               # si ok=False: "invalido" | "error"
     detalle: str = ""
     id_transaccion: str | None = None
 
@@ -98,12 +99,6 @@ def _normalizar_comentarios(gasto: dict[str, Any]) -> str | None:
     return str(comentarios)[:MAX_LEN_COMENTARIOS]
 
 
-async def ya_existe(db: AsyncSession, id_gasto: str) -> bool:
-    """El id del JSON se usa directo como Transaccion.id -- proteccion extra
-    contra duplicados ademas de archivos_mobile_procesados."""
-    return (await db.get(Transaccion, id_gasto)) is not None
-
-
 async def importar_gasto(
     db: AsyncSession,
     gasto: dict[str, Any],
@@ -125,8 +120,9 @@ async def importar_gasto(
         return ResultadoImport(ok=False, motivo="invalido", detalle=error_catalogos)
 
     id_gasto = str(gasto["id"])
-    if await ya_existe(db, id_gasto):
-        return ResultadoImport(ok=False, motivo="duplicado", id_transaccion=id_gasto)
+    existente = await db.get(Transaccion, id_gasto)
+    if existente is not None:
+        return await _actualizar_gasto(db, existente, gasto)
 
     ahora = datetime.now(timezone.utc)
     es_reembolsable = _normalizar_es_reembolsable(gasto)
@@ -187,3 +183,36 @@ async def importar_gasto(
 
     await db.flush()
     return ResultadoImport(ok=True, id_transaccion=id_gasto)
+
+
+async def _actualizar_gasto(db: AsyncSession, tx: Transaccion, gasto: dict[str, Any]) -> ResultadoImport:
+    """Upsert: el id ya existe -- el usuario edito un gasto (sincronizado
+    o no) desde la PWA y lo volvio a subir en un archivo nuevo (no se puede
+    reescribir un JSON ya movido a procesados/). Actualiza los campos
+    editables en vez de marcar duplicado sin tocar nada."""
+    era_reembolsable = tx.es_reembolsable
+    es_reembolsable = _normalizar_es_reembolsable(gasto)
+    ahora = datetime.now(timezone.utc)
+
+    tx.fecha = gasto["fecha"]
+    tx.descripcion = _normalizar_comentarios(gasto)
+    tx.id_categoria = gasto["id_categoria"]
+    tx.es_reembolsable = es_reembolsable
+    if not era_reembolsable and es_reembolsable:
+        tx.estado_reembolso = "pendiente"
+    elif not es_reembolsable:
+        tx.estado_reembolso = None
+    # si ya era reembolsable y lo sigue siendo, no tocar estado_reembolso
+    # (puede estar en curso: solicitado/recibido).
+    tx.actualizado_en = ahora
+
+    tramo = (await db.execute(
+        select(Tramo).where(Tramo.id_transaccion == tx.id, Tramo.numero_orden == 1)
+    )).scalar_one_or_none()
+    if tramo is not None:
+        tramo.id_cuenta_origen = gasto["id_medio_pago"]
+        tramo.monto_origen = float(gasto["monto"])
+        tramo.moneda_origen = gasto["id_moneda"]
+
+    await db.flush()
+    return ResultadoImport(ok=True, motivo="actualizado", id_transaccion=tx.id)

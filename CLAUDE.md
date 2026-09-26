@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-05 14:36
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-26 18:31
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260905.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260926.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -62,10 +62,11 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 ## Estado real de modulos PWA (pwa-gastos/src/modules)
 | Modulo | Estado | Detalle |
 |--------|--------|---------|
-| Configuracion | IMPLEMENTADO | 186 lineas |
-| GastosPendientes | PARCIAL | 93 lineas |
-| Home | IMPLEMENTADO | 66 lineas |
-| NuevoGasto | IMPLEMENTADO | 299 lineas |
+| Actividad | PARCIAL | 115 lineas |
+| Bandeja | STUB | 16 lineas |
+| Configuracion | IMPLEMENTADO | 294 lineas |
+| Home | PARCIAL | 221 lineas |
+| NuevoGasto | IMPLEMENTADO | 373 lineas |
 | ResumenMes | STUB | 18 lineas |
 
 ## Estado real de routers backend (api/v1/routers/)
@@ -78,7 +79,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | PARCIAL | 98 lineas |
 | obligaciones.py | PARCIAL | 89 lineas |
-| presupuestos.py | IMPLEMENTADO | 150 lineas |
+| presupuestos.py | IMPLEMENTADO | 166 lineas |
 | pwa_config.py | IMPLEMENTADO | 191 lineas |
 | reglas.py | PARCIAL | 73 lineas |
 | reportes.py | PARCIAL | 135 lineas |
@@ -87,13 +88,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
-6a78421 fix: cerrar-sesion.ps1 -- clasificacion STUB/PARCIAL/IMPLEMENTADO y escaneo de PWA
-4c8187b docs: auto-update 2026-09-04 23:16
-04a8ecf chore: agrega pwa-gastos/.vite al gitignore
-aeb3a69 docs: auto-update 2026-09-04 23:07
-fe02dd9 docs: actualiza ESTADO_PROYECTO.md tras fix presupuesto_repo y bootstrap prod
-5909da5 docs: auto-update 2026-09-04 23:06
-1f0a294 chore: agrega scripts de bootstrap de DB de produccion desde cero
-d5e2fee docs: auto-update 2026-09-04 23:00
-228611a fix: corrige calculo de patrimonio neto en presupuesto_repo
-f74d377 docs: auto-update 2026-08-22 17:13
+4b133ba test: cubre PresupuestoService y arregla config_pwa_import + aislamiento en tests de catalogos
+ce8499f docs: auto-update 2026-09-26 18:11
+786b8b2 docs: suma diagnostico de corte de sync PWA->OneDrive e ignora logs/ locales
+82de783 docs: auto-update 2026-09-09 19:29
+9428f75 feat(pwa): bullet chart de presupuesto por categoria y arbol de indicadores en Configuracion
+70559b6 feat(pwa+backend): rediseno del Home con indicadores de presupuesto por categoria
+8b24ba6 feat(pwa+backend): pantalla Actividad (historial 7 dias + reintento) y upsert de gastos editados
+cf546d9 feat(pwa): selector de categoria en arbol para el campo Categoria
+53aacd8 feat(pwa): mascara de moneda con separador de miles en el campo Monto
+0c1f58a feat(pwa): loguear errores de acquireTokenSilent para diagnosticar cortes de sesion MSAL

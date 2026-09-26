@@ -47,11 +47,19 @@ class TestCategorias:
 
     async def test_editar_devuelve_200(self, client: AsyncClient):
         """PATCH /categorias/{id} devuelve 200"""
+        await client.post(f"{BASE}/categorias", json={
+            "id": "VIDA", "nombre": "Vida diaria", "nivel": 1,
+            "tipo_patron_gasto": "variable_frecuente"
+        })
         r = await client.patch(f"{BASE}/categorias/VIDA", json={"nombre": "Vida"})
         assert r.status_code == 200
 
     async def test_inactivar_devuelve_204(self, client: AsyncClient):
         """DELETE /categorias/{id} devuelve 204 No Content"""
+        await client.post(f"{BASE}/categorias", json={
+            "id": "VIDA", "nombre": "Vida diaria", "nivel": 1,
+            "tipo_patron_gasto": "variable_frecuente"
+        })
         r = await client.delete(f"{BASE}/categorias/VIDA")
         assert r.status_code == 204
 
@@ -86,10 +94,18 @@ class TestCuentas:
         assert r.status_code == 201
 
     async def test_editar_devuelve_200(self, client: AsyncClient):
+        await client.post(f"{BASE}/cuentas", json={
+            "id": "BCO-CC-GHR", "nombre": "Bancolombia CC GHR",
+            "tipo": "CC", "banco": "Bancolombia", "moneda": "COP"
+        })
         r = await client.patch(f"{BASE}/cuentas/BCO-CC-GHR", json={"nombre": "Banco CC"})
         assert r.status_code == 200
 
     async def test_inactivar_devuelve_204(self, client: AsyncClient):
+        await client.post(f"{BASE}/cuentas", json={
+            "id": "BCO-CC-GHR", "nombre": "Bancolombia CC GHR",
+            "tipo": "CC", "banco": "Bancolombia", "moneda": "COP"
+        })
         r = await client.delete(f"{BASE}/cuentas/BCO-CC-GHR")
         assert r.status_code == 204
 
@@ -124,10 +140,16 @@ class TestContrapartes:
         assert "items" in r.json()
 
     async def test_editar_devuelve_200(self, client: AsyncClient):
+        await client.post(f"{BASE}/contrapartes", json={
+            "id": "RAPPI", "nombre": "Rappi", "tipo": "COMERCIO"
+        })
         r = await client.patch(f"{BASE}/contrapartes/RAPPI", json={"nombre": "Rappi Colombia"})
         assert r.status_code == 200
 
     async def test_inactivar_devuelve_204(self, client: AsyncClient):
+        await client.post(f"{BASE}/contrapartes", json={
+            "id": "RAPPI", "nombre": "Rappi", "tipo": "COMERCIO"
+        })
         r = await client.delete(f"{BASE}/contrapartes/RAPPI")
         assert r.status_code == 204
 
@@ -147,6 +169,9 @@ class TestPersonas:
         assert r.status_code == 201
 
     async def test_editar_devuelve_200(self, client: AsyncClient):
+        await client.post(f"{BASE}/personas", json={
+            "id": "GHR", "nombre": "Hernan Rizzi", "alias": "GHR"
+        })
         r = await client.patch(f"{BASE}/personas/GHR", json={"nombre": "Hernan"})
         assert r.status_code == 200
 

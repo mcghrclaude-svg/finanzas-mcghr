@@ -1,10 +1,16 @@
 import { msalInstance, loginRequest } from '../auth/msalConfig'
+import { logAuthError } from '../utils/authLog'
 
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0'
 
 export async function getAccessToken(account) {
-  const result = await msalInstance.acquireTokenSilent({ ...loginRequest, account })
-  return result.accessToken
+  try {
+    const result = await msalInstance.acquireTokenSilent({ ...loginRequest, account })
+    return result.accessToken
+  } catch (err) {
+    await logAuthError(err, 'graphClient.getAccessToken')
+    throw err
+  }
 }
 
 async function graphFetch(token, path, options = {}) {

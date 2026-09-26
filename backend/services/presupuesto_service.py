@@ -33,6 +33,12 @@ FACTOR_ACTUAL = Decimal("0.7")
 FACTOR_HIST = Decimal("0.3")
 
 
+def _mes_relativo(anio: int, mes: int, meses_atras: int) -> tuple[int, int]:
+    """(anio, mes) - meses_atras, con acarreo de anio. mes es 1-12."""
+    indice = (anio * 12 + (mes - 1)) - meses_atras
+    return indice // 12, indice % 12 + 1
+
+
 class PresupuestoService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -213,6 +219,86 @@ class PresupuestoService:
             "estado": "sin_configurar",
             "dias_transcurridos": dias_transcurridos,
             "dias_totales": dias_totales,
+        }
+
+    async def obtener_resumen_por_categoria(self, anio: int, mes: int) -> dict:
+        """
+        Resumen para el Home de la PWA: por cada categoria (nivel 1/2/3,
+        lista plana -- el frontend arma el arbol), gasto acumulado del mes
+        calendario (dia 1 al dia de hoy si es el mes actual), presupuesto
+        del mes, y promedio del total gastado en los ultimos 3 meses
+        calendario. Una categoria con hijos suma su propio valor (si tiene
+        presupuesto/gasto asignado directo) + el de todos sus descendientes.
+        """
+        hoy = date.today()
+        fecha_inicio_mes = date(anio, mes, 1)
+        if (anio, mes) == (hoy.year, hoy.month):
+            fecha_hasta_mes = hoy
+        else:
+            fecha_hasta_mes = date(anio, mes, calendar.monthrange(anio, mes)[1])
+
+        anio_3m_atras, mes_3m_atras = _mes_relativo(anio, mes, 3)
+        anio_1m_atras, mes_1m_atras = _mes_relativo(anio, mes, 1)
+        fecha_inicio_3m = date(anio_3m_atras, mes_3m_atras, 1)
+        fecha_fin_3m = date(anio_1m_atras, mes_1m_atras, calendar.monthrange(anio_1m_atras, mes_1m_atras)[1])
+
+        categorias = await self.repo.listar_categorias_activas()
+        gasto_mes = await self.repo.obtener_gasto_por_categoria_rango(fecha_inicio_mes, fecha_hasta_mes)
+        gasto_3m = await self.repo.obtener_gasto_por_categoria_rango(fecha_inicio_3m, fecha_fin_3m)
+        presupuestos = await self.repo.obtener_por_mes(anio, mes)
+        presupuesto_por_cat = {p.id_categoria: Decimal(str(p.monto_presupuestado)) for p in presupuestos}
+
+        hijos_por_padre: dict[str | None, list[Categoria]] = {}
+        for cat in categorias:
+            hijos_por_padre.setdefault(cat.id_padre, []).append(cat)
+
+        cero = Decimal(0)
+        totales: dict[str, dict[str, Decimal]] = {}
+
+        def calcular(cat: Categoria) -> dict[str, Decimal]:
+            propio = {
+                "gasto_acumulado": gasto_mes.get(cat.id, cero),
+                "presupuesto": presupuesto_por_cat.get(cat.id, cero),
+                "promedio_ultimos_3_meses": gasto_3m.get(cat.id, cero) / Decimal(3),
+            }
+            for hijo in hijos_por_padre.get(cat.id, []):
+                hijo_total = calcular(hijo)
+                for clave in propio:
+                    propio[clave] += hijo_total[clave]
+            totales[cat.id] = propio
+            return propio
+
+        for raiz in hijos_por_padre.get(None, []):
+            calcular(raiz)
+
+        items = [
+            {
+                "id_categoria": cat.id,
+                "nivel": cat.nivel,
+                "id_padre": cat.id_padre,
+                "nombre": cat.nombre,
+                **{k: float(v) for k, v in totales.get(cat.id, {
+                    "gasto_acumulado": gasto_mes.get(cat.id, cero),
+                    "presupuesto": presupuesto_por_cat.get(cat.id, cero),
+                    "promedio_ultimos_3_meses": gasto_3m.get(cat.id, cero) / Decimal(3),
+                }).items()},
+            }
+            for cat in categorias
+        ]
+
+        categorias_nivel1 = [c for c in categorias if c.nivel == 1]
+        total = {
+            "gasto_acumulado": float(sum((totales[c.id]["gasto_acumulado"] for c in categorias_nivel1), cero)),
+            "presupuesto": float(sum((totales[c.id]["presupuesto"] for c in categorias_nivel1), cero)),
+            "promedio_ultimos_3_meses": float(
+                sum((totales[c.id]["promedio_ultimos_3_meses"] for c in categorias_nivel1), cero)
+            ),
+        }
+
+        return {
+            "mes": {"anio": anio, "mes": mes},
+            "total": total,
+            "categorias": items,
         }
 
     async def benchmark_categoria(self, id_categoria: str) -> dict:

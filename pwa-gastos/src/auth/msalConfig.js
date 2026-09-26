@@ -1,4 +1,5 @@
 import { PublicClientApplication } from '@azure/msal-browser'
+import { logAuthError } from '../utils/authLog'
 
 // BASE_URL siempre trae '/' al final; Azure exige match exacto contra el
 // Redirect URI registrado (http://localhost:5173 sin barra en dev), asi
@@ -33,6 +34,11 @@ export const msalInstance = new PublicClientApplication(msalConfig)
 // pide un token para cualquier scope puntual (ej. el resource que manda el
 // propio picker en el comando "authenticate").
 export async function acquireToken(account, scopes) {
-  const result = await msalInstance.acquireTokenSilent({ scopes, account })
-  return result.accessToken
+  try {
+    const result = await msalInstance.acquireTokenSilent({ scopes, account })
+    return result.accessToken
+  } catch (err) {
+    await logAuthError(err, 'msalConfig.acquireToken')
+    throw err
+  }
 }

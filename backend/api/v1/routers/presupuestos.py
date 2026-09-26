@@ -51,6 +51,22 @@ async def ejecucion_presupuesto(
     return await service.obtener_ejecucion(anio, mes)
 
 
+@router.get("/resumen-por-categoria")
+async def resumen_por_categoria(
+    anio: int = Query(..., description="Año del mes calendario"),
+    mes: int = Query(..., ge=1, le=12, description="Mes calendario (1-12)"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Resumen por categoria (nivel 1/2/3, lista plana) para el Home de la PWA:
+    gasto acumulado del mes calendario, presupuesto del mes, y promedio del
+    total gastado en los ultimos 3 meses calendario. Cada categoria con
+    hijos incluye el rollup de sus descendientes.
+    """
+    service = PresupuestoService(db)
+    return await service.obtener_resumen_por_categoria(anio, mes)
+
+
 @router.get("/periodo-activo")
 async def periodo_activo(db: AsyncSession = Depends(get_db)):
     """

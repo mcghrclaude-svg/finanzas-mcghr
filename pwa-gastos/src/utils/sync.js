@@ -2,16 +2,37 @@ import { db } from '../db/db'
 import { useSettingsStore } from '../store/settingsStore'
 import { getAccessToken, ensureFolder, uploadFile } from '../api/graphClient'
 
-// Sube todos los gastos pendientes de IndexedDB a OneDrive. Por cada uno:
-// sube el JSON y, si tiene foto, la imagen; si ambas subidas tienen exito
-// borra el registro local. Si falla cualquier paso, el registro queda
-// intacto para reintentar en la proxima sincronizacion.
+const DIAS_RETENCION_SINCRONIZADOS = 7
+
+function tieneMasDeXDias(fechaISO, dias) {
+  const limite = new Date()
+  limite.setDate(limite.getDate() - dias)
+  return new Date(fechaISO) < limite
+}
+
+// Sube todos los gastos no sincronizados de IndexedDB a OneDrive. Por cada
+// uno: sube el JSON y, si tiene foto, la imagen; si ambas subidas tienen
+// exito el registro pasa a estado='sincronizado' (nunca se borra en el
+// momento). Si falla, queda en estado='error' con el motivo en
+// ultimoError, para reintentar en la proxima sincronizacion.
+//
+// Ademas purga (borra local) los registros ya sincronizados con mas de
+// 7 dias de antiguedad -- nunca los que estan en 'pendiente' o 'error',
+// sin importar la fecha.
 export async function syncPendientes(account) {
   const { carpetaRaiz } = useSettingsStore.getState()
+
+  const sincronizadosViejos = await db.gastos.where('estado').equals('sincronizado').toArray()
+  for (const g of sincronizadosViejos) {
+    if (tieneMasDeXDias(g.fecha, DIAS_RETENCION_SINCRONIZADOS)) {
+      await db.gastos.delete(g.localId)
+    }
+  }
+
   if (!carpetaRaiz) return { subidos: 0, fallidos: 0, motivo: 'sin-carpeta-configurada' }
   if (!account) return { subidos: 0, fallidos: 0, motivo: 'sin-sesion' }
 
-  const pendientes = await db.gastosPendientes.toArray()
+  const pendientes = await db.gastos.where('estado').notEqual('sincronizado').toArray()
   if (pendientes.length === 0) return { subidos: 0, fallidos: 0 }
 
   const token = await getAccessToken(account)
@@ -43,10 +64,19 @@ export async function syncPendientes(account) {
       const nombreJson = `${gasto.archivoBase ?? `gasto_${gasto.id}`}.json`
       await uploadFile(token, carpetaRaiz.driveId, pendientesFolder.id, nombreJson, jsonBlob)
 
-      await db.gastosPendientes.delete(gasto.localId)
+      await db.gastos.update(gasto.localId, {
+        estado: 'sincronizado',
+        ultimoIntentoEn: new Date().toISOString(),
+        ultimoError: null,
+      })
       subidos += 1
     } catch (err) {
       console.warn(`No se pudo subir el gasto ${gasto.id}:`, err)
+      await db.gastos.update(gasto.localId, {
+        estado: 'error',
+        ultimoIntentoEn: new Date().toISOString(),
+        ultimoError: String(err?.message ?? err),
+      })
       fallidos += 1
     }
   }

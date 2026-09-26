@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMsal, useIsAuthenticated } from '@azure/msal-react'
-import Combobox from '../../components/Combobox'
+import CategoriaTreeSelect from '../../components/CategoriaTreeSelect'
 import SimpleSelect from '../../components/SimpleSelect'
 import PhotoInput from '../../components/PhotoInput'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -17,8 +17,36 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
+// Limpia lo que el usuario tipeo/pego: saca prefijo de moneda, comas de
+// miles, y cualquier caracter que no sea digito o punto. Colapsa puntos
+// de mas si el usuario pega algo raro.
+function limpiarMonto(valorMostrado) {
+  if (!valorMostrado) return ''
+  const sinMoneda = valorMostrado.replace(/^[A-Za-z]+\s*/, '')
+  const sinComas = sinMoneda.replace(/,/g, '')
+  const limpio = sinComas.replace(/[^0-9.]/g, '')
+  const partes = limpio.split('.')
+  if (partes.length <= 1) return limpio
+  return `${partes[0]}.${partes.slice(1).join('')}`
+}
+
+// "monto" (crudo, el mismo que usa validar()/payload) -> texto mostrado
+// con separador de miles y codigo de moneda antepuesto. No redondea: el
+// redondeo a 2 decimales pasa por onBlur, que reescribe "monto" mismo.
+function formatearMontoMostrado(monto, idMoneda) {
+  if (!monto) return ''
+  const numero = Number(monto)
+  if (Number.isNaN(numero)) return monto
+  const [enteroStr, decimalStr] = monto.split('.')
+  const entero = enteroStr === '' || enteroStr === '-' ? '0' : enteroStr
+  const enteroFormateado = new Intl.NumberFormat('en-US').format(Number(entero))
+  const decimales = decimalStr !== undefined ? `.${decimalStr}` : ''
+  return `${idMoneda} ${enteroFormateado}${decimales}`
+}
+
 export default function NuevoGasto() {
   const navigate = useNavigate()
+  const { id: idEditar } = useParams()
   const { instance, accounts } = useMsal()
   const isAuthenticated = useIsAuthenticated()
   const account = accounts[0]
@@ -39,6 +67,35 @@ export default function NuevoGasto() {
   const [fotoKey, setFotoKey] = useState(0)
   const [guardado, setGuardado] = useState(false)
   const [error, setError] = useState(null)
+
+  // Modo edicion: localId != null significa que estamos regrabando un
+  // registro existente de la tabla "gastos" (ver PASO B del Bloque 3),
+  // no creando uno nuevo. idOriginal/creadoEnOriginal se preservan del
+  // registro cargado -- solo cambia el contenido y se genera un
+  // archivoBase nuevo (no se puede reescribir un JSON ya movido a
+  // procesados/ en OneDrive).
+  const [localId, setLocalId] = useState(null)
+  const [idOriginal, setIdOriginal] = useState(null)
+  const [creadoEnOriginal, setCreadoEnOriginal] = useState(null)
+
+  useEffect(() => {
+    if (!idEditar) return
+    ;(async () => {
+      const existente = await db.gastos.where('id').equals(idEditar).first()
+      if (!existente) return
+      setLocalId(existente.localId)
+      setIdOriginal(existente.id)
+      setCreadoEnOriginal(existente.creadoEn)
+      setFecha(existente.fecha)
+      setIdCategoria(existente.id_categoria)
+      setMonto(String(existente.monto))
+      setIdMoneda(existente.id_moneda)
+      setIdMedioPago(existente.id_medio_pago)
+      setQuien(existente.quien)
+      setEsReembolsable(existente.es_reembolsable)
+      setComentarios(existente.comentarios ?? '')
+    })()
+  }, [idEditar])
 
   const mediosFiltrados = useMedioPagoFiltrado(catalogos.medios_de_pago, quien, idMedioPago, setIdMedioPago)
 
@@ -84,8 +141,7 @@ export default function NuevoGasto() {
     setError(null)
 
     const archivoBase = `gasto_${fileTimestamp()}`
-    const registro = {
-      id: uuid(),
+    const camposComunes = {
       fecha,
       id_categoria: idCategoria,
       monto: Number(monto),
@@ -97,14 +153,30 @@ export default function NuevoGasto() {
       archivoBase,
       imagenBlob: foto ?? null,
       imagenNombre: foto ? `${archivoBase}.jpg` : null,
-      creadoEn: new Date().toISOString(),
     }
 
-    await db.gastosPendientes.add(registro)
+    if (localId) {
+      await db.gastos.update(localId, {
+        ...camposComunes,
+        id: idOriginal,
+        creadoEn: creadoEnOriginal,
+        estado: 'pendiente',
+        ultimoError: null,
+      })
+    } else {
+      await db.gastos.add({
+        id: uuid(),
+        ...camposComunes,
+        estado: 'pendiente',
+        ultimoIntentoEn: null,
+        ultimoError: null,
+        creadoEn: new Date().toISOString(),
+      })
+    }
     setGuardado(true)
 
-    // Intento de subida en background; si falla queda pendiente y se
-    // reintenta despues (boton manual en Ver Pendientes, o proxima carga).
+    // Intento de subida en background; si falla queda en estado='error' y
+    // se reintenta despues (boton manual en Actividad, o proxima carga).
     if (isAuthenticated) {
       syncPendientes(account).catch((err) => console.warn('Sync en background fallo:', err))
     }
@@ -115,7 +187,7 @@ export default function NuevoGasto() {
 
   async function grabarYCerrar() {
     const ok = await guardarGasto()
-    if (ok) navigate('/')
+    if (ok) navigate(localId ? '/actividad' : '/')
   }
 
   async function grabarYNuevo() {
@@ -127,8 +199,8 @@ export default function NuevoGasto() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-md">
         <div className="flex items-center gap-3 mb-6">
-          <Link to="/" className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
-          <h1 className="text-xl font-semibold text-gray-900">Agregar gasto</h1>
+          <Link to={localId ? '/actividad' : '/'} className="text-blue-600 text-sm font-medium">{'<- Volver'}</Link>
+          <h1 className="text-xl font-semibold text-gray-900">{localId ? 'Editar gasto' : 'Agregar gasto'}</h1>
         </div>
 
         {catalogos.categorias.length === 0 && (
@@ -178,12 +250,11 @@ export default function NuevoGasto() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Combobox
-                label="Categoria"
+              <CategoriaTreeSelect
                 options={catalogos.categorias}
                 value={idCategoria}
                 onChange={setIdCategoria}
-                placeholder="Buscar categoria..."
+                placeholder="Seleccionar..."
               />
             </div>
 
@@ -212,12 +283,15 @@ export default function NuevoGasto() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
               <input
-                type="number"
+                type="text"
                 inputMode="decimal"
-                min="0"
-                step="0.01"
-                value={monto}
-                onChange={(e) => setMonto(e.target.value)}
+                value={formatearMontoMostrado(monto, idMoneda)}
+                onChange={(e) => setMonto(limpiarMonto(e.target.value))}
+                onBlur={() => {
+                  if (!monto) return
+                  const numero = Number(monto)
+                  if (!Number.isNaN(numero)) setMonto(numero.toFixed(2))
+                }}
                 className="w-full rounded-lg border border-gray-300 py-2 px-3 text-base focus:border-blue-500 focus:ring-blue-500"
                 placeholder="0.00"
               />
