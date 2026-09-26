@@ -1,12 +1,12 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-09 19:29
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-26 18:11
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
 1. web_fetch de este archivo:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/CLAUDE.md
 2. web_fetch del HANDOFF del dia:
-   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260909.md
+   https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/HANDOFF_20260926.md
 3. web_fetch del ADR para contexto de decisiones:
    https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/ADR.md
 4. web_fetch del CITA para evitar errores conocidos:
@@ -88,6 +88,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+786b8b2 docs: suma diagnostico de corte de sync PWA->OneDrive e ignora logs/ locales
+82de783 docs: auto-update 2026-09-09 19:29
 9428f75 feat(pwa): bullet chart de presupuesto por categoria y arbol de indicadores en Configuracion
 70559b6 feat(pwa+backend): rediseno del Home con indicadores de presupuesto por categoria
 8b24ba6 feat(pwa+backend): pantalla Actividad (historial 7 dias + reintento) y upsert de gastos editados
@@ -96,5 +98,3 @@ cf546d9 feat(pwa): selector de categoria en arbol para el campo Categoria
 0c1f58a feat(pwa): loguear errores de acquireTokenSilent para diagnosticar cortes de sesion MSAL
 b57935d docs: auto-update 2026-09-05 14:36
 6a78421 fix: cerrar-sesion.ps1 -- clasificacion STUB/PARCIAL/IMPLEMENTADO y escaneo de PWA
-4c8187b docs: auto-update 2026-09-04 23:16
-04a8ecf chore: agrega pwa-gastos/.vite al gitignore
