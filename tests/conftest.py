@@ -15,6 +15,7 @@ Regla: NUNCA usar datos reales. Todos los datos son dummy.
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from backend.main import app
@@ -41,6 +42,24 @@ async def db_session():
     engine = create_async_engine(TEST_DB_URL, echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # config_pwa_import es, a proposito, una tabla sin modelo SQLAlchemy
+        # (ver docstring de backend/api/v1/routers/pwa_config.py) -- create_all
+        # no la crea. Se arma aca con el mismo DDL que
+        # schema/init_prod_desde_cero.sql usa para bootstrapear produccion,
+        # para que cualquier test que dispare la regeneracion de
+        # catalogos.json (efecto secundario de escribir en el catalogo) la
+        # encuentre creada, igual que en una DB real.
+        await conn.execute(text("""
+            CREATE TABLE config_pwa_import (
+                id                  INTEGER PRIMARY KEY CHECK (id = 1),
+                intervalo_minutos   INTEGER NOT NULL DEFAULT 60,
+                raices              TEXT    NOT NULL DEFAULT '[]',
+                actualizado_en      TEXT
+            )
+        """))
+        await conn.execute(text(
+            "INSERT INTO config_pwa_import (id, intervalo_minutos, raices) VALUES (1, 60, '[]')"
+        ))
 
     SessionLocal = async_sessionmaker(
         bind=engine,

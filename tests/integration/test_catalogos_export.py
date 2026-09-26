@@ -31,19 +31,11 @@ async def _insertar_catalogo_basico(db):
 
 
 async def _crear_config_pwa_import(db, raices=None):
-    # config_pwa_import no tiene modelo SQLAlchemy (raw SQL a proposito, ver
-    # docstring de pwa_config.py) -- create_all no la crea, hay que armarla
-    # a mano en tests que ejercitan el endpoint de export.
-    await db.execute(text("""
-        CREATE TABLE config_pwa_import (
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            intervalo_minutos INTEGER NOT NULL DEFAULT 60,
-            raices TEXT NOT NULL DEFAULT '[]',
-            actualizado_en TEXT
-        )
-    """))
+    # conftest.py ya crea config_pwa_import con su fila unica (id=1) para
+    # toda la suite -- aca solo se pisa el valor de raices para el caso de
+    # este test.
     await db.execute(
-        text("INSERT INTO config_pwa_import (id, intervalo_minutos, raices) VALUES (1, 60, :raices)"),
+        text("UPDATE config_pwa_import SET raices = :raices WHERE id = 1"),
         {"raices": json.dumps(raices or [])},
     )
 
