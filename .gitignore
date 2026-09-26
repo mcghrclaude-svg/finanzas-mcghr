@@ -50,6 +50,7 @@ backups/
 .DS_Store
 Thumbs.db
 *.log
+logs/
 
 # IDE
 .vscode/settings.json
