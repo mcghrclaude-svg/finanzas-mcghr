@@ -88,6 +88,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+92344dd feat(panel-control): restaura al arrancar lo que estaba prendido antes del apagado
+8dcc68f docs: auto-update 2026-09-26 20:46
 f5b5fb6 revert: saca de main el auto-restore (se commiteo ahi por error, se rehace en branch)
 785be52 docs: auto-update 2026-09-26 20:44
 4c1114e feat(panel-control): restaura al arrancar lo que estaba prendido antes del apagado
@@ -96,5 +98,3 @@ b63a83a docs: auto-update 2026-09-26 20:35
 1ad2186 fix(panel-control): saca caracteres no-ASCII de panel.js/panel.html (CITA-009)
 f8e2499 docs: auto-update 2026-09-26 20:34
 1d74b19 feat(panel-control): panel de control en la bandeja del sistema + arregla consola visible en tarea de import PWA
-0d5d10d merge: feature/pwa-home-actividad-arbol-categorias -- Home con indicadores de presupuesto, Actividad, arbol de categorias
-3ece746 docs: auto-update 2026-09-26 18:31
