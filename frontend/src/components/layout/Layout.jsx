@@ -9,6 +9,7 @@
  */
 import Sidebar from './Sidebar'
 import UndoBar from '@/components/shared/UndoBar'
+import GuardiaNavegacion from '@/components/shared/GuardiaNavegacion'
 
 export default function Layout({ children }) {
   return (
@@ -20,6 +21,7 @@ export default function Layout({ children }) {
         </main>
       </div>
       <UndoBar />
+      <GuardiaNavegacion />
     </div>
   )
 }

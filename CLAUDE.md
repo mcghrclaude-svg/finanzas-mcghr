@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 00:49
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 00:47
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -54,7 +54,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
-| Presupuesto | STUB | 4 lineas |
+| Presupuesto | IMPLEMENTADO | 236 lineas |
 | PWA | IMPLEMENTADO | 272 lineas |
 | Tools | PARCIAL | 410 lineas |
 | Transacciones | PARCIAL | 1315 lineas |
@@ -79,7 +79,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | PARCIAL | 98 lineas |
 | obligaciones.py | PARCIAL | 89 lineas |
-| presupuestos.py | IMPLEMENTADO | 166 lineas |
+| presupuestos.py | IMPLEMENTADO | 222 lineas |
 | pwa_config.py | IMPLEMENTADO | 191 lineas |
 | reglas.py | PARCIAL | 73 lineas |
 | reportes.py | PARCIAL | 135 lineas |
@@ -88,7 +88,9 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
-43fd050 feat(catalogos): header consistente con Transacciones + undo/redo en Categorias
+6ac9c47 fix(presupuesto): saca caracteres no-ASCII de comentarios (CITA-009)
+786753a docs: auto-update 2026-09-27 00:43
+d8c9a23 feat(presupuesto): pantalla de definicion de presupuesto por categoria
 ff2f61d Merge pull request #55 from mcghrclaude-svg/chat-panel-control-autorestore
 47211e4 docs: auto-update 2026-09-26 20:46
 92344dd feat(panel-control): restaura al arrancar lo que estaba prendido antes del apagado
@@ -96,5 +98,3 @@ ff2f61d Merge pull request #55 from mcghrclaude-svg/chat-panel-control-autoresto
 f5b5fb6 revert: saca de main el auto-restore (se commiteo ahi por error, se rehace en branch)
 785be52 docs: auto-update 2026-09-26 20:44
 4c1114e feat(panel-control): restaura al arrancar lo que estaba prendido antes del apagado
-07d7782 Merge pull request #54 from mcghrclaude-svg/chat-panel-control
-b63a83a docs: auto-update 2026-09-26 20:35

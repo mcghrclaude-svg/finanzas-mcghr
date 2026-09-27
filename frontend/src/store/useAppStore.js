@@ -49,10 +49,23 @@ const useAppStore = create((set, get) => ({
   clearUndoStack: () => set({ undoStack: [], redoStack: [] }),
 
   // — Cambios no guardados -------------------------------------------------------
-  // Se limpia al hacer Save. Dispara alerta si el usuario intenta cerrar la pestaña.
+  // Se limpia al hacer Save. Dispara alerta si el usuario intenta cerrar la pestana
+  // (AlertaSinGuardar) o navegar a otra pantalla del menu (GuardiaNavegacion).
   hayCambiosSinGuardar: false,
   marcarCambio: () => set({ hayCambiosSinGuardar: true }),
   limpiarCambios: () => set({ hayCambiosSinGuardar: false }),
+
+  // Funcion "grabar lo pendiente" de la pantalla actual con cambios sin
+  // guardar -- la registra ella misma al montarse. GuardiaNavegacion la usa
+  // para poder ofrecer "Grabar y salir" sin saber nada de la pantalla en si.
+  guardarPendientesFn: null,
+  registrarGuardadoPendiente: (fn) => set({ guardarPendientesFn: fn }),
+
+  // Ruta a la que se intento navegar mientras habia cambios sin guardar.
+  // No-null dispara el modal de GuardiaNavegacion.
+  destinoPendiente: null,
+  solicitarConfirmacionSalida: (to) => set({ destinoPendiente: to }),
+  cancelarConfirmacionSalida: () => set({ destinoPendiente: null }),
 }))
 
 export default useAppStore
