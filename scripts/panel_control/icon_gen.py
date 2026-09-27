@@ -17,11 +17,17 @@ COLOR_OFF = (138, 147, 166)
 _COLORES = {"ok": COLOR_OK, "warn": COLOR_WARN, "crit": COLOR_CRIT, "off": COLOR_OFF}
 
 
-def salud_agregada(estados_componentes: list[str], ultimo_resultado_tarea: str | None) -> str:
+def salud_agregada(estados_componentes: list[str], ultima_corrida_ok: bool | None) -> str:
     """estados_componentes: lista de 'ok'/'warn'/'off'/'n/a' de estado_todos().
+    ultima_corrida_ok: True/False segun los errores registrados en la ultima
+    fila de log_ejecuciones_mobile (no el "Last Result" crudo de Task
+    Scheduler -- ese campo usa codigos como 267009/267011 para "corriendo
+    ahora mismo" / "todavia no corrio" que no son errores reales y generaban
+    falsos rojos). None si no hay corridas registradas todavia: no hay
+    evidencia de fallo, no se marca critico.
     Prioridad: una tarea programada que fallo pesa mas que un servicio apagado
     a proposito (eso es normal, no es un problema)."""
-    if ultimo_resultado_tarea not in (None, "0"):
+    if ultima_corrida_ok is False:
         return "crit"
     if "warn" in estados_componentes:
         return "warn"

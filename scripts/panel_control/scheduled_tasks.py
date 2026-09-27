@@ -125,6 +125,19 @@ def ultima_corrida() -> dict | None:
     return filas[0] if filas else None
 
 
+def ultimo_run_ok() -> bool | None:
+    """True/False segun los errores de la ultima corrida real, leida de
+    log_ejecuciones_mobile -- a diferencia de EstadoTarea.ultimo_resultado
+    (el "Last Result" crudo de schtasks), esto no se confunde con los
+    codigos pseudo-error que Task Scheduler usa para "corriendo ahora mismo"
+    (267009) o "todavia no corrio" (267011). None si no hay corridas
+    registradas todavia."""
+    fila = ultima_corrida()
+    if fila is None:
+        return None
+    return (fila.get("errores") or 0) == 0
+
+
 if __name__ == "__main__":
     import json
 
