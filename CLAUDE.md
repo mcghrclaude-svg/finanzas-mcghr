@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-26 20:35
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-26 20:46
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -88,13 +88,13 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+f5b5fb6 revert: saca de main el auto-restore (se commiteo ahi por error, se rehace en branch)
+785be52 docs: auto-update 2026-09-26 20:44
+4c1114e feat(panel-control): restaura al arrancar lo que estaba prendido antes del apagado
+07d7782 Merge pull request #54 from mcghrclaude-svg/chat-panel-control
+b63a83a docs: auto-update 2026-09-26 20:35
 1ad2186 fix(panel-control): saca caracteres no-ASCII de panel.js/panel.html (CITA-009)
 f8e2499 docs: auto-update 2026-09-26 20:34
 1d74b19 feat(panel-control): panel de control en la bandeja del sistema + arregla consola visible en tarea de import PWA
 0d5d10d merge: feature/pwa-home-actividad-arbol-categorias -- Home con indicadores de presupuesto, Actividad, arbol de categorias
 3ece746 docs: auto-update 2026-09-26 18:31
-4b133ba test: cubre PresupuestoService y arregla config_pwa_import + aislamiento en tests de catalogos
-ce8499f docs: auto-update 2026-09-26 18:11
-786b8b2 docs: suma diagnostico de corte de sync PWA->OneDrive e ignora logs/ locales
-82de783 docs: auto-update 2026-09-09 19:29
-9428f75 feat(pwa): bullet chart de presupuesto por categoria y arbol de indicadores en Configuracion
