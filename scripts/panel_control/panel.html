@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel de Control MCGHR</title>
+<style>
+  :root{
+    --ink:#14213d; --muted:#5b6577; --panel:#ffffff; --panel-2:#f7f9fc; --border:#dde3ec;
+    --accent:#1e40af; --accent-soft:#e8edfa;
+    --ok:#1f9d63; --ok-soft:#e3f6ec;
+    --warn:#b7791f; --warn-soft:#fbf0dc;
+    --crit:#c53030; --crit-soft:#fbe3e3;
+    --off:#8a93a6; --off-soft:#e9ebef;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--panel); }
+  body{
+    color:var(--ink);
+    font-family:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    width:336px; overflow:hidden; user-select:none;
+  }
+  .mono{ font-variant-numeric:tabular-nums; font-family:Consolas,"Cascadia Mono",monospace; }
+
+  .fy-head{ display:flex; align-items:center; gap:9px; padding:12px 14px 10px; border-bottom:1px solid var(--border); }
+  .fy-glyph{ width:20px; height:20px; border-radius:5px; flex:none; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+  .fy-title{ font-size:13px; font-weight:600; flex:1; }
+
+  .tabs{ display:flex; gap:2px; padding:8px 10px 0; }
+  .tab{ flex:1; text-align:center; font-size:11px; font-weight:600; color:var(--muted);
+    background:none; border:none; padding:6px 2px 8px; cursor:pointer; border-bottom:2px solid transparent; font-family:inherit; }
+  .tab.is-active{ color:var(--ink); border-bottom-color:var(--accent); }
+  .tab-dot{ display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:4px; vertical-align:1px; background:var(--off); }
+
+  .tab-panel{ display:none; }
+  .tab-panel.is-active{ display:block; }
+
+  .row{ display:flex; align-items:center; gap:9px; padding:7px 14px; min-height:34px; box-sizing:border-box; }
+  .row + .row{ border-top:1px solid rgba(0,0,0,.05); }
+
+  .dot{ width:9px; height:9px; border-radius:50%; flex:none; box-shadow:0 0 0 3px var(--dot-soft, transparent); }
+  .dot.ok{ background:var(--ok); --dot-soft:var(--ok-soft); }
+  .dot.warn{ background:var(--warn); --dot-soft:var(--warn-soft); }
+  .dot.crit{ background:var(--crit); --dot-soft:var(--crit-soft); }
+  .dot.off{ background:var(--off); --dot-soft:var(--off-soft); }
+
+  .row-main{ display:flex; flex-direction:column; gap:1px; min-width:0; flex:1 1 auto; height:29px; justify-content:center; }
+  .row-name{ font-size:12.5px; font-weight:500; line-height:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row-sub{ font-size:10.5px; color:var(--muted); line-height:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .spacer{ flex:1; }
+  .port-link{ font-size:11px; color:var(--accent); text-decoration:none; border:1px solid transparent; padding:2px 6px;
+    border-radius:5px; display:inline-flex; align-items:center; gap:3px; cursor:pointer; }
+  .port-link:hover{ background:var(--accent-soft); }
+  .port-link[hidden]{ display:none; }
+
+  .icon-btn{ width:24px; height:24px; border-radius:6px; border:1px solid var(--border); background:var(--panel-2);
+    color:var(--muted); flex:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .icon-btn:hover{ color:var(--ink); border-color:var(--accent); }
+  .icon-btn svg{ width:13px; height:13px; }
+  .icon-btn[hidden]{ display:none; }
+  .icon-btn[disabled]{ opacity:.35; cursor:not-allowed; }
+
+  .toggle{ --w:30px; --h:16px; width:var(--w); height:var(--h); border-radius:999px; flex:none; border:none; cursor:pointer;
+    position:relative; background:var(--off-soft); transition:background .15s ease; }
+  .toggle::after{ content:""; position:absolute; top:2px; left:2px; width:calc(var(--h) - 4px); height:calc(var(--h) - 4px);
+    border-radius:50%; background:var(--panel); box-shadow:0 1px 2px rgba(0,0,0,.35); transition:transform .15s ease; }
+  .toggle.state-ok{ background:var(--ok); }
+  .toggle.state-warn{ background:var(--warn); }
+  .toggle.state-off{ background:var(--off); }
+  .toggle.is-on::after{ transform:translateX(14px); }
+  .toggle[hidden]{ display:none; }
+  .toggle[disabled]{ opacity:.5; cursor:not-allowed; }
+
+  .eyebrow{ font-size:10px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); padding:10px 14px 4px; }
+
+  .fy-foot{ display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-top:1px solid var(--border);
+    font-size:10.5px; color:var(--muted); }
+  .fy-foot a{ color:var(--accent); text-decoration:none; cursor:pointer; }
+
+  .view-history{ display:none; }
+  .view-history.is-active{ display:block; }
+  .view-main{ display:none; }
+  .view-main.is-active{ display:block; }
+
+  .hist-row{ display:flex; align-items:center; gap:9px; padding:7px 14px; min-height:34px; box-sizing:border-box; }
+  .hist-row + .hist-row{ border-top:1px solid rgba(0,0,0,.05); }
+  .hist-row .row-main{ flex:1; min-width:0; }
+</style>
+</head>
+<body>
+
+  <div class="view-main is-active" data-view="main">
+    <div class="fy-head">
+      <div class="fy-glyph">M</div>
+      <div class="fy-title">Finanzas MCGHR</div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Entorno">
+      <button class="tab is-active" data-tab="prod"><span class="tab-dot" data-tabdot="prod"></span>Prod</button>
+      <button class="tab" data-tab="dev"><span class="tab-dot" data-tabdot="dev"></span>Dev</button>
+      <button class="tab" data-tab="staging"><span class="tab-dot" data-tabdot="staging"></span>Staging</button>
+      <button class="tab" data-tab="test"><span class="tab-dot" data-tabdot="test"></span>Test</button>
+    </div>
+
+    <div class="fy-body" id="tabPanels"><!-- panel.js arma los 4 tab-panel con generarFila() --></div>
+
+    <div class="eyebrow">Tareas programadas</div>
+    <div id="tareaRow"></div>
+
+    <div class="fy-foot">
+      <span id="footUpdated">actualizando...</span>
+      <a id="abrirLogs">Abrir carpeta de logs</a>
+    </div>
+  </div>
+
+  <div class="view-history" data-view="history">
+    <div class="fy-head">
+      <button class="icon-btn" id="historyBack" style="border:none; background:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="fy-title" style="line-height:1.25;">
+        Import PWA -> escritorio
+        <div style="font-size:10px; font-weight:400; color:var(--muted);">Historial de corridas</div>
+      </div>
+    </div>
+    <div class="fy-body" id="historyRows"></div>
+    <div class="fy-foot"><span id="historyFoot"></span><span></span></div>
+  </div>
+
+<script src="panel.js"></script>
+</body>
+</html>
