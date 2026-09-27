@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 14:50
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 14:52
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+ad467e4 fix(backend): saca caracteres no-ASCII de las lineas que agrego en este chat (CITA-009)
+1c10ae5 docs: auto-update 2026-09-27 14:50
 f4be8bc feat(backend): listado real de transacciones, SMS en inbox stats, subcategorias de presupuesto y patrimonio real
 331dc55 Merge pull request #59 from mcghrclaude-svg/docs/cita-019-branch-guard
 d2bcbd0 docs: auto-update 2026-09-27 11:38
@@ -100,5 +102,3 @@ db3d908 Merge pull request #58 from mcghrclaude-svg/fix/panel-control-dpi-posici
 f618e43 docs: auto-update 2026-09-27 11:33
 55b5438 fix(panel-control): DPI, posicion de ventana y falso rojo en tarea programada
 ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-consistente
-0f42b1b docs: auto-update 2026-09-27 00:51
-7f91498 Merge remote-tracking branch 'origin/main' into feature/catalogos-header-consistente
