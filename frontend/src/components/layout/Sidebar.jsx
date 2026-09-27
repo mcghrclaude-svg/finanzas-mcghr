@@ -50,12 +50,28 @@ const NAV_GROUPS = [
   },
 ]
 
+// -- Guard de navegacion -------------------------------------------------------
+// Si hay cambios sin grabar en la pantalla actual, un click en el menu no
+// navega directo: pide confirmacion (GuardiaNavegacion, montado en Layout).
+function useClickNavSeguro() {
+  const hayCambios = useAppStore(s => s.hayCambiosSinGuardar)
+  const solicitarConfirmacionSalida = useAppStore(s => s.solicitarConfirmacionSalida)
+  return (to) => (e) => {
+    if (hayCambios) {
+      e.preventDefault()
+      solicitarConfirmacionSalida(to)
+    }
+  }
+}
+
 // ── NavItem ────────────────────────────────────────────────────────────────────
 function NavItem({ to, label, icon, collapsed }) {
+  const clickSeguro = useClickNavSeguro()
   return (
     <NavLink
       to={to}
       title={label}
+      onClick={clickSeguro(to)}
       className={({ isActive }) =>
         `relative group flex items-center transition-colors rounded-lg mx-1 ${
           collapsed ? 'justify-center py-2.5 px-0' : 'gap-3 px-3 py-2.5'
@@ -85,6 +101,7 @@ function NavItem({ to, label, icon, collapsed }) {
 function NavGroup({ group, collapsed }) {
   const [open, setOpen] = useState(false)
   const location = useLocation()
+  const clickSeguro = useClickNavSeguro()
   const isChildActive = group.items.some(i => location.pathname.startsWith(i.to))
 
   if (collapsed) {
@@ -112,6 +129,7 @@ function NavGroup({ group, collapsed }) {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={clickSeguro(item.to)}
               className={({ isActive }) =>
                 `flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
                   isActive ? 'text-primary-700 font-medium bg-primary-50' : 'text-gray-600 hover:bg-gray-50'
@@ -147,6 +165,7 @@ function NavGroup({ group, collapsed }) {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={clickSeguro(item.to)}
               className={({ isActive }) =>
                 `flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm rounded-r-lg transition-colors ${
                   isActive

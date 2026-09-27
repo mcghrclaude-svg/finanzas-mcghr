@@ -4,6 +4,7 @@ Router: /api/v1/presupuestos
 Endpoints:
     GET    /                           Lista presupuestos (filtro por anio/mes)
     POST   /                           Crear/actualizar presupuesto mensual
+    POST   /batch                      Crear/actualizar varias categorias en una sola operacion
     DELETE /{anio}/{mes}/{id_categoria} Eliminar presupuesto de una categoría
     GET    /ejecucion                  Ejecución del período activo (dashboard principal)
     GET    /periodo-activo             Período financiero abierto
@@ -18,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.database import get_db
 from backend.repositories.presupuesto_repo import PresupuestoRepository
 from backend.services.presupuesto_service import PresupuestoService
+from backend.services.pwa_export_service import exportar_resumen_categorias_pwa
 
 router = APIRouter()
 
@@ -30,6 +32,18 @@ class PresupuestoCreate(BaseModel):
     id_categoria: str
     monto_presupuestado: Decimal
     id_periodo: str | None = None
+
+
+class PresupuestoBatchItem(BaseModel):
+    id_categoria: str
+    monto_presupuestado: Decimal
+
+
+class PresupuestoBatchCreate(BaseModel):
+    anio: int
+    mes: int
+    id_periodo: str | None = None
+    items: list[PresupuestoBatchItem]
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────
@@ -132,12 +146,53 @@ async def crear_o_actualizar_presupuesto(
         id_periodo=body.id_periodo,
     )
     await db.commit()
+    await exportar_resumen_categorias_pwa(db)
     return {
         "id": p.id,
         "anio": p.anio,
         "mes": p.mes,
         "id_categoria": p.id_categoria,
         "monto_presupuestado": float(p.monto_presupuestado),
+    }
+
+
+@router.post("/batch", status_code=201)
+async def guardar_presupuesto_batch(
+    body: PresupuestoBatchCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Crea o actualiza varias categorias de presupuesto en una sola operacion.
+
+    Pensado para el boton "Guardar presupuesto" de la pantalla de definicion,
+    que puede tocar muchas categorias de una sola vez: en vez de un POST /
+    por categoria, se manda la lista completa, se hace un solo commit y se
+    regenera el JSON de la PWA una sola vez al final (no una vez por item).
+    """
+    repo = PresupuestoRepository(db)
+    guardados = []
+    for item in body.items:
+        p = await repo.upsert(
+            anio=body.anio,
+            mes=body.mes,
+            id_categoria=item.id_categoria,
+            monto=item.monto_presupuestado,
+            id_periodo=body.id_periodo,
+        )
+        guardados.append(p)
+    await db.commit()
+    await exportar_resumen_categorias_pwa(db)
+    return {
+        "items": [
+            {
+                "id": p.id,
+                "anio": p.anio,
+                "mes": p.mes,
+                "id_categoria": p.id_categoria,
+                "monto_presupuestado": float(p.monto_presupuestado),
+            }
+            for p in guardados
+        ]
     }
 
 
@@ -153,6 +208,7 @@ async def eliminar_presupuesto(
     if not ok:
         raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
     await db.commit()
+    await exportar_resumen_categorias_pwa(db)
     return None
 
 
