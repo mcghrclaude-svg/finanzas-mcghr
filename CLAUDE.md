@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 11:33
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 11:38
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -35,6 +35,9 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 - Verificar PRAGMA table_info antes de modificar modelos de DB (CITA-005)
 - Si un fix falla: diagnostico antes del segundo intento (CITA-010)
 - Commits: listar archivos explicitos, nunca git add -A (CITA-008)
+- SIEMPRE crear la rama del tema ANTES del primer cambio de codigo, aunque
+  el chat ya haya mergeado otra rama antes -- volver a main tras un merge
+  no habilita a seguir commiteando ahi (CITA-019, bloqueado por hook)
 
 ## Entornos -- Claude Code y Claude Desktop
 - DB desarrollo: data/dev/finanzas_dev.db -- usar MCP sqlite_dev
@@ -88,6 +91,9 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+892b187 docs(cita): registra CITA-019 y agrega hook que bloquea commits en main
+db3d908 Merge pull request #58 from mcghrclaude-svg/fix/panel-control-dpi-posicion-estado
+f618e43 docs: auto-update 2026-09-27 11:33
 55b5438 fix(panel-control): DPI, posicion de ventana y falso rojo en tarea programada
 ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-consistente
 0f42b1b docs: auto-update 2026-09-27 00:51
@@ -95,6 +101,3 @@ ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-con
 03a312b Merge pull request #56 from mcghrclaude-svg/feature/presupuesto-definicion
 0c1e434 docs: auto-update 2026-09-27 00:49
 43fd050 feat(catalogos): header consistente con Transacciones + undo/redo en Categorias
-42e1336 docs: auto-update 2026-09-27 00:47
-6ac9c47 fix(presupuesto): saca caracteres no-ASCII de comentarios (CITA-009)
-786753a docs: auto-update 2026-09-27 00:43
