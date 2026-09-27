@@ -37,3 +37,4 @@ el archivo individual de cada CITA.
 | CITA-016 | CORS con origenes hardcodeados en vez de settings.cors_origins | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-016.md |
 | CITA-017 | Safe area en iOS: sin env(safe-area-inset-*) los toques bajo el notch se pierden | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-017.md |
 | CITA-018 | Base path de Vite para GitHub Pages: condicional por comando, no por PROD | 3-CONTEXTO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-018.md |
+| CITA-019 | Agente commitea directo en main en vez de crear una rama primero | 1-AUTOMATIZADO | https://raw.githubusercontent.com/mcghrclaude-svg/finanzas-mcghr/main/docs/citas/CITA-019.md |

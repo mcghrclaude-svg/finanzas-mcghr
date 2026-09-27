@@ -219,6 +219,9 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 - Verificar PRAGMA table_info antes de modificar modelos de DB (CITA-005)
 - Si un fix falla: diagnostico antes del segundo intento (CITA-010)
 - Commits: listar archivos explicitos, nunca git add -A (CITA-008)
+- SIEMPRE crear la rama del tema ANTES del primer cambio de codigo, aunque
+  el chat ya haya mergeado otra rama antes -- volver a main tras un merge
+  no habilita a seguir commiteando ahi (CITA-019, bloqueado por hook)
 
 ## Entornos -- Claude Code y Claude Desktop
 - DB desarrollo: data/dev/finanzas_dev.db -- usar MCP sqlite_dev
