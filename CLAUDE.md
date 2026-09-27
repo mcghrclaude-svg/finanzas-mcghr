@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 11:38
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 14:50
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -79,18 +79,22 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | backup.py | PARCIAL | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 518 lineas |
 | dashboard.py | PARCIAL | 120 lineas |
+| home_config.py | IMPLEMENTADO | 64 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
-| inversiones.py | PARCIAL | 98 lineas |
-| obligaciones.py | PARCIAL | 89 lineas |
-| presupuestos.py | IMPLEMENTADO | 222 lineas |
+| inversiones.py | PARCIAL | 111 lineas |
+| obligaciones.py | PARCIAL | 113 lineas |
+| presupuestos.py | IMPLEMENTADO | 239 lineas |
 | pwa_config.py | IMPLEMENTADO | 191 lineas |
 | reglas.py | PARCIAL | 73 lineas |
 | reportes.py | PARCIAL | 135 lineas |
 | tools.py | PARCIAL | 434 lineas |
-| transacciones.py | PARCIAL | 155 lineas |
-| __init__.py | IMPLEMENTADO | 31 lineas |
+| transacciones.py | PARCIAL | 173 lineas |
+| __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+f4be8bc feat(backend): listado real de transacciones, SMS en inbox stats, subcategorias de presupuesto y patrimonio real
+331dc55 Merge pull request #59 from mcghrclaude-svg/docs/cita-019-branch-guard
+d2bcbd0 docs: auto-update 2026-09-27 11:38
 892b187 docs(cita): registra CITA-019 y agrega hook que bloquea commits en main
 db3d908 Merge pull request #58 from mcghrclaude-svg/fix/panel-control-dpi-posicion-estado
 f618e43 docs: auto-update 2026-09-27 11:33
@@ -98,6 +102,3 @@ f618e43 docs: auto-update 2026-09-27 11:33
 ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-consistente
 0f42b1b docs: auto-update 2026-09-27 00:51
 7f91498 Merge remote-tracking branch 'origin/main' into feature/catalogos-header-consistente
-03a312b Merge pull request #56 from mcghrclaude-svg/feature/presupuesto-definicion
-0c1e434 docs: auto-update 2026-09-27 00:49
-43fd050 feat(catalogos): header consistente con Transacciones + undo/redo en Categorias
