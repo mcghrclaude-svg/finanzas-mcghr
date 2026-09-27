@@ -1,5 +1,5 @@
 /**
- * PresupuestoCard.jsx — tarjeta de una categoria, tamano fijo, navegable.
+ * PresupuestoCard.jsx -- tarjeta de una categoria, tamano fijo, navegable.
  *
  * Una categoria sin hijos (hoja) muestra un campo editable. Una categoria
  * con hijos muestra el total (suma de sus hojas) y, dentro de la misma

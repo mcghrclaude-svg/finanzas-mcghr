@@ -1,5 +1,5 @@
 /**
- * GuardiaNavegacion.jsx — modal "cambios sin grabar" al intentar navegar a
+ * GuardiaNavegacion.jsx -- modal "cambios sin grabar" al intentar navegar a
  * otra pantalla del menu. Se monta una sola vez en Layout, igual que
  * AlertaSinGuardar (que cubre el cierre de la pestana) y UndoBar.
  *

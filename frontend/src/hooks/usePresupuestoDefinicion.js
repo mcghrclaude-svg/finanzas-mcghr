@@ -1,5 +1,5 @@
 /**
- * usePresupuestoDefinicion — datos para la pantalla de definicion de
+ * usePresupuestoDefinicion -- datos para la pantalla de definicion de
  * presupuesto por categoria (modules/Presupuesto). Sigue el mismo patron
  * que useTransacciones.js: React Query para el fetch/cache, mutacion
  * dedicada para grabar.

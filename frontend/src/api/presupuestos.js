@@ -1,6 +1,6 @@
 /**
  * api/presupuestos.js
- * Llamadas a /api/v1/presupuestos — espeja el patron de api/catalogos.js del repo.
+ * Llamadas a /api/v1/presupuestos -- espeja el patron de api/catalogos.js del repo.
  */
 import client from './client'
 

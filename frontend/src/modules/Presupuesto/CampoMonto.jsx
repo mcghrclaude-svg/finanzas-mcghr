@@ -1,5 +1,5 @@
 /**
- * CampoMonto.jsx — input de monto en pesos, sin decimales.
+ * CampoMonto.jsx -- input de monto en pesos, sin decimales.
  * El "$" y los separadores de miles son una mascara del propio input (no
  * hay un componente ni un span aparte): mientras esta enfocado se ven los
  * digitos crudos que se estan tipeando (sin re-formatear en cada tecla,

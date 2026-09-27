@@ -50,7 +50,7 @@ const NAV_GROUPS = [
   },
 ]
 
-// ── Guard de navegacion ────────────────────────────────────────────────────────
+// -- Guard de navegacion -------------------------------------------------------
 // Si hay cambios sin grabar en la pantalla actual, un click en el menu no
 // navega directo: pide confirmacion (GuardiaNavegacion, montado en Layout).
 function useClickNavSeguro() {

@@ -1,5 +1,5 @@
 /**
- * presupuestoUtils.js — funciones puras para el arbol de presupuesto.
+ * presupuestoUtils.js -- funciones puras para el arbol de presupuesto.
  * "hoja" = categoria sin sub-categorias propias: es la unica editable
  * directamente. El monto de una categoria con hijos es siempre la suma de
  * sus hojas descendientes (nunca un valor propio).

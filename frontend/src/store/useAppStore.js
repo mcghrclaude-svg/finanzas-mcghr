@@ -49,7 +49,7 @@ const useAppStore = create((set, get) => ({
   clearUndoStack: () => set({ undoStack: [], redoStack: [] }),
 
   // — Cambios no guardados -------------------------------------------------------
-  // Se limpia al hacer Save. Dispara alerta si el usuario intenta cerrar la pestaña
+  // Se limpia al hacer Save. Dispara alerta si el usuario intenta cerrar la pestana
   // (AlertaSinGuardar) o navegar a otra pantalla del menu (GuardiaNavegacion).
   hayCambiosSinGuardar: false,
   marcarCambio: () => set({ hayCambiosSinGuardar: true }),
