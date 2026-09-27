@@ -61,6 +61,21 @@ async def db_session():
             "INSERT INTO config_pwa_import (id, intervalo_minutos, raices) VALUES (1, 60, '[]')"
         ))
 
+        # config_home_widgets: mismo criterio -- tabla de configuracion sin
+        # modelo SQLAlchemy (ver docstring de home_config.py), se arma aca
+        # con el mismo DDL que schema/finanzas_v1_8.sql.
+        await conn.execute(text("""
+            CREATE TABLE config_home_widgets (
+                id                  INTEGER PRIMARY KEY CHECK (id = 1),
+                insight_visible     BOOLEAN NOT NULL DEFAULT 1,
+                patrimonio_visible  BOOLEAN NOT NULL DEFAULT 1,
+                ask_visible         BOOLEAN NOT NULL DEFAULT 1
+            )
+        """))
+        await conn.execute(text(
+            "INSERT INTO config_home_widgets (id, insight_visible, patrimonio_visible, ask_visible) VALUES (1, 1, 1, 1)"
+        ))
+
     SessionLocal = async_sessionmaker(
         bind=engine,
         class_=AsyncSession,

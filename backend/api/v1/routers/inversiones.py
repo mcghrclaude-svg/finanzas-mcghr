@@ -20,6 +20,7 @@ Importación IBKR:
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.database import get_db
+from backend.services.inversiones_service import InversionesService
 
 router = APIRouter()
 
@@ -40,20 +41,32 @@ async def crear_inversion(db: AsyncSession = Depends(get_db)):
 
 @router.get("/patrimonio")
 async def resumen_patrimonio(
-    fecha: str | None = Query(None, description="ISO 8601 date; default=hoy"),
+    fecha: str | None = Query(None, description="ISO 8601 date; informativo -- hoy siempre usa la ultima valuacion/saldo cargado"),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Valor neto patrimonial (VNP) a la fecha indicada.
-    VNP = Σ activos valuados − Σ deudas activas (capital restante)
+    Valor neto patrimonial (VNP) actual.
+    VNP = Σ activos valuados (Inversion/Valuacion) − Σ deudas activas
+    (Obligacion.saldo_pendiente, carga manual -- ver ADR en el modelo).
     """
-    return {
-        "fecha": fecha,
-        "activos_total": 0,
-        "deudas_total": 0,
-        "patrimonio_neto": 0,
-        "detalle": [],
-    }
+    service = InversionesService(db)
+    return await service.resumen_patrimonio(fecha=fecha)
+
+
+@router.get("/patrimonio/historico")
+async def historico_patrimonio(
+    meses: int = Query(12, ge=1, le=60, description="Cantidad de meses calendario hacia atras"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Serie mensual de activos vs. deudas para el widget "Evolucion
+    patrimonio" del Home. Un mes sin ningun dato todavia (activos_total o
+    deudas_total = null) simplemente no tiene historial cargado a esa
+    fecha -- el frontend decide como mostrarlo (ej. recortar el eje a partir
+    del primer mes con datos).
+    """
+    service = InversionesService(db)
+    return await service.historico_patrimonio(meses=meses)
 
 
 @router.get("/{inversion_id}")

@@ -44,6 +44,84 @@ class PresupuestoService:
         self.db = db
         self.repo = PresupuestoRepository(db)
 
+    async def _periodo_activo_y_fechas(self, anio: int, mes: int):
+        """Resuelve el periodo financiero activo (o fallback a mes calendario)
+        y las fechas/dias derivados que necesita el calculo de ejecucion.
+        Compartido por obtener_ejecucion y obtener_ejecucion_subcategorias."""
+        hoy = date.today()
+        periodo = await self.repo.obtener_periodo_activo()
+
+        if periodo:
+            fecha_inicio = periodo.fecha_inicio
+            fecha_hasta = min(hoy, periodo.fecha_fin_real or hoy)
+            dias_transcurridos = (hoy - fecha_inicio).days + 1
+            fecha_fin_ref = periodo.fecha_fin_real or periodo.fecha_fin_tentativa
+            dias_totales = (fecha_fin_ref - fecha_inicio).days + 1
+        else:
+            fecha_inicio = date(anio, mes, 1)
+            fecha_hasta = hoy
+            dias_totales = calendar.monthrange(anio, mes)[1]
+            dias_transcurridos = hoy.day
+
+        dias_transcurridos = max(dias_transcurridos, 1)
+        return periodo, fecha_inicio, fecha_hasta, dias_transcurridos, dias_totales
+
+    async def _construir_item_ejecucion(
+        self,
+        id_categoria: str,
+        nombre_fallback: str,
+        cat: Categoria | None,
+        monto_presupuestado: Decimal,
+        fecha_inicio: date,
+        fecha_hasta: date,
+        dias_transcurridos: int,
+        dias_totales: int,
+    ) -> dict:
+        """Calcula riesgo/velocidad/proyeccion para una categoria (o
+        subcategoria) dada. `monto_presupuestado` puede ser 0 cuando no hay
+        presupuesto cargado a ese nivel -- el resto de las cuentas sigue
+        funcionando (pct_consumido/pct_esperado_hoy quedan en 0)."""
+        tipo_patron = cat.tipo_patron_gasto if cat else "variable_frecuente"
+        nombre = cat.nombre if cat else nombre_fallback
+
+        gasto_acumulado = await self.repo.obtener_gasto_acumulado_periodo(
+            id_categoria, fecha_inicio, fecha_hasta
+        )
+
+        hist = await self.repo.obtener_velocidad_historica(id_categoria, n_periodos=3)
+        vel_hist: Decimal | None = None
+        if hist:
+            vel_hist = sum(h.velocidad_diaria for h in hist) / len(hist)
+
+        vel_actual = gasto_acumulado / Decimal(dias_transcurridos)
+
+        nivel_riesgo, ratio = self._calcular_riesgo(tipo_patron, vel_actual, vel_hist)
+        monto_proyectado = self._calcular_proyeccion(
+            vel_actual, vel_hist, dias_totales, tipo_patron, monto_presupuestado
+        )
+        pct_consumido = float(gasto_acumulado / monto_presupuestado) if monto_presupuestado else 0.0
+        pct_esperado_hoy = self._calcular_pct_esperado(
+            tipo_patron, vel_hist, monto_presupuestado, dias_transcurridos,
+        )
+
+        return {
+            "id_categoria": id_categoria,
+            "nombre": nombre,
+            "tipo_patron_gasto": tipo_patron,
+            "monto_presupuestado": float(monto_presupuestado),
+            "gasto_acumulado": float(gasto_acumulado),
+            "velocidad_actual": float(vel_actual),
+            "velocidad_historica": float(vel_hist) if vel_hist is not None else None,
+            "ratio_riesgo": float(ratio) if ratio is not None else None,
+            "nivel_riesgo": nivel_riesgo,
+            "pct_consumido": round(pct_consumido, 4),
+            "pct_esperado_hoy": round(pct_esperado_hoy, 4),
+            "monto_proyectado": float(monto_proyectado),
+            # Próximo vencimiento (solo fijo_unico): lo calculamos desde obligaciones.
+            # Por ahora None — el endpoint de obligaciones lo enriquece si es necesario.
+            "proximo_vencimiento": None,
+        }
+
     async def obtener_ejecucion(
         self,
         anio: int,
@@ -53,34 +131,20 @@ class PresupuestoService:
         Construye la lista completa de items de ejecución de presupuesto
         para el período activo o el mes calendario dado.
 
+        Enumera desde Presupuesto (no desde Categoria): en la práctica esto
+        limita el resultado a categorías nivel-1 porque hoy solo se cargan
+        presupuestos ahí. Para el drill-down a subcategorías ver
+        obtener_ejecucion_subcategorias, que enumera desde Categoria y no
+        requiere que exista un Presupuesto.
+
         Retorna estructura lista para serializar por el router.
         """
-        hoy = date.today()
+        periodo, fecha_inicio, fecha_hasta, dias_transcurridos, dias_totales = (
+            await self._periodo_activo_y_fechas(anio, mes)
+        )
 
-        # Período financiero activo
-        periodo = await self.repo.obtener_periodo_activo()
-
-        if periodo:
-            fecha_inicio = periodo.fecha_inicio
-            # hasta hoy o fecha_fin_real, lo que sea menor
-            fecha_hasta = min(hoy, periodo.fecha_fin_real or hoy)
-            dias_transcurridos = (hoy - fecha_inicio).days + 1
-            # dias totales: si hay fecha_fin_real usamos real, sino tentativa
-            fecha_fin_ref = periodo.fecha_fin_real or periodo.fecha_fin_tentativa
-            dias_totales = (fecha_fin_ref - fecha_inicio).days + 1
-        else:
-            # Fallback a mes calendario
-            fecha_inicio = date(anio, mes, 1)
-            fecha_hasta = hoy
-            dias_totales = calendar.monthrange(anio, mes)[1]
-            dias_transcurridos = hoy.day
-
-        dias_transcurridos = max(dias_transcurridos, 1)
-
-        # Presupuestos del mes
         presupuestos = await self.repo.obtener_por_mes(anio, mes)
 
-        # Cargar categorias en un dict
         cat_ids = [p.id_categoria for p in presupuestos]
         cats = {}
         if cat_ids:
@@ -91,58 +155,14 @@ class PresupuestoService:
 
         items = []
         for pres in presupuestos:
-            cat = cats.get(pres.id_categoria)
-            tipo_patron = cat.tipo_patron_gasto if cat else "variable_frecuente"
-            nombre = cat.nombre if cat else pres.id_categoria
-
-            # Gasto acumulado hasta hoy en el período
-            gasto_acumulado = await self.repo.obtener_gasto_acumulado_periodo(
-                pres.id_categoria, fecha_inicio, fecha_hasta
-            )
-
-            # Velocidad histórica promedio (3 períodos anteriores)
-            hist = await self.repo.obtener_velocidad_historica(pres.id_categoria, n_periodos=3)
-            vel_hist: Decimal | None = None
-            if hist:
-                vel_hist = sum(h.velocidad_diaria for h in hist) / len(hist)
-
-            # Velocidad actual
-            vel_actual = gasto_acumulado / Decimal(dias_transcurridos)
-
-            # Riesgo y proyección
-            nivel_riesgo, ratio = self._calcular_riesgo(tipo_patron, vel_actual, vel_hist)
-            monto_proyectado = self._calcular_proyeccion(
-                vel_actual, vel_hist, dias_totales, tipo_patron,
-                Decimal(str(pres.monto_presupuestado))
-            )
-            pct_consumido = float(
-                gasto_acumulado / Decimal(str(pres.monto_presupuestado))
-            ) if pres.monto_presupuestado else 0
-            pct_esperado_hoy = self._calcular_pct_esperado(
-                tipo_patron, vel_hist,
+            item = await self._construir_item_ejecucion(
+                pres.id_categoria,
+                pres.id_categoria,
+                cats.get(pres.id_categoria),
                 Decimal(str(pres.monto_presupuestado)),
-                dias_transcurridos,
+                fecha_inicio, fecha_hasta, dias_transcurridos, dias_totales,
             )
-
-            # Próximo vencimiento (solo fijo_unico): lo calculamos desde obligaciones
-            # Por ahora None — el endpoint de obligaciones lo enriquece si es necesario
-            proximo_vencimiento = None
-
-            items.append({
-                "id_categoria": pres.id_categoria,
-                "nombre": nombre,
-                "tipo_patron_gasto": tipo_patron,
-                "monto_presupuestado": float(pres.monto_presupuestado),
-                "gasto_acumulado": float(gasto_acumulado),
-                "velocidad_actual": float(vel_actual),
-                "velocidad_historica": float(vel_hist) if vel_hist is not None else None,
-                "ratio_riesgo": float(ratio) if ratio is not None else None,
-                "nivel_riesgo": nivel_riesgo,
-                "pct_consumido": round(pct_consumido, 4),
-                "pct_esperado_hoy": round(pct_esperado_hoy, 4),
-                "monto_proyectado": float(monto_proyectado),
-                "proximo_vencimiento": proximo_vencimiento,
-            })
+            items.append(item)
 
         # Ordenar: critico → alto → ok → fijo
         orden = {"critico": 0, "alto": 1, "ok": 2, "fijo": 3}
@@ -150,6 +170,55 @@ class PresupuestoService:
 
         return {
             "periodo": self._serializar_periodo(periodo, fecha_inicio, dias_transcurridos, dias_totales),
+            "items": items,
+        }
+
+    async def obtener_ejecucion_subcategorias(
+        self,
+        anio: int,
+        mes: int,
+        id_padre: str,
+    ) -> dict:
+        """
+        Mismo cálculo de riesgo/velocidad/proyección que obtener_ejecucion,
+        pero para las subcategorías (hijos directos) de `id_padre`. A
+        diferencia de obtener_ejecucion, enumera desde Categoria (no desde
+        Presupuesto): una subcategoría sin presupuesto cargado igual aparece,
+        con monto_presupuestado=0 (sin marca de presupuesto en la UI) en vez
+        de quedar afuera. Usado por el drill-down del widget de Home.
+        """
+        periodo, fecha_inicio, fecha_hasta, dias_transcurridos, dias_totales = (
+            await self._periodo_activo_y_fechas(anio, mes)
+        )
+
+        result = await self.db.execute(
+            select(Categoria).where(
+                Categoria.id_padre == id_padre,
+                Categoria.activa == True,  # noqa: E712
+            )
+        )
+        hijos = result.scalars().all()
+
+        presupuestos = await self.repo.obtener_por_mes(anio, mes)
+        presupuesto_por_cat = {
+            p.id_categoria: Decimal(str(p.monto_presupuestado)) for p in presupuestos
+        }
+
+        items = []
+        for cat in hijos:
+            monto_presupuestado = presupuesto_por_cat.get(cat.id, Decimal(0))
+            item = await self._construir_item_ejecucion(
+                cat.id, cat.nombre, cat, monto_presupuestado,
+                fecha_inicio, fecha_hasta, dias_transcurridos, dias_totales,
+            )
+            items.append(item)
+
+        orden = {"critico": 0, "alto": 1, "ok": 2, "fijo": 3}
+        items.sort(key=lambda x: orden.get(x["nivel_riesgo"], 9))
+
+        return {
+            "periodo": self._serializar_periodo(periodo, fecha_inicio, dias_transcurridos, dias_totales),
+            "id_padre": id_padre,
             "items": items,
         }
 

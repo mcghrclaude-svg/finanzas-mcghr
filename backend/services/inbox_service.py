@@ -53,6 +53,7 @@ class InboxService:
             "pendientes": await self.repo.contar_pendientes(),
             "alta_prioridad": await self.repo.contar_alta_prioridad(),
             "confirmados_hoy": await self.repo.contar_confirmados_hoy(),
+            "pendientes_sms": await self.repo.contar_pendientes_por_fuente("sms_bc"),
         }
 
     # ------------------------------------------------------------------

@@ -32,6 +32,7 @@ from backend.api.v1.routers import (
     dashboard,
     tools,
     pwa_config,
+    home_config,
 )
 
 app = FastAPI(
@@ -66,6 +67,7 @@ app.include_router(backup.router,         prefix=f"{PREFIX}/backup",         tag
 app.include_router(dashboard.router,      prefix=f"{PREFIX}/dashboard",      tags=["dashboard"])
 app.include_router(tools.router,          prefix=f"{PREFIX}/tools",          tags=["tools"])
 app.include_router(pwa_config.router,     prefix=f"{PREFIX}/pwa-config",      tags=["pwa-config"])
+app.include_router(home_config.router,    prefix=f"{PREFIX}/home-config",     tags=["home-config"])
 
 
 @app.get("/health", tags=["system"])

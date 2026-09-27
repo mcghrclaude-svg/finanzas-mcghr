@@ -34,6 +34,8 @@ async def listar_transacciones(
     db: AsyncSession = Depends(get_db),
     cursor: str | None = Query(None),
     limit: int = Query(50, le=200),
+    estado: str | None = Query(None, description="pendiente | confirmado | anulado (default: sin filtro)"),
+    origen: str | None = Query(None, description="etl_claude | manual_web | api"),
     desde: str | None = Query(None, description="Fecha inicio YYYY-MM-DD"),
     hasta: str | None = Query(None, description="Fecha fin YYYY-MM-DD"),
     id_categoria: str | None = Query(None),
@@ -44,9 +46,25 @@ async def listar_transacciones(
     es_recurrente: bool | None = Query(None),
     estado_reembolso: str | None = Query(None),
 ):
-    """Lista transacciones confirmadas con filtros y paginacion por cursor."""
-    # TODO: implementar con TransaccionesService
-    return {"items": [], "next_cursor": None, "total": 0}
+    """Lista transacciones con filtros y paginacion por cursor, mas recientes
+    primero. `estado=all` (usado por el front) equivale a no filtrar por
+    estado."""
+    service = TransaccionesService(db)
+    return await service.listar(
+        cursor=cursor,
+        limit=limit,
+        estado=estado if estado and estado != "all" else None,
+        origen=origen,
+        desde=desde,
+        hasta=hasta,
+        id_categoria=id_categoria,
+        id_cuenta=id_cuenta,
+        quien_pago=quien_pago,
+        tipo=tipo,
+        id_contraparte=id_contraparte,
+        es_recurrente=es_recurrente,
+        estado_reembolso=estado_reembolso,
+    )
 
 
 @router.post("/", status_code=201, response_model=TransaccionCreateResponse)

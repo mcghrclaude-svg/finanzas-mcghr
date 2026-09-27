@@ -65,6 +65,23 @@ async def ejecucion_presupuesto(
     return await service.obtener_ejecucion(anio, mes)
 
 
+@router.get("/ejecucion/{id_categoria}/subcategorias")
+async def ejecucion_subcategorias(
+    id_categoria: str,
+    anio: int = Query(..., description="Año del período"),
+    mes: int = Query(..., description="Mes del período (1–12)"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Ejecución de presupuesto para las subcategorías (hijos directos) de
+    `id_categoria` -- usado por el drill-down del widget "Presupuesto por
+    categoría" del Home. A diferencia de /ejecucion, una subcategoría sin
+    presupuesto cargado igual aparece, con monto_presupuestado=0.
+    """
+    service = PresupuestoService(db)
+    return await service.obtener_ejecucion_subcategorias(anio, mes, id_categoria)
+
+
 @router.get("/resumen-por-categoria")
 async def resumen_por_categoria(
     anio: int = Query(..., description="Año del mes calendario"),

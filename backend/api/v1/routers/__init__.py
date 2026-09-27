@@ -12,6 +12,7 @@ from backend.api.v1.routers import (
     dashboard,
     tools,
     pwa_config,
+    home_config,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "dashboard",
     "tools",
     "pwa_config",
+    "home_config",
 ]

@@ -99,6 +99,7 @@ class InboxStatsOut(BaseModel):
     pendientes: int = 0
     alta_prioridad: int = 0
     confirmados_hoy: int = 0
+    pendientes_sms: int = 0
 
 
 class InboxListResponse(BaseModel):
