@@ -99,7 +99,18 @@ export default function CategoriaTree({ items, onEditar, onInactivar }) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <table className="w-full">
+      {/* table-layout fixed + colgroup: sin esto, el ancho de cada columna se
+          recalcula segun el contenido de las filas visibles -- al tipear en
+          el buscador o cambiar el toggle Active/All cambia que filas se ven,
+          y las columnas "saltaban" de ancho en cada cambio. */}
+      <table className="w-full" style={{ tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '42%' }} />
+          <col style={{ width: '16%' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '80px' }} />
+        </colgroup>
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
             {['Nombre', 'ID', 'Patron de gasto', 'Estado', ''].map(h => (

@@ -9,6 +9,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import { catalogosApi } from '@/api/catalogos'
+import useAppStore from '@/store/useAppStore'
+import { useUndo } from '@/hooks/useUndo'
 import CategoriaTree from './CategoriaTree'
 import TablaGenerica from './TablaGenerica'
 import ModalForm from './ModalForm'
@@ -193,9 +195,20 @@ function PendingList({ onReload }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs text-gray-500">{items.length} pending proposal{items.length !== 1 ? 's' : ''}</p>
-        <button onClick={cargar} className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50">
+      <div className="flex items-center gap-2 mb-1">
+        <p className="text-xs text-gray-500 flex-shrink-0">{items.length} pending proposal{items.length !== 1 ? 's' : ''}</p>
+        <div className="w-px h-5 bg-gray-200" />
+        {/* Placeholder sin funcionalidad todavia -- no hay estructura de busqueda
+            para propuestas pendientes (ver pedido del usuario). */}
+        <input
+          type="text"
+          placeholder="Search pending..."
+          disabled
+          title="Not available yet"
+          className="flex-1 min-w-36 max-w-xs px-3 py-1.5 text-xs border border-gray-200 rounded bg-gray-50 text-gray-400 cursor-not-allowed"
+        />
+        <div className="flex-1" />
+        <button onClick={cargar} className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 flex-shrink-0">
           ↻ Refresh
         </button>
       </div>
@@ -243,6 +256,15 @@ export default function Catalogos() {
   const [formVals,  setFormVals]  = useState({})
   const [guardando, setGuardando] = useState(false)
   const [monedasActivas, setMonedasActivas] = useState([])
+  // 'total' | 'activas' | 'inactivas' -- filtro por estado, clickeable desde
+  // las 3 etiquetas del toolbar. Categorias arranca en 'activas' (no tiene
+  // sentido presupuestar/editar algo dado de baja); el resto arranca
+  // mostrando todo, igual que antes.
+  const [filtroEstado, setFiltroEstado] = useState('activas')
+  const [ordenAsc, setOrdenAsc] = useState(true)
+
+  const { undo, redo, undoStack, redoStack } = useAppStore()
+  const { ejecutar } = useUndo()
 
   // Se recarga junto con la seccion activa (cambio de tab, guardar, inactivar)
   // en vez de una sola vez al montar -- si no, queda obsoleta apenas alguien
@@ -265,12 +287,26 @@ export default function Catalogos() {
     }
   }, [seccion])
 
-  useEffect(() => { cargar(); setBusqueda('') }, [cargar])
+  useEffect(() => {
+    cargar()
+    setBusqueda('')
+    setFiltroEstado(seccion === 'categorias' ? 'activas' : 'total')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seccion])
 
-  const itemsFiltrados = items.filter(item => {
-    const q = busqueda.toLowerCase()
-    return !q || Object.values(item).some(v => String(v ?? '').toLowerCase().includes(q))
-  })
+  const itemsFiltrados = items
+    .filter(item => {
+      const q = busqueda.toLowerCase()
+      return !q || Object.values(item).some(v => String(v ?? '').toLowerCase().includes(q))
+    })
+    .filter(item => {
+      if (filtroEstado === 'activas') return item.activa !== false
+      if (filtroEstado === 'inactivas') return item.activa === false
+      return true
+    })
+    .sort((a, b) => ordenAsc
+      ? String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''))
+      : String(b.nombre ?? '').localeCompare(String(a.nombre ?? '')))
 
   const total    = items.length
   const activos  = items.filter(i => i.activa !== false).length
@@ -295,7 +331,22 @@ export default function Catalogos() {
     setGuardando(true)
     try {
       if (modal.item) {
-        await API[seccion].editar(modal.item.id, formVals)
+        if (seccion === 'categorias') {
+          // Snapshot para poder volver atras -- el PATCH real ya viaja con
+          // formVals (los valores nuevos) via la accion.
+          const anterior = {
+            nombre: modal.item.nombre,
+            id_padre: modal.item.id_padre,
+            tipo_patron_gasto: modal.item.tipo_patron_gasto,
+          }
+          await ejecutar({
+            descripcion: `Editar categoria "${modal.item.nombre}"`,
+            accion: () => catalogosApi.editarCategoria(modal.item.id, formVals),
+            deshacer: () => catalogosApi.editarCategoria(modal.item.id, anterior),
+          })
+        } else {
+          await API[seccion].editar(modal.item.id, formVals)
+        }
         toast.success('Updated successfully')
       } else if (seccion === 'monedas') {
         // El codigo lo escribe el usuario -- no se autogenera como slug.
@@ -309,7 +360,20 @@ export default function Catalogos() {
         const derivados = seccion === 'categorias'
           ? { nivel: (items.find(i => i.id === formVals.id_padre)?.nivel ?? 0) + 1 }
           : {}
-        await API[seccion].crear({ ...formVals, id: autoId, ...derivados })
+        const payload = { ...formVals, id: autoId, ...derivados }
+        if (seccion === 'categorias') {
+          // Deshacer una creacion no puede volver a hacer POST (el id ya
+          // existe) -- el equivalente es inactivarla; rehacer la reactiva
+          // con el mismo toggle (DELETE /categorias/{id} alterna activa).
+          await ejecutar({
+            descripcion: `Crear categoria "${formVals.nombre}"`,
+            accion: () => catalogosApi.crearCategoria(payload),
+            deshacer: () => catalogosApi.inactivarCategoria(autoId),
+            rehacer: () => catalogosApi.inactivarCategoria(autoId),
+          })
+        } else {
+          await API[seccion].crear(payload)
+        }
         toast.success('Created successfully')
       }
       setModal(null)
@@ -324,7 +388,19 @@ export default function Catalogos() {
   async function handleInactivar() {
     setGuardando(true)
     try {
-      await API[seccion].inactivar(modal.item.id)
+      if (seccion === 'categorias') {
+        // inactivarCategoria alterna activa -- el mismo toggle sirve de
+        // deshacer (y de rehacer, por defecto, via useUndo).
+        await ejecutar({
+          descripcion: modal.item.activa !== false
+            ? `Inactivar categoria "${modal.item.nombre}"`
+            : `Activar categoria "${modal.item.nombre}"`,
+          accion: () => catalogosApi.inactivarCategoria(modal.item.id),
+          deshacer: () => catalogosApi.inactivarCategoria(modal.item.id),
+        })
+      } else {
+        await API[seccion].inactivar(modal.item.id)
+      }
       toast.success(modal.item.activa !== false ? 'Deactivated' : 'Activated')
       setModal(null)
       cargar()
@@ -349,9 +425,9 @@ export default function Catalogos() {
         {seccion !== 'pendientes' && (
           <button
             onClick={abrirCrear}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
           >
-            + New
+            Add New
           </button>
         )}
       </div>
@@ -373,38 +449,62 @@ export default function Catalogos() {
         ))}
       </div>
 
-      {/* Stats -- oculto en pestana Pending */}
+      {/* Toolbar -- mismo formato que Transacciones (sort, search, estado, undo/redo/reload).
+          Sin rango de fechas ni filtros de Source/People: no aplican a un catalogo.
+          Oculto en Pending, que no tiene ni estados ni orden todavia. */}
       {seccion !== 'pendientes' && (
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: 'Total',    value: total,    color: 'text-gray-900' },
-            { label: 'Active',   value: activos,  color: 'text-success-500' },
-            { label: 'Inactive', value: inactivos,color: 'text-gray-400' },
-          ].map(s => (
-            <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
-              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            </div>
-          ))}
-        </div>
-      )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setOrdenAsc(a => !a)}
+            title={ordenAsc ? 'Sorted A-Z -- click for Z-A' : 'Sorted Z-A -- click for A-Z'}
+            className="flex items-center gap-1 text-xs border border-gray-200 rounded px-2.5 py-1.5 text-gray-600 hover:bg-gray-50"
+          >
+            <span>{ordenAsc ? '↑' : '↓'}</span> Name
+          </button>
 
-      {/* Busqueda -- oculto en categorias y pending */}
-      {seccion !== 'categorias' && seccion !== 'pendientes' && (
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <div className="w-px h-5 bg-gray-200" />
+
+          <div className="relative flex-1 min-w-36 max-w-xs">
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={`Search ${(meta?.label ?? '').toLowerCase()}...`}
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 bg-white w-64"
+              className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:border-primary-400"
             />
           </div>
-          <button onClick={cargar} className="px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50">
-            ↻
-          </button>
+
+          <div className="w-px h-5 bg-gray-200" />
+
+          <div className="flex items-center gap-1.5">
+            {[
+              { key: 'total',     label: 'Total',    value: total,     color: 'text-gray-900' },
+              { key: 'activas',   label: 'Active',   value: activos,   color: 'text-success-500' },
+              { key: 'inactivas', label: 'Inactive', value: inactivos, color: 'text-gray-400' },
+            ].map(s => (
+              <button
+                key={s.key}
+                onClick={() => setFiltroEstado(s.key)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${
+                  filtroEstado === s.key ? 'bg-primary-50 border-primary-300' : 'bg-white border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-semibold text-gray-400 uppercase tracking-wider text-[10px]">{s.label}</span>
+                <span className={`font-bold ${s.color}`}>{s.value}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="w-px h-5 bg-gray-200" />
+
+          <div className="flex items-center gap-1">
+            <button onClick={undo} disabled={!undoStack.length} title="Undo (Ctrl+Z)"
+              className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-25 text-gray-400 text-sm">↩</button>
+            <button onClick={redo} disabled={!redoStack.length} title="Redo (Ctrl+Y)"
+              className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-25 text-gray-400 text-sm">↪</button>
+            <button onClick={cargar} title="Refresh"
+              className="p-1.5 rounded hover:bg-gray-100 text-gray-400 text-sm">↻</button>
+          </div>
         </div>
       )}
 
@@ -416,7 +516,11 @@ export default function Catalogos() {
           <span className="animate-spin">⏳</span> Loading...
         </div>
       ) : seccion === 'categorias' ? (
-        <CategoriaTree items={buildTree(itemsFiltrados)} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
+        <CategoriaTree
+          items={buildTree(itemsFiltrados, ordenAsc)}
+          onEditar={abrirEditar}
+          onInactivar={abrirConfirmar}
+        />
       ) : (
         <TablaGenerica columnas={COLUMNAS[seccion] ?? []} items={itemsFiltrados} onEditar={abrirEditar} onInactivar={abrirConfirmar} />
       )}
