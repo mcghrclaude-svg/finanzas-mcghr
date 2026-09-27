@@ -23,7 +23,7 @@ export function generarSlugUnico(nombre, existentes = []) {
 }
 
 // Convierte la lista plana de categorias (con id_padre) en arbol anidado (hijos).
-export function buildTree(items) {
+export function buildTree(items, ordenAsc = true) {
   const byId = new Map(items.map(i => [i.id, { ...i, hijos: [] }]))
   const roots = []
   for (const item of byId.values()) {
@@ -33,7 +33,7 @@ export function buildTree(items) {
       roots.push(item)
     }
   }
-  const porNombre = (a, b) => a.nombre.localeCompare(b.nombre)
+  const porNombre = (a, b) => ordenAsc ? a.nombre.localeCompare(b.nombre) : b.nombre.localeCompare(a.nombre)
   for (const item of byId.values()) item.hijos.sort(porNombre)
   roots.sort(porNombre)
   return roots
