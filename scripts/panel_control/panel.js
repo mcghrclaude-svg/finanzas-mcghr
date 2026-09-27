@@ -61,7 +61,7 @@
     var rs = document.createElement("span");
     rs.className = "row-sub";
     rs.id = "sub-" + entorno + "-" + componente;
-    rs.textContent = "cargando…";
+    rs.textContent = "cargando...";
     main.appendChild(rn);
     main.appendChild(rs);
     row.appendChild(main);
@@ -128,11 +128,11 @@
     if (e.puerto) {
       link.hidden = false;
       link.dataset.url = "http://localhost:" + e.puerto;
-      link.textContent = ":" + e.puerto + " ↗";
+      link.textContent = ":" + e.puerto;
     } else if (e.componente === "pwa") {
       link.hidden = false;
       link.dataset.url = e.link_publicado || "";
-      link.textContent = "↗";
+      link.textContent = "abrir";
     } else {
       link.hidden = true;
     }
@@ -175,8 +175,8 @@
     row.innerHTML =
       '<span class="dot ' + salud + '"></span>' +
       '<div class="row-main">' +
-        '<span class="row-name">Import PWA → escritorio</span>' +
-        '<span class="row-sub mono">' + (t && t.existe ? "última corrida: " + (salud === "ok" ? "OK" : "con errores") : "sin datos") + '</span>' +
+        '<span class="row-name">Import PWA -> escritorio</span>' +
+        '<span class="row-sub mono">' + (t && t.existe ? "ultima corrida: " + (salud === "ok" ? "OK" : "con errores") : "sin datos") + '</span>' +
       '</div>' +
       '<span class="spacer"></span>' +
       '<button class="icon-btn" id="btnHistorial" title="Ver historial de corridas">' + svgHistorial() + '</button>';
@@ -190,7 +190,7 @@
       '<span class="dot off"></span>' +
       '<div class="row-main">' +
         '<span class="row-name">ETL correo/PDF (Claude Desktop)</span>' +
-        '<span class="row-sub">no implementado todavía</span>' +
+        '<span class="row-sub">no implementado todavia</span>' +
       '</div>';
     cont.appendChild(placeholder);
   }
@@ -203,12 +203,12 @@
       cont.innerHTML = "";
       filas = filas || [];
       if (!filas.length) {
-        cont.innerHTML = '<div class="hist-row"><span class="row-sub">Sin corridas registradas todavía.</span></div>';
+        cont.innerHTML = '<div class="hist-row"><span class="row-sub">Sin corridas registradas todavia.</span></div>';
       }
       filas.forEach(function (f) {
         var salud = f.errores > 0 ? "crit" : "ok";
-        var resumen = f.archivos_leidos + " archivos · " + f.transacciones_nuevas + " nuevas · " +
-          f.duplicados + " duplicados · " + f.errores + " errores";
+        var resumen = f.archivos_leidos + " archivos - " + f.transacciones_nuevas + " nuevas - " +
+          f.duplicados + " duplicados - " + f.errores + " errores";
         var row = document.createElement("div");
         row.className = "hist-row";
         row.innerHTML =
@@ -223,7 +223,7 @@
         });
         cont.appendChild(row);
       });
-      document.getElementById("historyFoot").textContent = "últimas " + filas.length + " corridas";
+      document.getElementById("historyFoot").textContent = "ultimas " + filas.length + " corridas";
     });
   }
 
