@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 00:51
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 11:33
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -88,6 +88,9 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+55b5438 fix(panel-control): DPI, posicion de ventana y falso rojo en tarea programada
+ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-consistente
+0f42b1b docs: auto-update 2026-09-27 00:51
 7f91498 Merge remote-tracking branch 'origin/main' into feature/catalogos-header-consistente
 03a312b Merge pull request #56 from mcghrclaude-svg/feature/presupuesto-definicion
 0c1e434 docs: auto-update 2026-09-27 00:49
@@ -95,6 +98,3 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 42e1336 docs: auto-update 2026-09-27 00:47
 6ac9c47 fix(presupuesto): saca caracteres no-ASCII de comentarios (CITA-009)
 786753a docs: auto-update 2026-09-27 00:43
-d8c9a23 feat(presupuesto): pantalla de definicion de presupuesto por categoria
-ff2f61d Merge pull request #55 from mcghrclaude-svg/chat-panel-control-autorestore
-47211e4 docs: auto-update 2026-09-26 20:46

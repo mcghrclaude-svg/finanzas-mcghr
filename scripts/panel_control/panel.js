@@ -168,15 +168,23 @@
 
     var row = document.createElement("div");
     row.className = "row";
+    // ultima_corrida_ok viene de los errores reales registrados (misma
+    // fuente que el detalle de historial) -- no del "Last Result" crudo de
+    // Task Scheduler, que usa codigos como "corriendo ahora mismo" o
+    // "todavia no corrio" que no son fallas y generaban falsos rojos aca
+    // mientras el historial de abajo mostraba todo en verde.
     var salud = "off";
+    var subTexto = "sin datos";
     if (t && t.existe) {
-      salud = (t.ultimo_resultado && t.ultimo_resultado !== "0") ? "crit" : "ok";
+      if (t.ultima_corrida_ok === true) { salud = "ok"; subTexto = "ultima corrida: OK"; }
+      else if (t.ultima_corrida_ok === false) { salud = "crit"; subTexto = "ultima corrida: con errores"; }
+      else { salud = "off"; subTexto = "sin corridas registradas todavia"; }
     }
     row.innerHTML =
       '<span class="dot ' + salud + '"></span>' +
       '<div class="row-main">' +
         '<span class="row-name">Import PWA -> escritorio</span>' +
-        '<span class="row-sub mono">' + (t && t.existe ? "ultima corrida: " + (salud === "ok" ? "OK" : "con errores") : "sin datos") + '</span>' +
+        '<span class="row-sub mono">' + subTexto + '</span>' +
       '</div>' +
       '<span class="spacer"></span>' +
       '<button class="icon-btn" id="btnHistorial" title="Ver historial de corridas">' + svgHistorial() + '</button>';

@@ -17,7 +17,12 @@
   body{
     color:var(--ink);
     font-family:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
-    width:336px; overflow:hidden; user-select:none;
+    /* width:100% (no un px fijo tipo 336px): el ancho de ventana que pide
+       tray_app.py es el de la ventana COMPLETA (incluye el borde de
+       Windows), no el del area donde se dibuja esto -- con un ancho fijo
+       mas grande que esa area real, el contenido se salia del viewport y
+       los botones de la derecha quedaban recortados por overflow:hidden. */
+    width:100%; overflow:hidden; user-select:none;
   }
   .mono{ font-variant-numeric:tabular-nums; font-family:Consolas,"Cascadia Mono",monospace; }
 
