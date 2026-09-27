@@ -36,6 +36,7 @@ VENV_UVICORN = REPO_ROOT / "venv" / "Scripts" / "uvicorn.exe"
 FRONTEND_DIR = REPO_ROOT / "frontend"
 PWA_DIR = REPO_ROOT / "pwa-gastos"
 LOGDIR = REPO_ROOT / "logs"
+DESEADO_PATH = LOGDIR / "deseado.json"
 
 # Orden de presentacion en el panel: Prod primero (pedido explicito).
 ENTORNOS = ("prod", "dev", "staging", "test")
@@ -205,7 +206,34 @@ def _os_environ() -> dict[str, str]:
     return dict(os.environ)
 
 
+def _clave(componente: str, entorno: str) -> str:
+    return f"{componente}_{entorno}"
+
+
+def _leer_deseados() -> dict[str, bool]:
+    if not DESEADO_PATH.exists():
+        return {}
+    try:
+        return json.loads(DESEADO_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _marcar_deseado(componente: str, entorno: str, encendido: bool) -> None:
+    """Registra si el usuario quiere este componente prendido, para poder
+    restaurarlo despues de un reinicio de Windows (ver restaurar_deseados()).
+    Es intencion, no estado real: un componente que sigue vivo despues de
+    Stop no se marca 'deseado' otra vez -- Stop es siempre una decision
+    explicita del usuario, no se revierte sola."""
+    LOGDIR.mkdir(exist_ok=True)
+    deseados = _leer_deseados()
+    deseados[_clave(componente, entorno)] = encendido
+    DESEADO_PATH.write_text(json.dumps(deseados, indent=2), encoding="utf-8")
+
+
 def iniciar(componente: str, entorno: str) -> EstadoComponente:
+    _marcar_deseado(componente, entorno, True)
+
     if _leer_pid(componente, entorno) is not None:
         return estado(componente, entorno)  # ya esta corriendo, no duplicar
 
@@ -228,6 +256,8 @@ def iniciar(componente: str, entorno: str) -> EstadoComponente:
 
 
 def detener(componente: str, entorno: str) -> EstadoComponente:
+    _marcar_deseado(componente, entorno, False)
+
     pid = _leer_pid(componente, entorno)
     archivo = _pid_file(componente, entorno)
     if pid is not None:
@@ -245,6 +275,25 @@ def reiniciar(componente: str, entorno: str) -> EstadoComponente:
     return iniciar(componente, entorno)
 
 
+def restaurar_deseados() -> list[EstadoComponente]:
+    """Vuelve a prender lo que estaba corriendo cuando se apago/reinicio
+    Windows la ultima vez -- pensado para llamarse una vez al arrancar
+    tray_app.py. Un componente detenido a mano (detener()) no se restaura
+    solo porque la PC se reinicio; solo lo que seguia 'deseado=True'."""
+    restaurados = []
+    for clave, encendido in _leer_deseados().items():
+        if not encendido:
+            continue
+        componente, _, entorno = clave.partition("_")
+        if puerto(entorno, componente) is None:
+            continue
+        try:
+            restaurados.append(iniciar(componente, entorno))
+        except Exception:
+            pass
+    return restaurados
+
+
 if __name__ == "__main__":
     accion = sys.argv[1] if len(sys.argv) > 1 else "estado"
     if accion == "estado":
@@ -253,6 +302,8 @@ if __name__ == "__main__":
         _componente, _entorno = sys.argv[2], sys.argv[3]
         fn = {"iniciar": iniciar, "detener": detener, "reiniciar": reiniciar}[accion]
         print(json.dumps(asdict(fn(_componente, _entorno)), indent=2, ensure_ascii=False))
+    elif accion == "restaurar":
+        print(json.dumps([asdict(e) for e in restaurar_deseados()], indent=2, ensure_ascii=False))
     else:
         print(f"Accion desconocida: {accion}", file=sys.stderr)
         sys.exit(1)

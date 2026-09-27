@@ -131,6 +131,10 @@ def main() -> None:
     )
     threading.Thread(target=icon.run, daemon=True).start()
     threading.Thread(target=_loop_icono, args=(icon,), daemon=True).start()
+    # Restaura lo que estaba prendido antes del ultimo apagado/reinicio de
+    # Windows. En background: arrancar varios componentes puede tardar unos
+    # segundos y no debe demorar la aparicion del icono de la bandeja.
+    threading.Thread(target=pm.restaurar_deseados, daemon=True).start()
 
     webview.start()
 
