@@ -46,8 +46,8 @@ async def resumen_patrimonio(
 ):
     """
     Valor neto patrimonial (VNP) actual.
-    VNP = Σ activos valuados (Inversion/Valuacion) − Σ deudas activas
-    (Obligacion.saldo_pendiente, carga manual -- ver ADR en el modelo).
+    VNP = suma de activos valuados (Inversion/Valuacion) - suma de deudas
+    activas (Obligacion.saldo_pendiente, carga manual -- ver ADR en el modelo).
     """
     service = InversionesService(db)
     return await service.resumen_patrimonio(fecha=fecha)

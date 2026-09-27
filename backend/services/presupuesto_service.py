@@ -117,8 +117,8 @@ class PresupuestoService:
             "pct_consumido": round(pct_consumido, 4),
             "pct_esperado_hoy": round(pct_esperado_hoy, 4),
             "monto_proyectado": float(monto_proyectado),
-            # Próximo vencimiento (solo fijo_unico): lo calculamos desde obligaciones.
-            # Por ahora None — el endpoint de obligaciones lo enriquece si es necesario.
+            # Proximo vencimiento (solo fijo_unico): lo calculamos desde obligaciones.
+            # Por ahora None -- el endpoint de obligaciones lo enriquece si es necesario.
             "proximo_vencimiento": None,
         }
 
@@ -128,12 +128,12 @@ class PresupuestoService:
         mes: int,
     ) -> dict:
         """
-        Construye la lista completa de items de ejecución de presupuesto
-        para el período activo o el mes calendario dado.
+        Construye la lista completa de items de ejecucion de presupuesto
+        para el periodo activo o el mes calendario dado.
 
-        Enumera desde Presupuesto (no desde Categoria): en la práctica esto
-        limita el resultado a categorías nivel-1 porque hoy solo se cargan
-        presupuestos ahí. Para el drill-down a subcategorías ver
+        Enumera desde Presupuesto (no desde Categoria): en la practica esto
+        limita el resultado a categorias nivel-1 porque hoy solo se cargan
+        presupuestos ahi. Para el drill-down a subcategorias ver
         obtener_ejecucion_subcategorias, que enumera desde Categoria y no
         requiere que exista un Presupuesto.
 
@@ -164,7 +164,7 @@ class PresupuestoService:
             )
             items.append(item)
 
-        # Ordenar: critico → alto → ok → fijo
+        # Ordenar: critico -> alto -> ok -> fijo
         orden = {"critico": 0, "alto": 1, "ok": 2, "fijo": 3}
         items.sort(key=lambda x: orden.get(x["nivel_riesgo"], 9))
 
@@ -180,10 +180,10 @@ class PresupuestoService:
         id_padre: str,
     ) -> dict:
         """
-        Mismo cálculo de riesgo/velocidad/proyección que obtener_ejecucion,
-        pero para las subcategorías (hijos directos) de `id_padre`. A
+        Mismo calculo de riesgo/velocidad/proyeccion que obtener_ejecucion,
+        pero para las subcategorias (hijos directos) de `id_padre`. A
         diferencia de obtener_ejecucion, enumera desde Categoria (no desde
-        Presupuesto): una subcategoría sin presupuesto cargado igual aparece,
+        Presupuesto): una subcategoria sin presupuesto cargado igual aparece,
         con monto_presupuestado=0 (sin marca de presupuesto en la UI) en vez
         de quedar afuera. Usado por el drill-down del widget de Home.
         """
@@ -213,6 +213,7 @@ class PresupuestoService:
             )
             items.append(item)
 
+        # Ordenar: critico -> alto -> ok -> fijo
         orden = {"critico": 0, "alto": 1, "ok": 2, "fijo": 3}
         items.sort(key=lambda x: orden.get(x["nivel_riesgo"], 9))
 
