@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 00:43
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 00:47
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -88,6 +88,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 31 lineas |
 
 ## Ultimos 10 commits
+6ac9c47 fix(presupuesto): saca caracteres no-ASCII de comentarios (CITA-009)
+786753a docs: auto-update 2026-09-27 00:43
 d8c9a23 feat(presupuesto): pantalla de definicion de presupuesto por categoria
 ff2f61d Merge pull request #55 from mcghrclaude-svg/chat-panel-control-autorestore
 47211e4 docs: auto-update 2026-09-26 20:46
@@ -96,5 +98,3 @@ ff2f61d Merge pull request #55 from mcghrclaude-svg/chat-panel-control-autoresto
 f5b5fb6 revert: saca de main el auto-restore (se commiteo ahi por error, se rehace en branch)
 785be52 docs: auto-update 2026-09-26 20:44
 4c1114e feat(panel-control): restaura al arrancar lo que estaba prendido antes del apagado
-07d7782 Merge pull request #54 from mcghrclaude-svg/chat-panel-control
-b63a83a docs: auto-update 2026-09-26 20:35
