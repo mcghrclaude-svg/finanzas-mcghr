@@ -14,7 +14,7 @@
 import { useState, useMemo } from 'react'
 import { colorDeterministico } from '../colorCategoria'
 
-const CX = 52, CY = 52, R = 46
+const CX = 65, CY = 65, R = 58
 
 function arco(a0, a1) {
   const rad = Math.PI / 180
@@ -54,7 +54,7 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
     ang += grados
     const tieneHijos = categoriasConHijos.has(c.id_categoria)
     const primeraPalabra = c.nombre.split(' ')[0]
-    const label = grados >= 55 ? `${primeraPalabra}\n${pct}%` : `${pct}%`
+    const label = grados >= 40 ? `${primeraPalabra}\n${pct}%` : `${pct}%`
     return {
       id: c.id_categoria, nombre: c.nombre, color: c.color ?? colorDeterministico(c.id_categoria),
       path, labelX, labelY, label, tieneHijos,
@@ -86,8 +86,8 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
       {slices.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-xs text-gray-400 italic">Sin gasto para mostrar.</div>
       ) : (
-        <div className="relative" style={{ width: 104, height: 104 }}>
-          <svg viewBox="0 0 104 104" width="104" height="104">
+        <div className="relative" style={{ width: 130, height: 130 }}>
+          <svg viewBox="0 0 130 130" width="130" height="130">
             {slices.map(s => (
               <path
                 key={s.id}
@@ -102,7 +102,7 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
               key={s.id}
               style={{
                 position: 'absolute', left: s.labelX, top: s.labelY, transform: 'translate(-50%, -50%)',
-                fontSize: 8, fontWeight: 700, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.35)',
+                fontSize: 9, fontWeight: 700, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.35)',
                 pointerEvents: 'none', textAlign: 'center', lineHeight: 1.1, whiteSpace: 'pre-line',
               }}
             >

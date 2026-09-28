@@ -60,7 +60,7 @@ export default function Dashboard() {
           ya no usa h-full (eso hacia que estirara todo el alto disponible
           de una columna compartida con Patrimonio, dejandola gigante y
           tapando lo de abajo). */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 190px' }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 230px' }}>
         <div className="grid grid-cols-2 gap-2.5">
           <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
             sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
       {/* Fila inferior: Transacciones (ancho) + Patrimonio y Ask Claude
           apilados en la misma columna angosta que la torta arriba. */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 190px' }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 230px' }}>
         <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
 
         <div className="flex flex-col gap-3">

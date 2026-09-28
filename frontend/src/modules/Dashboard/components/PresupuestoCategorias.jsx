@@ -33,8 +33,8 @@ export default function PresupuestoCategorias({ resumenCategorias, categoriasCon
   }
 
   return (
-    <div className="card bg-white border border-gray-200 rounded-xl p-3">
-      <div className="flex items-center justify-between mb-2 min-h-[18px]">
+    <div className="card bg-white border border-gray-200 rounded-xl p-2.5">
+      <div className="flex items-center justify-between mb-1.5 min-h-[16px]">
         {nivelActual ? (
           <div className="flex items-center gap-2 text-sm">
             <button onClick={volver} className="text-primary-600 hover:text-primary-700 font-medium">
@@ -54,7 +54,7 @@ export default function PresupuestoCategorias({ resumenCategorias, categoriasCon
           Sin subcategorías para mostrar.
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-x-6 gap-y-2">
+        <div className="grid grid-cols-3 gap-x-6 gap-y-1">
           {items.map(item => (
             <CategoriaBullet
               key={item.id_categoria}

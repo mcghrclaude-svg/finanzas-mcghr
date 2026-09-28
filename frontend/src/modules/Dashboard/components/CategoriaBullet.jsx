@@ -52,7 +52,7 @@ export default function CategoriaBullet({ item, tieneHijos = false, onDrill }) {
         {tieneHijos && <span className="ml-auto text-gray-300 text-xs flex-shrink-0">›</span>}
       </div>
 
-      <div className="relative h-9">
+      <div className="relative h-8">
         {markPct !== null && (
           <span
             className="absolute text-[9.5px] font-bold whitespace-nowrap bg-white px-1 rounded"
