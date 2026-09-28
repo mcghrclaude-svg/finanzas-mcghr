@@ -14,7 +14,7 @@
 import { useState, useMemo } from 'react'
 import { colorDeterministico } from '../colorCategoria'
 
-const CX = 65, CY = 65, R = 58
+const CX = 72, CY = 72, R = 64
 
 function arco(a0, a1) {
   const rad = Math.PI / 180
@@ -71,8 +71,8 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
   }
 
   return (
-    <div className="card bg-white border border-gray-200 rounded-xl p-2.5 flex flex-col items-center gap-1">
-      <div className="w-full flex items-center justify-between min-h-[14px]">
+    <div className="card bg-white border border-gray-200 rounded-xl p-1.5 flex flex-col items-center gap-0.5">
+      <div className="w-full flex items-center justify-between">
         {nivelActual ? (
           <div className="flex items-center gap-1.5 text-[10px]">
             <button onClick={volver} className="text-primary-600 hover:text-primary-700 font-semibold">← Atrás</button>
@@ -86,8 +86,8 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
       {slices.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-xs text-gray-400 italic">Sin gasto para mostrar.</div>
       ) : (
-        <div className="relative" style={{ width: 130, height: 130 }}>
-          <svg viewBox="0 0 130 130" width="130" height="130">
+        <div className="relative" style={{ width: 144, height: 144 }}>
+          <svg viewBox="0 0 144 144" width="144" height="144">
             {slices.map(s => (
               <path
                 key={s.id}
