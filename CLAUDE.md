@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:31
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:40
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -53,7 +53,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
 | Catalogos | PARCIAL | 550 lineas |
-| Dashboard | IMPLEMENTADO | 116 lineas |
+| Dashboard | IMPLEMENTADO | 115 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+f9479fb fix(home): elimina hueco entre Presupuesto y Transacciones, iguala ancho de la torta
+ba48036 docs: auto-update 2026-09-27 20:31
 ac25798 fix(home): corrige el hueco vacio entre el banner y Presupuesto por categoria
 4d60e8a docs: auto-update 2026-09-27 20:25
 9ff36f5 feat(home): unifica todo el Home a mes calendario y compacta el layout
@@ -100,5 +102,3 @@ d54d6f4 feat(home): agrega torta de gasto por categoria y compacta el layout (va
 be68a3e docs: auto-update 2026-09-27 19:31
 8f29375 feat(home): reconstruye la pagina Home segun la variante D aprobada
 2147263 docs: auto-update 2026-09-27 19:19
-749287f refactor(transacciones): extrae DetailPanel y helpers compartidos a archivos propios
-224ffb5 docs: auto-update 2026-09-27 14:52
