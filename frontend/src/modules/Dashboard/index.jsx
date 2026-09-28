@@ -17,7 +17,7 @@ import { useDashboard } from '@/hooks/useDashboard'
 import MetricCard from './components/MetricCard'
 import PendientesCard from './components/PendientesCard'
 import GastoPorCategoriaPie from './components/GastoPorCategoriaPie'
-import InsightBanner from './components/InsightBanner'
+import InsightBanner, { seleccionarInsight } from './components/InsightBanner'
 import PresupuestoCategorias from './components/PresupuestoCategorias'
 import TransaccionesRecientes from './components/TransaccionesRecientes'
 import EvolucionPatrimonio from './components/EvolucionPatrimonio'
@@ -37,6 +37,7 @@ export default function Dashboard() {
   if (error)   return <div className="p-6 text-red-500 text-sm">Error: {error}</div>
 
   const periodo = resumen?.periodo
+  const insight = seleccionarInsight(resumenCategorias)
 
   return (
     <div className="p-6 space-y-3 max-w-6xl">
@@ -72,33 +73,33 @@ export default function Dashboard() {
         <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
-
-        {homeConfig?.insight_visible && (
-          <div className="col-span-3">
-            <InsightBanner resumenCategorias={resumenCategorias} />
-          </div>
-        )}
-
-        {homeConfig?.patrimonio_visible && (
-          <div style={{ gridColumn: '4', gridRow: 'span 2' }}>
-            <EvolucionPatrimonio patrimonio={patrimonio} patrimonioHistorico={patrimonioHistorico} />
-          </div>
-        )}
-
-        <div className="col-span-3">
+      {/* Insight + Presupuesto apilados a la izquierda, Evolucion
+          patrimonio a la derecha -- 2 columnas independientes (no grid-row
+          span sobre una grilla de 4 compartida con otro contenido) para que
+          el alto de una no dependa de una fila ajena: si Patrimonio es mas
+          alto que Insight+Presupuesto, el espacio de sobra queda abajo de
+          Presupuesto, nunca empujandolo hacia abajo. */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: '3fr 1fr' }}>
+        <div className="flex flex-col gap-3">
+          {homeConfig?.insight_visible && insight && (
+            <InsightBanner insight={insight} />
+          )}
           <PresupuestoCategorias
             resumenCategorias={resumenCategorias}
             categoriasConHijos={categoriasConHijos}
           />
         </div>
 
-        <div className="col-span-3">
-          <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
-        </div>
+        {homeConfig?.patrimonio_visible && (
+          <EvolucionPatrimonio patrimonio={patrimonio} patrimonioHistorico={patrimonioHistorico} />
+        )}
+      </div>
+
+      <div className="grid gap-3" style={{ gridTemplateColumns: '3fr 1fr' }}>
+        <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
 
         {homeConfig?.ask_visible && (
-          <div style={{ gridColumn: '4' }} className="bg-white border border-gray-200 rounded-xl p-4 h-[300px] flex flex-col gap-3">
+          <div className="bg-white border border-gray-200 rounded-xl p-4 h-[300px] flex flex-col gap-3">
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preguntale a Claude</h2>
             <p className="text-xs text-gray-500 flex-1">
               "¿Por qué esta categoría viene tan alta este mes?"
@@ -109,7 +110,6 @@ export default function Dashboard() {
             </button>
           </div>
         )}
-
       </div>
     </div>
   )
