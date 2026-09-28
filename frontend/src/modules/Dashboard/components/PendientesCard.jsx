@@ -12,17 +12,17 @@ export default function PendientesCard({ inboxStats }) {
   return (
     <button
       onClick={() => navigate('/transacciones')}
-      className="text-left bg-gray-100 border border-gray-200 rounded-xl p-3 hover:shadow-sm transition-shadow h-full flex flex-col justify-center"
+      className="text-left bg-gray-100 border border-gray-200 rounded-xl p-2.5 hover:shadow-sm transition-shadow h-full flex flex-col justify-center"
     >
-      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
         Pendientes de revisión
       </div>
       <div className="flex flex-col">
-        <div className="flex items-center justify-between text-xs py-0.5">
+        <div className="flex items-center justify-between text-xs py-px">
           <span className="text-gray-600">📥 Inbox</span>
           <span className="font-bold text-gray-900">{pendientes}</span>
         </div>
-        <div className="flex items-center justify-between text-xs py-0.5 border-t border-dashed border-gray-300">
+        <div className="flex items-center justify-between text-xs py-px border-t border-dashed border-gray-300">
           <span className="text-gray-600">💬 SMS</span>
           <span className="font-bold text-gray-900">{pendientesSms}</span>
         </div>

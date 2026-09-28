@@ -55,61 +55,60 @@ export default function Dashboard() {
         <PersonalizarWidgets homeConfig={homeConfig} onCambiar={actualizarHomeConfig} />
       </div>
 
-      {/* Fila superior: mismo ancho total que antes tenian los 4 KPIs --
-          2/3 son esos mismos 4 KPIs (grilla 2x2) y 1/3 es la torta de gasto
-          por categoria, sin espacio en blanco de sobra. Altura acotada por
-          el tamaño de la torta (180px) -- las 4 etiquetas estiran para
-          calzar con esa altura, no al reves. */}
+      {/* Dos columnas independientes de punta a punta (no grid-row span
+          compartido entre widgets de alto distinto -- eso fue lo que
+          generaba huecos en blanco): izquierda = KPIs + Insight +
+          Presupuesto + Transacciones, una debajo de la otra; derecha =
+          torta + Evolucion patrimonio + Ask Claude, mismo ancho de columna
+          para las tres. Si una columna termina antes que la otra, el
+          espacio de sobra queda al final de la pagina, nunca en el medio
+          empujando al siguiente widget. */}
       <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 1fr' }}>
-        <div className="grid grid-cols-2 gap-2.5">
-          <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
-            sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
-          <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
-            sub="Ver detalle abajo" subColor="warning" />
-          <MetricCard label="Available balance" value={formatCOP(resumen?.saldo_disponible_hoy)}
-            sub={`Proyectado cierre ${formatCOP(resumen?.saldo_proyectado_cierre)}`} />
-          <PendientesCard inboxStats={inboxStats} />
-        </div>
-        <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
-      </div>
 
-      {/* Insight + Presupuesto apilados a la izquierda, Evolucion
-          patrimonio a la derecha -- 2 columnas independientes (no grid-row
-          span sobre una grilla de 4 compartida con otro contenido) para que
-          el alto de una no dependa de una fila ajena: si Patrimonio es mas
-          alto que Insight+Presupuesto, el espacio de sobra queda abajo de
-          Presupuesto, nunca empujandolo hacia abajo. */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: '3fr 1fr' }}>
         <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
+            <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
+              sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
+            <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
+              sub="Ver detalle abajo" subColor="warning" />
+            <MetricCard label="Available balance" value={formatCOP(resumen?.saldo_disponible_hoy)}
+              sub={`Proyectado cierre ${formatCOP(resumen?.saldo_proyectado_cierre)}`} />
+            <PendientesCard inboxStats={inboxStats} />
+          </div>
+
           {homeConfig?.insight_visible && insight && (
             <InsightBanner insight={insight} />
           )}
+
           <PresupuestoCategorias
             resumenCategorias={resumenCategorias}
             categoriasConHijos={categoriasConHijos}
           />
+
+          <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
         </div>
 
-        {homeConfig?.patrimonio_visible && (
-          <EvolucionPatrimonio patrimonio={patrimonio} patrimonioHistorico={patrimonioHistorico} />
-        )}
-      </div>
+        <div className="flex flex-col gap-3">
+          <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
 
-      <div className="grid gap-3" style={{ gridTemplateColumns: '3fr 1fr' }}>
-        <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
+          {homeConfig?.patrimonio_visible && (
+            <EvolucionPatrimonio patrimonio={patrimonio} patrimonioHistorico={patrimonioHistorico} />
+          )}
 
-        {homeConfig?.ask_visible && (
-          <div className="bg-white border border-gray-200 rounded-xl p-4 h-[300px] flex flex-col gap-3">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preguntale a Claude</h2>
-            <p className="text-xs text-gray-500 flex-1">
-              "¿Por qué esta categoría viene tan alta este mes?"
-            </p>
-            <button onClick={() => navigate('/analitica')}
-              className="px-3 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              🤖 Preguntar
-            </button>
-          </div>
-        )}
+          {homeConfig?.ask_visible && (
+            <div className="bg-white border border-gray-200 rounded-xl p-4 h-[300px] flex flex-col gap-3">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preguntale a Claude</h2>
+              <p className="text-xs text-gray-500 flex-1">
+                "¿Por qué esta categoría viene tan alta este mes?"
+              </p>
+              <button onClick={() => navigate('/analitica')}
+                className="px-3 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                🤖 Preguntar
+              </button>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   )

@@ -16,7 +16,7 @@ export default function MetricCard({ label, value, sub, subColor = '', onDetail 
 
   return (
     <div
-      className="relative bg-gray-100 border border-gray-200 rounded-xl p-3 cursor-default transition-shadow hover:shadow-sm h-full flex flex-col justify-center"
+      className="relative bg-gray-100 border border-gray-200 rounded-xl p-2.5 cursor-default transition-shadow hover:shadow-sm h-full flex flex-col justify-center"
       onMouseEnter={() => setShowPlus(true)}
       onMouseLeave={() => setShowPlus(false)}
     >
@@ -31,10 +31,10 @@ export default function MetricCard({ label, value, sub, subColor = '', onDetail 
           +
         </button>
       )}
-      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
         {label}
       </div>
-      <div className="text-xl font-bold text-gray-900">
+      <div className="text-lg font-bold text-gray-900 leading-tight">
         {value}
       </div>
       {sub && (
