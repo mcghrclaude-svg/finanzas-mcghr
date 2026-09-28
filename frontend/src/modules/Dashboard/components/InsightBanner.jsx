@@ -1,31 +1,35 @@
 /**
- * InsightBanner — aviso de patrón inusual, derivado en el cliente de los
- * mismos campos que ya devuelve /presupuestos/ejecucion (ratio_riesgo,
- * nivel_riesgo) -- no necesita ningún endpoint nuevo. Si ninguna categoría
- * viene alto/crítico, no se muestra nada.
+ * InsightBanner — aviso de patrón inusual, derivado en el cliente de
+ * /presupuestos/resumen-por-categoria (mes calendario) -- no necesita
+ * ningún endpoint nuevo. Elige la categoría nivel-1 con mayor % de
+ * presupuesto consumido (>=80%); si ninguna llega a ese umbral, no
+ * muestra nada.
  */
 import { formatCOP } from '@/hooks/useDashboard'
 
-export default function InsightBanner({ ejecucion }) {
-  const items = ejecucion?.items ?? []
+const UMBRAL_AVISO = 0.8
+
+export default function InsightBanner({ resumenCategorias }) {
+  const items = (resumenCategorias ?? []).filter(c => c.nivel === 1 && c.presupuesto > 0)
   const candidato = items
-    .filter(i => (i.nivel_riesgo === 'critico' || i.nivel_riesgo === 'alto') && i.ratio_riesgo)
-    .sort((a, b) => b.ratio_riesgo - a.ratio_riesgo)[0]
+    .map(c => ({ ...c, ratio: c.gasto_acumulado / c.presupuesto }))
+    .filter(c => c.ratio >= UMBRAL_AVISO)
+    .sort((a, b) => b.ratio - a.ratio)[0]
 
   if (!candidato) return null
 
-  const pctSobreRitmo = Math.round((candidato.ratio_riesgo - 1) * 100)
+  const pct = Math.round(candidato.ratio * 100)
+  const sobrepasado = candidato.ratio >= 1
 
   return (
-    <div className="bg-primary-50 border border-primary-100 rounded-xl px-5 py-4 flex gap-3 items-start">
+    <div className="bg-primary-50 border border-primary-100 rounded-xl px-4 py-2.5 flex gap-3 items-start">
       <span className="text-lg">💡</span>
       <div>
         <div className="text-sm font-semibold text-primary-800">
-          {candidato.nombre} viene {pctSobreRitmo}% por encima de tu ritmo habitual
+          {candidato.nombre} ya {sobrepasado ? 'superó' : 'consumió el'} {pct}% de su presupuesto
         </div>
         <div className="text-xs text-gray-500 mt-0.5">
-          Ya llevas {formatCOP(candidato.gasto_acumulado)} de los {formatCOP(candidato.monto_presupuestado)} presupuestados.
-          Si el ritmo sigue así, cerrarías en {formatCOP(candidato.monto_proyectado)}.
+          {formatCOP(candidato.gasto_acumulado)} de los {formatCOP(candidato.presupuesto)} presupuestados este mes.
         </div>
       </div>
     </div>

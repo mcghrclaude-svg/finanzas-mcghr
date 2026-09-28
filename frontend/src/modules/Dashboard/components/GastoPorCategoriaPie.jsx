@@ -6,16 +6,15 @@
  * porción con subcategorías hace drill-down, con "← Atrás" para volver --
  * navegación propia, independiente de Presupuesto por categoría.
  *
- * Fuente: /presupuestos/resumen-por-categoria (gasto acumulado del MES
- * CALENDARIO, con rollup jerárquico) -- a diferencia de /ejecucion, incluye
- * categorías sin presupuesto cargado. Nota: al ser mes calendario y no
- * período financiero, el total de esta torta puede no coincidir centavo a
- * centavo con el KPI "Gasto acumulado" de arriba (que sí usa período).
+ * Fuente: /presupuestos/resumen-por-categoria (gasto acumulado del mes
+ * calendario, con rollup jerárquico) -- mismo mes calendario que usa todo
+ * el resto del Home (KPIs, Presupuesto por categoría), así que el total
+ * de esta torta sí coincide con el KPI "Gasto acumulado" de arriba.
  */
 import { useState, useMemo } from 'react'
 import { colorDeterministico } from '../colorCategoria'
 
-const CX = 105, CY = 105, R = 95
+const CX = 90, CY = 90, R = 80
 
 function arco(a0, a1) {
   const rad = Math.PI / 180
@@ -72,8 +71,8 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
   }
 
   return (
-    <div className="card bg-white border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1 h-full">
-      <div className="w-full flex items-center justify-between min-h-[16px]">
+    <div className="card bg-white border border-gray-200 rounded-xl p-2.5 flex flex-col items-center gap-1 h-full">
+      <div className="w-full flex items-center justify-between min-h-[15px]">
         {nivelActual ? (
           <div className="flex items-center gap-2 text-[11px]">
             <button onClick={volver} className="text-primary-600 hover:text-primary-700 font-semibold">← Atrás</button>
@@ -87,8 +86,8 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
       {slices.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-xs text-gray-400 italic">Sin gasto para mostrar.</div>
       ) : (
-        <div className="relative" style={{ width: 210, height: 210 }}>
-          <svg viewBox="0 0 210 210" width="210" height="210">
+        <div className="relative" style={{ width: 180, height: 180 }}>
+          <svg viewBox="0 0 180 180" width="180" height="180">
             {slices.map(s => (
               <path
                 key={s.id}

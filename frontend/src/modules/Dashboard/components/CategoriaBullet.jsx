@@ -2,13 +2,10 @@
  * CategoriaBullet — una fila del widget "Presupuesto por categoría", al
  * estilo de las etiquetas de la PWA (pwa-gastos/src/components/BulletChart):
  * barra con el gasto acumulado, monto real y presupuestado superpuestos
- * sobre la barra (no como texto aparte), y un punto de riesgo si el ritmo
- * de gasto viene alto/crítico.
- *
- * A diferencia del componente original de la PWA, este no recalcula un
- * `promedio_ultimos_3_meses` (el modelo de riesgo del dashboard de escritorio
- * usa velocidad_actual/historica en su lugar) -- solo superpone gasto real y
- * presupuesto, que es lo que pidió el usuario.
+ * sobre la barra (no como texto aparte). El punto de riesgo se deriva del
+ * simple gasto/presupuesto (>=100% crítico, >=80% alto) -- mismo criterio
+ * que la PWA, no el modelo de velocidad_actual/historica del período
+ * financiero (que el Home ya no usa, ver ADR mes-calendario).
  */
 import { formatCOP } from '@/hooks/useDashboard'
 import { colorDeterministico } from '../colorCategoria'
@@ -22,14 +19,14 @@ function clamp(v, lo, hi) {
 
 export default function CategoriaBullet({ item, tieneHijos = false, onDrill }) {
   const gasto = item.gasto_acumulado ?? 0
-  const presupuesto = item.monto_presupuestado ?? 0
+  const presupuesto = item.presupuesto ?? item.monto_presupuestado ?? 0
   const scale = 1.15 * Math.max(gasto, presupuesto || gasto || 1)
   const fillPct = gasto > 0 ? clamp((gasto / scale) * 100, 0.8, 100) : 0
   const markPct = presupuesto > 0 ? clamp((presupuesto / scale) * 100, 0, 100) : null
 
   const ratio = presupuesto > 0 ? gasto / presupuesto : 0
-  const critico = item.nivel_riesgo === 'critico' || (item.nivel_riesgo !== 'fijo' && ratio >= UMBRAL_CRITICO)
-  const alto = !critico && item.nivel_riesgo !== 'fijo' && ratio >= UMBRAL_ALTO
+  const critico = ratio >= UMBRAL_CRITICO
+  const alto = !critico && ratio >= UMBRAL_ALTO
 
   const labelGastoPct = clamp(fillPct, 6, 94)
   const labelPresPct = markPct !== null ? clamp(markPct, 6, 94) : null
@@ -51,9 +48,6 @@ export default function CategoriaBullet({ item, tieneHijos = false, onDrill }) {
         )}
         {alto && (
           <span className="flex-shrink-0 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-amber-500 text-white text-[9px] font-bold">!</span>
-        )}
-        {item.nivel_riesgo === 'fijo' && item.proximo_vencimiento && (
-          <span className="text-[10px] text-gray-400 truncate">· vence {item.proximo_vencimiento}</span>
         )}
         {tieneHijos && <span className="ml-auto text-gray-300 text-xs flex-shrink-0">›</span>}
       </div>

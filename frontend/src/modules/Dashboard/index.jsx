@@ -28,9 +28,9 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const hoy = new Date()
   const {
-    resumen, ejecucion, inboxStats, homeConfig, transaccionesRecientes,
+    resumen, inboxStats, homeConfig, transaccionesRecientes,
     patrimonio, patrimonioHistorico, categoriasConHijos, resumenCategorias,
-    loading, error, refetch, cargarSubcategorias, actualizarHomeConfig,
+    loading, error, refetch, actualizarHomeConfig,
   } = useDashboard(hoy.getFullYear(), hoy.getMonth() + 1)
 
   if (loading) return <div className="p-6 text-gray-400 text-sm">Loading...</div>
@@ -39,7 +39,7 @@ export default function Dashboard() {
   const periodo = resumen?.periodo
 
   return (
-    <div className="p-6 space-y-4 max-w-6xl">
+    <div className="p-6 space-y-3 max-w-6xl">
 
       <div className="flex items-start justify-between">
         <div>
@@ -56,9 +56,11 @@ export default function Dashboard() {
 
       {/* Fila superior: mismo ancho total que antes tenian los 4 KPIs --
           2/3 son esos mismos 4 KPIs (grilla 2x2) y 1/3 es la torta de gasto
-          por categoria, sin espacio en blanco de sobra. */}
-      <div className="grid gap-3.5" style={{ gridTemplateColumns: '2fr 1fr' }}>
-        <div className="grid grid-cols-2 gap-3">
+          por categoria, sin espacio en blanco de sobra. Altura acotada por
+          el tamaño de la torta (180px) -- las 4 etiquetas estiran para
+          calzar con esa altura, no al reves. */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 1fr' }}>
+        <div className="grid grid-cols-2 gap-2.5">
           <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
             sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
           <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
@@ -70,11 +72,11 @@ export default function Dashboard() {
         <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-3">
 
         {homeConfig?.insight_visible && (
           <div className="col-span-3">
-            <InsightBanner ejecucion={ejecucion} />
+            <InsightBanner resumenCategorias={resumenCategorias} />
           </div>
         )}
 
@@ -86,9 +88,8 @@ export default function Dashboard() {
 
         <div className="col-span-3">
           <PresupuestoCategorias
-            ejecucion={ejecucion}
+            resumenCategorias={resumenCategorias}
             categoriasConHijos={categoriasConHijos}
-            cargarSubcategorias={cargarSubcategorias}
           />
         </div>
 

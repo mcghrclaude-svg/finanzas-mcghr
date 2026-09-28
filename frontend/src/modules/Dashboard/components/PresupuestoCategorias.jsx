@@ -1,48 +1,35 @@
 /**
  * PresupuestoCategorias — widget "Presupuesto por categoría" del Home.
- * Etiquetas al estilo PWA (ver CategoriaBullet) ordenadas por nivel de
- * riesgo (igual que ya devuelve /presupuestos/ejecucion), con drill-down a
- * subcategorías: al hacer click en una categoría con hijos, este widget --
- * y solo este widget -- muestra sus subcategorías, con "← Atrás" para volver.
+ * Etiquetas al estilo PWA (ver CategoriaBullet), con drill-down local a
+ * subcategorías (sin ida y vuelta al backend, la lista ya trae todos los
+ * niveles): al hacer click en una categoría con hijos, este widget -- y
+ * solo este widget -- muestra sus subcategorías, con "← Atrás" para volver.
+ *
+ * Fuente: /presupuestos/resumen-por-categoria (mes calendario), la misma
+ * que usa "Gasto por categoría" -- navegación independiente entre los dos
+ * widgets, pero mismos datos y mismo mes.
  */
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import CategoriaBullet from './CategoriaBullet'
 
-export default function PresupuestoCategorias({ ejecucion, categoriasConHijos, cargarSubcategorias }) {
+export default function PresupuestoCategorias({ resumenCategorias, categoriasConHijos }) {
   const [pila, setPila] = useState([]) // [{id, nombre}] -- ultimo = nivel actual
-  const [items, setItems] = useState(null) // null = usar ejecucion.items (nivel top)
-  const [cargando, setCargando] = useState(false)
-
   const nivelActual = pila.length > 0 ? pila[pila.length - 1] : null
-  const itemsMostrados = nivelActual ? (items ?? []) : (ejecucion?.items ?? [])
 
-  async function drill(item) {
-    setCargando(true)
-    try {
-      const hijos = await cargarSubcategorias(item.id_categoria)
-      setPila(p => [...p, { id: item.id_categoria, nombre: item.nombre }])
-      setItems(hijos)
-    } finally {
-      setCargando(false)
-    }
+  const items = useMemo(() => {
+    const lista = resumenCategorias ?? []
+    return nivelActual
+      ? lista.filter(c => c.id_padre === nivelActual.id)
+      : lista.filter(c => c.nivel === 1)
+  }, [resumenCategorias, nivelActual])
+
+  function drill(item) {
+    if (!categoriasConHijos.has(item.id_categoria)) return
+    setPila(p => [...p, { id: item.id_categoria, nombre: item.nombre }])
   }
 
-  async function volver() {
-    const nuevaPila = pila.slice(0, -1)
-    if (nuevaPila.length === 0) {
-      setPila([])
-      setItems(null)
-      return
-    }
-    setCargando(true)
-    try {
-      const padre = nuevaPila[nuevaPila.length - 1]
-      const hijos = await cargarSubcategorias(padre.id)
-      setPila(nuevaPila)
-      setItems(hijos)
-    } finally {
-      setCargando(false)
-    }
+  function volver() {
+    setPila(p => p.slice(0, -1))
   }
 
   return (
@@ -62,15 +49,13 @@ export default function PresupuestoCategorias({ ejecucion, categoriasConHijos, c
         )}
       </div>
 
-      {cargando ? (
-        <div className="py-8 text-center text-xs text-gray-400">Cargando...</div>
-      ) : itemsMostrados.length === 0 ? (
+      {items.length === 0 ? (
         <div className="py-8 text-center text-xs text-gray-400 italic">
           Sin subcategorías para mostrar.
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-          {itemsMostrados.map(item => (
+          {items.map(item => (
             <CategoriaBullet
               key={item.id_categoria}
               item={item}
