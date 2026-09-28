@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 19:19
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 19:31
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -53,7 +53,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
 | Catalogos | PARCIAL | 550 lineas |
-| Dashboard | IMPLEMENTADO | 182 lineas |
+| Dashboard | IMPLEMENTADO | 106 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+8f29375 feat(home): reconstruye la pagina Home segun la variante D aprobada
+2147263 docs: auto-update 2026-09-27 19:19
 749287f refactor(transacciones): extrae DetailPanel y helpers compartidos a archivos propios
 224ffb5 docs: auto-update 2026-09-27 14:52
 ad467e4 fix(backend): saca caracteres no-ASCII de las lineas que agrego en este chat (CITA-009)
@@ -100,5 +102,3 @@ f4be8bc feat(backend): listado real de transacciones, SMS en inbox stats, subcat
 331dc55 Merge pull request #59 from mcghrclaude-svg/docs/cita-019-branch-guard
 d2bcbd0 docs: auto-update 2026-09-27 11:38
 892b187 docs(cita): registra CITA-019 y agrega hook que bloquea commits en main
-db3d908 Merge pull request #58 from mcghrclaude-svg/fix/panel-control-dpi-posicion-estado
-f618e43 docs: auto-update 2026-09-27 11:33
