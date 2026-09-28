@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:06
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:25
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -53,7 +53,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
 | Catalogos | PARCIAL | 550 lineas |
-| Dashboard | IMPLEMENTADO | 115 lineas |
+| Dashboard | IMPLEMENTADO | 116 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
@@ -78,7 +78,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | analitica.py | PARCIAL | 72 lineas |
 | backup.py | PARCIAL | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 518 lineas |
-| dashboard.py | PARCIAL | 120 lineas |
+| dashboard.py | PARCIAL | 107 lineas |
 | home_config.py | IMPLEMENTADO | 64 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
 | inversiones.py | PARCIAL | 111 lineas |
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+9ff36f5 feat(home): unifica todo el Home a mes calendario y compacta el layout
+88089d6 docs: auto-update 2026-09-27 20:06
 d54d6f4 feat(home): agrega torta de gasto por categoria y compacta el layout (variante K)
 be68a3e docs: auto-update 2026-09-27 19:31
 8f29375 feat(home): reconstruye la pagina Home segun la variante D aprobada
@@ -100,5 +102,3 @@ be68a3e docs: auto-update 2026-09-27 19:31
 224ffb5 docs: auto-update 2026-09-27 14:52
 ad467e4 fix(backend): saca caracteres no-ASCII de las lineas que agrego en este chat (CITA-009)
 1c10ae5 docs: auto-update 2026-09-27 14:50
-f4be8bc feat(backend): listado real de transacciones, SMS en inbox stats, subcategorias de presupuesto y patrimonio real
-331dc55 Merge pull request #59 from mcghrclaude-svg/docs/cita-019-branch-guard
