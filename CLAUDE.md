@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:54
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:59
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+cb6880e fix(home): la torta llena mas su recuadro sin agrandarlo
+1468533 docs: auto-update 2026-09-27 20:54
 ec683ef fix(home): agranda la torta y la columna angosta, compacta Presupuesto por categoria
 1776b84 docs: auto-update 2026-09-27 20:48
 1137baf fix(home): achica la torta y hace ancho completo a Presupuesto por categoria
@@ -100,5 +102,3 @@ f9479fb fix(home): elimina hueco entre Presupuesto y Transacciones, iguala ancho
 ba48036 docs: auto-update 2026-09-27 20:31
 ac25798 fix(home): corrige el hueco vacio entre el banner y Presupuesto por categoria
 4d60e8a docs: auto-update 2026-09-27 20:25
-9ff36f5 feat(home): unifica todo el Home a mes calendario y compacta el layout
-88089d6 docs: auto-update 2026-09-27 20:06
