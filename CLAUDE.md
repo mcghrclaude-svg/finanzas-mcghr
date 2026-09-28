@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 14:52
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 19:19
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -60,7 +60,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Presupuesto | IMPLEMENTADO | 236 lineas |
 | PWA | IMPLEMENTADO | 272 lineas |
 | Tools | PARCIAL | 410 lineas |
-| Transacciones | PARCIAL | 1315 lineas |
+| Transacciones | IMPLEMENTADO | 744 lineas |
 
 ## Estado real de modulos PWA (pwa-gastos/src/modules)
 | Modulo | Estado | Detalle |
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+749287f refactor(transacciones): extrae DetailPanel y helpers compartidos a archivos propios
+224ffb5 docs: auto-update 2026-09-27 14:52
 ad467e4 fix(backend): saca caracteres no-ASCII de las lineas que agrego en este chat (CITA-009)
 1c10ae5 docs: auto-update 2026-09-27 14:50
 f4be8bc feat(backend): listado real de transacciones, SMS en inbox stats, subcategorias de presupuesto y patrimonio real
@@ -100,5 +102,3 @@ d2bcbd0 docs: auto-update 2026-09-27 11:38
 892b187 docs(cita): registra CITA-019 y agrega hook que bloquea commits en main
 db3d908 Merge pull request #58 from mcghrclaude-svg/fix/panel-control-dpi-posicion-estado
 f618e43 docs: auto-update 2026-09-27 11:33
-55b5438 fix(panel-control): DPI, posicion de ventana y falso rojo en tarea programada
-ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-consistente
