@@ -54,7 +54,7 @@ export default function PresupuestoCategorias({ resumenCategorias, categoriasCon
           Sin subcategorías para mostrar.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+        <div className="grid grid-cols-3 gap-x-6 gap-y-2">
           {items.map(item => (
             <CategoriaBullet
               key={item.id_categoria}

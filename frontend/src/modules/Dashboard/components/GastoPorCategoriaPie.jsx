@@ -14,7 +14,7 @@
 import { useState, useMemo } from 'react'
 import { colorDeterministico } from '../colorCategoria'
 
-const CX = 90, CY = 90, R = 80
+const CX = 52, CY = 52, R = 46
 
 function arco(a0, a1) {
   const rad = Math.PI / 180
@@ -54,7 +54,7 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
     ang += grados
     const tieneHijos = categoriasConHijos.has(c.id_categoria)
     const primeraPalabra = c.nombre.split(' ')[0]
-    const label = grados >= 28 ? `${primeraPalabra}\n${pct}%` : `${pct}%`
+    const label = grados >= 55 ? `${primeraPalabra}\n${pct}%` : `${pct}%`
     return {
       id: c.id_categoria, nombre: c.nombre, color: c.color ?? colorDeterministico(c.id_categoria),
       path, labelX, labelY, label, tieneHijos,
@@ -71,28 +71,28 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
   }
 
   return (
-    <div className="card bg-white border border-gray-200 rounded-xl p-2.5 flex flex-col items-center gap-1 h-full">
-      <div className="w-full flex items-center justify-between min-h-[15px]">
+    <div className="card bg-white border border-gray-200 rounded-xl p-2.5 flex flex-col items-center gap-1">
+      <div className="w-full flex items-center justify-between min-h-[14px]">
         {nivelActual ? (
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex items-center gap-1.5 text-[10px]">
             <button onClick={volver} className="text-primary-600 hover:text-primary-700 font-semibold">← Atrás</button>
             <span className="text-gray-600 font-medium">{nivelActual.nombre}</span>
           </div>
         ) : (
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Gasto por categoría</span>
+          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Gasto por categoría</span>
         )}
       </div>
 
       {slices.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-xs text-gray-400 italic">Sin gasto para mostrar.</div>
       ) : (
-        <div className="relative" style={{ width: 180, height: 180 }}>
-          <svg viewBox="0 0 180 180" width="180" height="180">
+        <div className="relative" style={{ width: 104, height: 104 }}>
+          <svg viewBox="0 0 104 104" width="104" height="104">
             {slices.map(s => (
               <path
                 key={s.id}
                 d={s.path}
-                style={{ fill: s.color, stroke: '#fff', strokeWidth: 1.5, cursor: s.tieneHijos ? 'pointer' : 'default' }}
+                style={{ fill: s.color, stroke: '#fff', strokeWidth: 1, cursor: s.tieneHijos ? 'pointer' : 'default' }}
                 onClick={() => drill(s)}
               />
             ))}
@@ -102,8 +102,8 @@ export default function GastoPorCategoriaPie({ resumenCategorias, categoriasConH
               key={s.id}
               style={{
                 position: 'absolute', left: s.labelX, top: s.labelY, transform: 'translate(-50%, -50%)',
-                fontSize: 10.5, fontWeight: 700, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.35)',
-                pointerEvents: 'none', textAlign: 'center', lineHeight: 1.15, whiteSpace: 'pre-line',
+                fontSize: 8, fontWeight: 700, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.35)',
+                pointerEvents: 'none', textAlign: 'center', lineHeight: 1.1, whiteSpace: 'pre-line',
               }}
             >
               {s.label}

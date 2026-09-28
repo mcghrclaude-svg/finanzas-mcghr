@@ -55,50 +55,50 @@ export default function Dashboard() {
         <PersonalizarWidgets homeConfig={homeConfig} onCambiar={actualizarHomeConfig} />
       </div>
 
-      {/* Dos columnas independientes de punta a punta (no grid-row span
-          compartido entre widgets de alto distinto -- eso fue lo que
-          generaba huecos en blanco): izquierda = KPIs + Insight +
-          Presupuesto + Transacciones, una debajo de la otra; derecha =
-          torta + Evolucion patrimonio + Ask Claude, mismo ancho de columna
-          para las tres. Si una columna termina antes que la otra, el
-          espacio de sobra queda al final de la pagina, nunca en el medio
-          empujando al siguiente widget. */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 1fr' }}>
-
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-2.5">
-            <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
-              sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
-            <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
-              sub="Ver detalle abajo" subColor="warning" />
-            <MetricCard label="Available balance" value={formatCOP(resumen?.saldo_disponible_hoy)}
-              sub={`Proyectado cierre ${formatCOP(resumen?.saldo_proyectado_cierre)}`} />
-            <PendientesCard inboxStats={inboxStats} />
-          </div>
-
-          {homeConfig?.insight_visible && insight && (
-            <InsightBanner insight={insight} />
-          )}
-
-          <PresupuestoCategorias
-            resumenCategorias={resumenCategorias}
-            categoriasConHijos={categoriasConHijos}
-          />
-
-          <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
+      {/* Fila superior: KPIs (ancho) + torta angosta, misma altura -- la
+          torta tiene ancho fijo chico, no una fraccion del ancho total, y
+          ya no usa h-full (eso hacia que estirara todo el alto disponible
+          de una columna compartida con Patrimonio, dejandola gigante y
+          tapando lo de abajo). */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 190px' }}>
+        <div className="grid grid-cols-2 gap-2.5">
+          <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
+            sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
+          <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
+            sub="Ver detalle abajo" subColor="warning" />
+          <MetricCard label="Available balance" value={formatCOP(resumen?.saldo_disponible_hoy)}
+            sub={`Proyectado cierre ${formatCOP(resumen?.saldo_proyectado_cierre)}`} />
+          <PendientesCard inboxStats={inboxStats} />
         </div>
+        <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
+      </div>
+
+      {homeConfig?.insight_visible && insight && (
+        <InsightBanner insight={insight} />
+      )}
+
+      {/* Presupuesto por categoria: ancho completo de la pagina (no
+          columna angosta) para que entren 3 categorias por fila y solo
+          2 filas en vez de 3. */}
+      <PresupuestoCategorias
+        resumenCategorias={resumenCategorias}
+        categoriasConHijos={categoriasConHijos}
+      />
+
+      {/* Fila inferior: Transacciones (ancho) + Patrimonio y Ask Claude
+          apilados en la misma columna angosta que la torta arriba. */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 190px' }}>
+        <TransaccionesRecientes items={transaccionesRecientes} onEditada={refetch} />
 
         <div className="flex flex-col gap-3">
-          <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
-
           {homeConfig?.patrimonio_visible && (
             <EvolucionPatrimonio patrimonio={patrimonio} patrimonioHistorico={patrimonioHistorico} />
           )}
 
           {homeConfig?.ask_visible && (
-            <div className="bg-white border border-gray-200 rounded-xl p-4 h-[300px] flex flex-col gap-3">
+            <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3">
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preguntale a Claude</h2>
-              <p className="text-xs text-gray-500 flex-1">
+              <p className="text-xs text-gray-500">
                 "¿Por qué esta categoría viene tan alta este mes?"
               </p>
               <button onClick={() => navigate('/analitica')}
@@ -108,7 +108,6 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   )
