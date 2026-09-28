@@ -12,7 +12,7 @@ export default function PendientesCard({ inboxStats }) {
   return (
     <button
       onClick={() => navigate('/transacciones')}
-      className="text-left bg-gray-100 border border-gray-200 rounded-xl p-2.5 hover:shadow-sm transition-shadow h-full flex flex-col justify-center"
+      className="text-left bg-white border border-gray-200 rounded-xl p-2.5 hover:shadow-sm transition-shadow h-full flex flex-col justify-center"
     >
       <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
         Pendientes de revisión

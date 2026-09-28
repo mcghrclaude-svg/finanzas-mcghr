@@ -1,8 +1,3 @@
-/**
- * MetricCard.jsx — Version A
- * Cambio: fondo gris suave en lugar del azul/gris oscuro anterior.
- * bg-gray-100 con borde sutil — neutro, legible, sin agresividad visual.
- */
 import { useState } from 'react'
 
 export default function MetricCard({ label, value, sub, subColor = '', onDetail }) {
@@ -16,7 +11,7 @@ export default function MetricCard({ label, value, sub, subColor = '', onDetail 
 
   return (
     <div
-      className="relative bg-gray-100 border border-gray-200 rounded-xl p-2.5 cursor-default transition-shadow hover:shadow-sm h-full flex flex-col justify-center"
+      className="relative bg-white border border-gray-200 rounded-xl p-2.5 cursor-default transition-shadow hover:shadow-sm h-full flex flex-col justify-center"
       onMouseEnter={() => setShowPlus(true)}
       onMouseLeave={() => setShowPlus(false)}
     >
@@ -25,7 +20,7 @@ export default function MetricCard({ label, value, sub, subColor = '', onDetail 
           onClick={onDetail}
           title="Ver detalle"
           aria-label={`Ver detalle de ${label}`}
-          className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-700 text-xs border border-gray-200 transition-opacity"
+          className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-700 text-xs border border-gray-200 transition-opacity"
           style={{ opacity: showPlus ? 1 : 0 }}
         >
           +
