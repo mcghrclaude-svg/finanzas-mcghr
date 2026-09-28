@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:25
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:31
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+ac25798 fix(home): corrige el hueco vacio entre el banner y Presupuesto por categoria
+4d60e8a docs: auto-update 2026-09-27 20:25
 9ff36f5 feat(home): unifica todo el Home a mes calendario y compacta el layout
 88089d6 docs: auto-update 2026-09-27 20:06
 d54d6f4 feat(home): agrega torta de gasto por categoria y compacta el layout (variante K)
@@ -100,5 +102,3 @@ be68a3e docs: auto-update 2026-09-27 19:31
 2147263 docs: auto-update 2026-09-27 19:19
 749287f refactor(transacciones): extrae DetailPanel y helpers compartidos a archivos propios
 224ffb5 docs: auto-update 2026-09-27 14:52
-ad467e4 fix(backend): saca caracteres no-ASCII de las lineas que agrego en este chat (CITA-009)
-1c10ae5 docs: auto-update 2026-09-27 14:50
