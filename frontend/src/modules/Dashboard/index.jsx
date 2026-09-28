@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import { useDashboard } from '@/hooks/useDashboard'
 import MetricCard from './components/MetricCard'
 import PendientesCard from './components/PendientesCard'
+import GastoPorCategoriaPie from './components/GastoPorCategoriaPie'
 import InsightBanner from './components/InsightBanner'
 import PresupuestoCategorias from './components/PresupuestoCategorias'
 import TransaccionesRecientes from './components/TransaccionesRecientes'
@@ -28,7 +29,7 @@ export default function Dashboard() {
   const hoy = new Date()
   const {
     resumen, ejecucion, inboxStats, homeConfig, transaccionesRecientes,
-    patrimonio, patrimonioHistorico, categoriasConHijos,
+    patrimonio, patrimonioHistorico, categoriasConHijos, resumenCategorias,
     loading, error, refetch, cargarSubcategorias, actualizarHomeConfig,
   } = useDashboard(hoy.getFullYear(), hoy.getMonth() + 1)
 
@@ -53,15 +54,23 @@ export default function Dashboard() {
         <PersonalizarWidgets homeConfig={homeConfig} onCambiar={actualizarHomeConfig} />
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      {/* Fila superior: mismo ancho total que antes tenian los 4 KPIs --
+          2/3 son esos mismos 4 KPIs (grilla 2x2) y 1/3 es la torta de gasto
+          por categoria, sin espacio en blanco de sobra. */}
+      <div className="grid gap-3.5" style={{ gridTemplateColumns: '2fr 1fr' }}>
+        <div className="grid grid-cols-2 gap-3">
+          <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
+            sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
+          <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
+            sub="Ver detalle abajo" subColor="warning" />
+          <MetricCard label="Available balance" value={formatCOP(resumen?.saldo_disponible_hoy)}
+            sub={`Proyectado cierre ${formatCOP(resumen?.saldo_proyectado_cierre)}`} />
+          <PendientesCard inboxStats={inboxStats} />
+        </div>
+        <GastoPorCategoriaPie resumenCategorias={resumenCategorias} categoriasConHijos={categoriasConHijos} />
+      </div>
 
-        <MetricCard label="Income received" value={formatCOP(resumen?.ingresos_acreditados)}
-          sub={`Credited ${periodo?.fecha_inicio ?? ''}`} />
-        <MetricCard label="Spending to date" value={formatCOP(resumen?.gastos_acumulados)}
-          sub="Ver detalle abajo" subColor="warning" />
-        <MetricCard label="Available balance" value={formatCOP(resumen?.saldo_disponible_hoy)}
-          sub={`Proyectado cierre ${formatCOP(resumen?.saldo_proyectado_cierre)}`} />
-        <PendientesCard inboxStats={inboxStats} />
+      <div className="grid grid-cols-4 gap-4">
 
         {homeConfig?.insight_visible && (
           <div className="col-span-3">

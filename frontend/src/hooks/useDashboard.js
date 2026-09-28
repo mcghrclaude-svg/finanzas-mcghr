@@ -26,6 +26,7 @@ import {
   PATRIMONIO_MOCK,
   PATRIMONIO_HISTORICO_MOCK,
   SUBCATEGORIAS_MOCK,
+  RESUMEN_CATEGORIAS_MOCK,
 } from '../mock/dashboardMock'
 import apiClient from '../api/client'
 import { presupuestosApi } from '../api/presupuestos'
@@ -49,6 +50,7 @@ export function useDashboard(anio, mes) {
   const [patrimonio,            setPatrimonio]             = useState(null)
   const [patrimonioHistorico,   setPatrimonioHistorico]    = useState(null)
   const [categoriasConHijos,    setCategoriasConHijos]     = useState(new Set())
+  const [resumenCategorias,     setResumenCategorias]      = useState([])
   const [loading,               setLoading]                = useState(true)
   const [error,                 setError]                  = useState(null)
 
@@ -68,9 +70,10 @@ export function useDashboard(anio, mes) {
         setPatrimonio(PATRIMONIO_MOCK)
         setPatrimonioHistorico(PATRIMONIO_HISTORICO_MOCK)
         setCategoriasConHijos(new Set(Object.keys(SUBCATEGORIAS_MOCK)))
+        setResumenCategorias(RESUMEN_CATEGORIAS_MOCK)
       } else {
         const [
-          resRes, ejecRes, statsRes, configRes, trxRes, patrRes, patrHistRes, categoriasRes,
+          resRes, ejecRes, statsRes, configRes, trxRes, patrRes, patrHistRes, categoriasRes, resumenCatRes,
         ] = await Promise.all([
           apiClient.get(`/dashboard/resumen?anio=${anio}&mes=${mes}`),
           presupuestosApi.ejecucion(anio, mes),
@@ -80,6 +83,7 @@ export function useDashboard(anio, mes) {
           inversionesApi.patrimonio(),
           inversionesApi.patrimonioHistorico(6),
           catalogosApi.getCategorias({ solo_activas: true }),
+          presupuestosApi.resumenPorCategoria(anio, mes),
         ])
         setResumen(resRes.data)
         setEjecucion(ejecRes)
@@ -90,6 +94,7 @@ export function useDashboard(anio, mes) {
         setTransaccionesRecientes(trxRes.data.items ?? [])
         setPatrimonio(patrRes)
         setPatrimonioHistorico(patrHistRes)
+        setResumenCategorias(resumenCatRes.categorias ?? [])
 
         const listaCategorias = Array.isArray(categoriasRes) ? categoriasRes : (categoriasRes?.items ?? [])
         const conHijos = new Set(
@@ -128,7 +133,7 @@ export function useDashboard(anio, mes) {
   return {
     resumen, ejecucion, ingresos, obligaciones,
     inboxStats, homeConfig, transaccionesRecientes, patrimonio, patrimonioHistorico,
-    categoriasConHijos,
+    categoriasConHijos, resumenCategorias,
     loading, error, refetch: cargar,
     cargarSubcategorias, actualizarHomeConfig,
   }

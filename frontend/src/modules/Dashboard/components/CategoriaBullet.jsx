@@ -11,20 +11,10 @@
  * presupuesto, que es lo que pidió el usuario.
  */
 import { formatCOP } from '@/hooks/useDashboard'
+import { colorDeterministico } from '../colorCategoria'
 
 const UMBRAL_ALTO = 0.8
 const UMBRAL_CRITICO = 1.0
-
-// El backend no asigna color por categoría (eso vive en la config local de
-// la PWA, coloresCategorias en su settingsStore) -- acá se deriva uno
-// estable a partir del id, para no depender de esa config y no mostrar
-// todo en gris.
-const PALETTE = ['#D85A30', '#378ADD', '#1D9E75', '#D4537E', '#534AB7', '#888780', '#C08A2E', '#2E9BB0']
-function colorDeterministico(id) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0
-  return PALETTE[hash % PALETTE.length]
-}
 
 function clamp(v, lo, hi) {
   return Math.min(Math.max(v, lo), hi)
@@ -68,27 +58,27 @@ export default function CategoriaBullet({ item, tieneHijos = false, onDrill }) {
         {tieneHijos && <span className="ml-auto text-gray-300 text-xs flex-shrink-0">›</span>}
       </div>
 
-      <div className="relative h-11">
+      <div className="relative h-9">
         {markPct !== null && (
           <span
-            className="absolute text-[10px] font-bold whitespace-nowrap bg-white px-1 rounded"
-            style={{ left: `${labelPresPct}%`, top: -3, color: '#8b5cf6', transform: 'translateX(-50%)' }}
+            className="absolute text-[9.5px] font-bold whitespace-nowrap bg-white px-1 rounded"
+            style={{ left: `${labelPresPct}%`, top: -2, color: '#8b5cf6', transform: 'translateX(-50%)' }}
           >
             {formatCOP(presupuesto)}
           </span>
         )}
-        <div className="absolute left-0 right-0 h-2.5 bg-gray-100 rounded-full" style={{ top: 15 }}>
+        <div className="absolute left-0 right-0 h-2 bg-gray-100 rounded-full" style={{ top: 12 }}>
           <div className="h-full rounded-full transition-all" style={{ width: `${fillPct}%`, background: color }} />
           {markPct !== null && (
             <div
-              className="absolute -top-0.5 w-0.5 h-3.5 rounded-sm"
+              className="absolute -top-0.5 w-0.5 h-3 rounded-sm"
               style={{ left: `${markPct}%`, background: '#8b5cf6' }}
             />
           )}
         </div>
         <span
-          className="absolute text-[10px] font-bold whitespace-nowrap bg-white px-1 rounded"
-          style={{ left: `${labelGastoPct}%`, top: 29, color, transform: 'translateX(-50%)' }}
+          className="absolute text-[9.5px] font-bold whitespace-nowrap bg-white px-1 rounded"
+          style={{ left: `${labelGastoPct}%`, top: 22, color, transform: 'translateX(-50%)' }}
         >
           {formatCOP(gasto)}
         </span>

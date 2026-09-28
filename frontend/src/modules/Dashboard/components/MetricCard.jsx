@@ -16,7 +16,7 @@ export default function MetricCard({ label, value, sub, subColor = '', onDetail 
 
   return (
     <div
-      className="relative bg-gray-100 border border-gray-200 rounded-xl p-5 cursor-default transition-shadow hover:shadow-sm"
+      className="relative bg-gray-100 border border-gray-200 rounded-xl p-3 cursor-default transition-shadow hover:shadow-sm h-full flex flex-col justify-center"
       onMouseEnter={() => setShowPlus(true)}
       onMouseLeave={() => setShowPlus(false)}
     >
@@ -25,20 +25,20 @@ export default function MetricCard({ label, value, sub, subColor = '', onDetail 
           onClick={onDetail}
           title="Ver detalle"
           aria-label={`Ver detalle de ${label}`}
-          className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-700 text-sm border border-gray-200 transition-opacity"
+          className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-700 text-xs border border-gray-200 transition-opacity"
           style={{ opacity: showPlus ? 1 : 0 }}
         >
           +
         </button>
       )}
-      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
         {label}
       </div>
-      <div className="text-2xl font-bold text-gray-900 mb-1">
+      <div className="text-xl font-bold text-gray-900">
         {value}
       </div>
       {sub && (
-        <div className={`text-xs ${subColorClass}`}>
+        <div className={`text-[10.5px] mt-0.5 ${subColorClass}`}>
           {sub}
         </div>
       )}

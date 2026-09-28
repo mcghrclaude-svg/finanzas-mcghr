@@ -315,6 +315,25 @@ export const PATRIMONIO_HISTORICO_MOCK = {
   ],
 }
 
+// Resumen por categoria (mes calendario, todas las categorias con o sin
+// presupuesto, lista plana con nivel/id_padre) -- fuente del widget "Gasto
+// por categoria" (torta). Mismos ids que SUBCATEGORIAS_MOCK para que el
+// drill-down sea consistente entre los dos widgets en modo mock.
+export const RESUMEN_CATEGORIAS_MOCK = [
+  { id_categoria: 'VIDA-REST',  nivel: 1, id_padre: null, nombre: 'Restaurantes',        gasto_acumulado: 435_000, presupuesto: 600_000 },
+  { id_categoria: 'VIDA-TRANS', nivel: 1, id_padre: null, nombre: 'Transporte',          gasto_acumulado: 280_000, presupuesto: 500_000 },
+  { id_categoria: 'VIDA-MKT',   nivel: 1, id_padre: null, nombre: 'Mercado',             gasto_acumulado: 738_000, presupuesto: 1_800_000 },
+  { id_categoria: 'HOGAR-ARR',  nivel: 1, id_padre: null, nombre: 'Arriendo',            gasto_acumulado: 0,       presupuesto: 3_200_000 },
+  { id_categoria: 'HOGAR-SERV', nivel: 1, id_padre: null, nombre: 'Servicios públicos',  gasto_acumulado: 151_000, presupuesto: 450_000 },
+  { id_categoria: 'SALUD-CONS', nivel: 1, id_padre: null, nombre: 'Salud',               gasto_acumulado: 90_000,  presupuesto: 450_000 },
+
+  { id_categoria: 'VIDA-REST-DOM',  nivel: 2, id_padre: 'VIDA-REST',  nombre: 'Domicilios',        gasto_acumulado: 260_000, presupuesto: 350_000 },
+  { id_categoria: 'VIDA-REST-OUT',  nivel: 2, id_padre: 'VIDA-REST',  nombre: 'Cenas afuera',       gasto_acumulado: 135_000, presupuesto: 200_000 },
+  { id_categoria: 'VIDA-REST-CAFE', nivel: 2, id_padre: 'VIDA-REST',  nombre: 'Cafés',              gasto_acumulado: 40_000,  presupuesto: 50_000 },
+  { id_categoria: 'VIDA-TRANS-APP', nivel: 2, id_padre: 'VIDA-TRANS', nombre: 'Apps (Uber/Didi)',   gasto_acumulado: 190_000, presupuesto: 320_000 },
+  { id_categoria: 'VIDA-TRANS-COMB',nivel: 2, id_padre: 'VIDA-TRANS', nombre: 'Combustible',        gasto_acumulado: 90_000,  presupuesto: 180_000 },
+]
+
 // Subcategorias por categoria padre -- mismo shape que items de ejecucion,
 // para el drill-down del widget "Presupuesto por categoria".
 export const SUBCATEGORIAS_MOCK = {

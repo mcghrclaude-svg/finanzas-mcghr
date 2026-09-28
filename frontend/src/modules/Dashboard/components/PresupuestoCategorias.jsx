@@ -46,8 +46,8 @@ export default function PresupuestoCategorias({ ejecucion, categoriasConHijos, c
   }
 
   return (
-    <div className="card bg-white border border-gray-200 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3 min-h-[20px]">
+    <div className="card bg-white border border-gray-200 rounded-xl p-3">
+      <div className="flex items-center justify-between mb-2 min-h-[18px]">
         {nivelActual ? (
           <div className="flex items-center gap-2 text-sm">
             <button onClick={volver} className="text-primary-600 hover:text-primary-700 font-medium">
@@ -69,7 +69,7 @@ export default function PresupuestoCategorias({ ejecucion, categoriasConHijos, c
           Sin subcategorías para mostrar.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {itemsMostrados.map(item => (
             <CategoriaBullet
               key={item.id_categoria}
