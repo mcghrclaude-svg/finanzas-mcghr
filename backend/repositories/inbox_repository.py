@@ -75,6 +75,21 @@ class InboxRepository:
         result = await self.db.execute(q)
         return result.scalar() or 0
 
+    async def contar_pendientes_por_fuente(self, fuente: str) -> int:
+        """Pendientes de un canal de lectura especifico (ver Transaccion.fuente:
+        'gmail_hernan' | 'sms_bc' | 'manual' | 'foto_factura', docs/schema_v1.md).
+        Usado para el conteo de "SMS por confirmar" del Home -- puede dar 0 si
+        todavia no hay transacciones leidas por ese canal."""
+        q = select(func.count()).where(
+            and_(
+                Transaccion.estado == "pendiente",
+                Transaccion.revisado_humano == 0,
+                Transaccion.fuente == fuente,
+            )
+        )
+        result = await self.db.execute(q)
+        return result.scalar() or 0
+
     async def contar_alta_prioridad(self) -> int:
         """Pendientes con confianza < 0.60."""
         q = select(func.count()).where(

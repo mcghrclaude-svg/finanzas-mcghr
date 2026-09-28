@@ -30,4 +30,7 @@ export const presupuestosApi = {
 
   ejecucion: (anio, mes) =>
     client.get(`${BASE}/ejecucion`, { params: { anio, mes } }).then(r => r.data),
+
+  ejecucionSubcategorias: (idCategoria, anio, mes) =>
+    client.get(`${BASE}/ejecucion/${idCategoria}/subcategorias`, { params: { anio, mes } }).then(r => r.data),
 }

@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 11:38
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 21:04
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -53,14 +53,14 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
 | Catalogos | PARCIAL | 550 lineas |
-| Dashboard | IMPLEMENTADO | 182 lineas |
+| Dashboard | PARCIAL | 114 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
 | Presupuesto | IMPLEMENTADO | 236 lineas |
 | PWA | IMPLEMENTADO | 272 lineas |
 | Tools | PARCIAL | 410 lineas |
-| Transacciones | PARCIAL | 1315 lineas |
+| Transacciones | IMPLEMENTADO | 744 lineas |
 
 ## Estado real de modulos PWA (pwa-gastos/src/modules)
 | Modulo | Estado | Detalle |
@@ -78,26 +78,27 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | analitica.py | PARCIAL | 72 lineas |
 | backup.py | PARCIAL | 92 lineas |
 | catalogos.py | IMPLEMENTADO | 518 lineas |
-| dashboard.py | PARCIAL | 120 lineas |
+| dashboard.py | PARCIAL | 107 lineas |
+| home_config.py | IMPLEMENTADO | 64 lineas |
 | inbox.py | IMPLEMENTADO | 358 lineas |
-| inversiones.py | PARCIAL | 98 lineas |
-| obligaciones.py | PARCIAL | 89 lineas |
-| presupuestos.py | IMPLEMENTADO | 222 lineas |
+| inversiones.py | PARCIAL | 111 lineas |
+| obligaciones.py | PARCIAL | 113 lineas |
+| presupuestos.py | IMPLEMENTADO | 239 lineas |
 | pwa_config.py | IMPLEMENTADO | 191 lineas |
 | reglas.py | PARCIAL | 73 lineas |
 | reportes.py | PARCIAL | 135 lineas |
 | tools.py | PARCIAL | 434 lineas |
-| transacciones.py | PARCIAL | 155 lineas |
-| __init__.py | IMPLEMENTADO | 31 lineas |
+| transacciones.py | PARCIAL | 173 lineas |
+| __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
-892b187 docs(cita): registra CITA-019 y agrega hook que bloquea commits en main
-db3d908 Merge pull request #58 from mcghrclaude-svg/fix/panel-control-dpi-posicion-estado
-f618e43 docs: auto-update 2026-09-27 11:33
-55b5438 fix(panel-control): DPI, posicion de ventana y falso rojo en tarea programada
-ff3aaf8 Merge pull request #57 from mcghrclaude-svg/feature/catalogos-header-consistente
-0f42b1b docs: auto-update 2026-09-27 00:51
-7f91498 Merge remote-tracking branch 'origin/main' into feature/catalogos-header-consistente
-03a312b Merge pull request #56 from mcghrclaude-svg/feature/presupuesto-definicion
-0c1e434 docs: auto-update 2026-09-27 00:49
-43fd050 feat(catalogos): header consistente con Transacciones + undo/redo en Categorias
+de8e9e4 fix(home): las 4 etiquetas usan fondo blanco como el resto de las cards
+38a213f docs: auto-update 2026-09-27 20:59
+cb6880e fix(home): la torta llena mas su recuadro sin agrandarlo
+1468533 docs: auto-update 2026-09-27 20:54
+ec683ef fix(home): agranda la torta y la columna angosta, compacta Presupuesto por categoria
+1776b84 docs: auto-update 2026-09-27 20:48
+1137baf fix(home): achica la torta y hace ancho completo a Presupuesto por categoria
+3460788 docs: auto-update 2026-09-27 20:40
+f9479fb fix(home): elimina hueco entre Presupuesto y Transacciones, iguala ancho de la torta
+ba48036 docs: auto-update 2026-09-27 20:31

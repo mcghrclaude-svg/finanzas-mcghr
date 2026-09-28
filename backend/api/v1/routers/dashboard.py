@@ -1,21 +1,26 @@
 """
 Router: /api/v1/dashboard
 
-Endpoint principal del dashboard de finanzas MCGHR.
-Agrega en una sola llamada todas las métricas del top del dashboard:
-    - Período financiero activo
-    - Ingresos acreditados en el período
-    - Gastos acumulados hasta hoy
+Endpoint principal del Home de escritorio.
+Agrega en una sola llamada todas las metricas del top del dashboard:
+    - Ingresos acreditados en el mes calendario
+    - Gastos acumulados hasta hoy (mes calendario)
     - Saldo disponible hoy (ingresos - gastos)
-    - Saldo proyectado al cierre (ingresos - proyección gastos)
-    - Patrimonio neto (activos inversión - deudas)
-    - Variación patrimonio vs período anterior
-    - Count de inbox pendiente (badge de catalogación)
+    - Saldo proyectado al cierre (ritmo simple: gasto_acumulado/dia * dias_totales)
+    - Patrimonio neto (activos inversion - deudas)
+    - Variacion patrimonio vs periodo anterior
+    - Count de inbox pendiente (badge de catalogacion)
 
-Diseñado para ser llamado una sola vez al cargar el dashboard.
-Las tarjetas de presupuesto se cargan por separado desde /presupuestos/ejecucion.
+Usa mes calendario en todo el Home (no periodo financiero de salario) para
+ser consistente con /presupuestos/resumen-por-categoria (que ya usa mes
+calendario, mismo criterio que la PWA) -- ver ADR pendiente de registrar.
+El concepto de periodo financiero (PeriodoFinanciero, dia_acreditacion_salario)
+sigue existiendo para Budget Mgmt y /presupuestos/ejecucion, que no cambian.
+
+Disenado para ser llamado una sola vez al cargar el Home.
 """
 
+import calendar
 from datetime import date
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,22 +28,21 @@ from decimal import Decimal
 
 from backend.core.database import get_db
 from backend.repositories.presupuesto_repo import PresupuestoRepository
-from backend.services.presupuesto_service import PresupuestoService
 
 router = APIRouter()
 
 
 @router.get("/resumen")
 async def resumen_dashboard(
-    anio: int | None = Query(None, description="Año (default: actual)"),
+    anio: int | None = Query(None, description="Anio (default: actual)"),
     mes: int | None = Query(None, description="Mes 1-12 (default: actual)"),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Métricas consolidadas del dashboard. Llamada única al montar la página.
+    Metricas consolidadas del Home. Llamada unica al montar la pagina.
 
     El frontend usa estos datos para:
-      - Top bar: título del período y fechas
+      - Top bar: dia del mes calendario transcurrido
       - 4 metric cards: ingresos, gastos, saldo proy., patrimonio
       - Badge del inbox
     """
@@ -47,66 +51,49 @@ async def resumen_dashboard(
     mes = mes or hoy.month
 
     repo = PresupuestoRepository(db)
-    service = PresupuestoService(db)
 
-    # Período activo
-    periodo = await repo.obtener_periodo_activo()
+    fecha_inicio = date(anio, mes, 1)
+    ultimo_dia = calendar.monthrange(anio, mes)[1]
+    fecha_fin_mes = date(anio, mes, ultimo_dia)
+    es_mes_actual = (anio, mes) == (hoy.year, hoy.month)
+    fecha_hasta = hoy if es_mes_actual else fecha_fin_mes
+    dias_transcurridos = max(hoy.day if es_mes_actual else ultimo_dia, 1)
+    dias_totales = ultimo_dia
 
-    if periodo:
-        fecha_inicio = periodo.fecha_inicio
-        fecha_hasta = min(hoy, periodo.fecha_fin_real or hoy)
-        dias_transcurridos = (hoy - fecha_inicio).days + 1
-        fecha_fin_ref = periodo.fecha_fin_real or periodo.fecha_fin_tentativa
-        dias_totales = (fecha_fin_ref - fecha_inicio).days + 1
-    else:
-        import calendar
-        fecha_inicio = date(anio, mes, 1)
-        fecha_hasta = hoy
-        dias_transcurridos = hoy.day
-        dias_totales = calendar.monthrange(anio, mes)[1]
-
-    dias_transcurridos = max(dias_transcurridos, 1)
-
-    # Ingresos acreditados en el período
+    # Ingresos acreditados en el mes calendario
     ingresos = await repo.obtener_ingresos_periodo(fecha_inicio, fecha_hasta)
 
-    # Gastos acumulados hasta hoy
+    # Gastos acumulados hasta hoy (mes calendario)
     gastos = await repo.obtener_gastos_totales_periodo(fecha_inicio, fecha_hasta)
 
     # Saldo disponible hoy
     saldo_disponible = ingresos - gastos
 
-    # Proyección de gastos al cierre (suma de monto_proyectado de cada categoría)
-    # Reutilizamos obtener_ejecucion para no duplicar lógica
-    ejecucion = await service.obtener_ejecucion(anio, mes)
-    gastos_proyectados = sum(
-        Decimal(str(item["monto_proyectado"])) for item in ejecucion["items"]
-    )
+    # Proyeccion simple por ritmo (sin modelo de velocidad por categoria):
+    # gasto_acumulado / dias_transcurridos * dias_totales
+    gastos_proyectados = (gastos / Decimal(dias_transcurridos)) * Decimal(dias_totales)
     saldo_proyectado = ingresos - gastos_proyectados
 
     # Patrimonio neto
     activos, pasivos = await repo.obtener_patrimonio_neto()
     patrimonio_neto = activos - pasivos
 
-    # Variación vs período anterior (simplificado: no disponible sin 2 períodos)
-    # TODO: calcular cuando haya datos históricos reales
+    # Variacion vs mes anterior (simplificado: no disponible sin historico real)
+    # TODO: calcular cuando haya datos historicos reales
     variacion_patrimonio = Decimal("0")
 
     # Badge inbox
     inbox_count = await repo.obtener_conteo_inbox_pendiente()
 
-    # Serializar período
-    periodo_data = None
-    if periodo:
-        periodo_data = {
-            "id": periodo.id,
-            "fecha_inicio": str(periodo.fecha_inicio),
-            "fecha_fin_tentativa": str(periodo.fecha_fin_tentativa),
-            "fecha_fin_real": str(periodo.fecha_fin_real) if periodo.fecha_fin_real else None,
-            "estado": periodo.estado,
-            "dias_transcurridos": dias_transcurridos,
-            "dias_totales": dias_totales,
-        }
+    periodo_data = {
+        "id": None,
+        "fecha_inicio": str(fecha_inicio),
+        "fecha_fin_tentativa": str(fecha_fin_mes),
+        "fecha_fin_real": str(fecha_fin_mes) if not es_mes_actual else None,
+        "estado": "mes_calendario",
+        "dias_transcurridos": dias_transcurridos,
+        "dias_totales": dias_totales,
+    }
 
     return {
         "periodo": periodo_data,

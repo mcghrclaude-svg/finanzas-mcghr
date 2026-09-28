@@ -5,7 +5,7 @@ from backend.models.base import Base  # noqa: F401
 from backend.models.catalogo import Categoria, Cuenta, Contraparte, Persona, Moneda, EntidadPotencial  # noqa: F401
 from backend.models.transaccion import Transaccion, Tramo, Asiento  # noqa: F401
 from backend.models.presupuesto import Presupuesto  # noqa: F401
-from backend.models.obligacion import Obligacion  # noqa: F401
+from backend.models.obligacion import Obligacion, SaldoObligacionHistorico  # noqa: F401
 from backend.models.inversion import Inversion, Posicion, Valuacion  # noqa: F401
 from backend.models.documento import Documento  # noqa: F401
 from backend.models.vinculo import Vinculo  # noqa: F401

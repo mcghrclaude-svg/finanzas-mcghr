@@ -13,11 +13,25 @@ Flujo de recordatorios:
     se acerca el vencimiento o cuando no se detecta el pago esperado.
 """
 
+from decimal import Decimal
+
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.database import get_db
+from backend.services.obligaciones_service import ObligacionesService
 
 router = APIRouter()
+
+
+class ObligacionUpdate(BaseModel):
+    nombre: str | None = None
+    monto_cuota: Decimal | None = None
+    dia_vencimiento: int | None = None
+    dias_aviso_anticipado: int | None = None
+    activa: bool | None = None
+    # Carga manual (v1.8) -- ver comentario en backend/models/obligacion.py
+    saldo_pendiente: Decimal | None = None
 
 
 @router.get("/")
@@ -27,8 +41,9 @@ async def listar_obligaciones(
     vence_antes_de: str | None = Query(None, description="ISO 8601 date"),
     db: AsyncSession = Depends(get_db),
 ):
-    # TODO: incluir estado de pago del mes corriente
-    return {"items": []}
+    # TODO: incluir estado de pago del mes corriente; vence_antes_de sin usar todavia
+    service = ObligacionesService(db)
+    return await service.listar(tipo=tipo, solo_activas=solo_activas)
 
 
 @router.post("/", status_code=201)
@@ -62,13 +77,22 @@ async def obligaciones_sin_pago(
 
 @router.get("/{obligacion_id}")
 async def detalle_obligacion(obligacion_id: str, db: AsyncSession = Depends(get_db)):
-    # TODO: incluir historial de pagos y, si DEUDA, saldo de capital restante
-    return {}
+    # TODO: incluir historial de pagos (Despues, ver POST /registrar-pago)
+    service = ObligacionesService(db)
+    return await service.detalle(obligacion_id)
 
 
 @router.patch("/{obligacion_id}")
-async def editar_obligacion(obligacion_id: str, db: AsyncSession = Depends(get_db)):
-    return {}
+async def editar_obligacion(
+    obligacion_id: str,
+    body: ObligacionUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Edicion manual, incluyendo saldo_pendiente. Cada cambio de
+    saldo_pendiente queda registrado en saldo_obligacion_historico (ver
+    ObligacionesRepository.actualizar)."""
+    service = ObligacionesService(db)
+    return await service.editar(obligacion_id, body.model_dump(exclude_unset=True))
 
 
 @router.post("/{obligacion_id}/registrar-pago")
