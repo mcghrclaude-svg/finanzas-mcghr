@@ -1,5 +1,5 @@
 ﻿# CLAUDE.md -- Finanzas MCGHR
-# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:40
+# Generado automaticamente por cerrar-sesion.ps1 -- 2026-09-27 20:48
 # NO editar a mano. Editar el codigo real; este archivo se regenera solo.
 
 ## Inicio obligatorio de cada chat
@@ -53,7 +53,7 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | Analitica | STUB | 5 lineas |
 | Backup | STUB | 4 lineas |
 | Catalogos | PARCIAL | 550 lineas |
-| Dashboard | IMPLEMENTADO | 115 lineas |
+| Dashboard | PARCIAL | 114 lineas |
 | Inbox | IMPLEMENTADO | 21 lineas |
 | Inversiones | STUB | 4 lineas |
 | Obligaciones | STUB | 4 lineas |
@@ -92,6 +92,8 @@ NO usar project_knowledge_search -- puede estar desactualizado.
 | __init__.py | IMPLEMENTADO | 33 lineas |
 
 ## Ultimos 10 commits
+1137baf fix(home): achica la torta y hace ancho completo a Presupuesto por categoria
+3460788 docs: auto-update 2026-09-27 20:40
 f9479fb fix(home): elimina hueco entre Presupuesto y Transacciones, iguala ancho de la torta
 ba48036 docs: auto-update 2026-09-27 20:31
 ac25798 fix(home): corrige el hueco vacio entre el banner y Presupuesto por categoria
@@ -100,5 +102,3 @@ ac25798 fix(home): corrige el hueco vacio entre el banner y Presupuesto por cate
 88089d6 docs: auto-update 2026-09-27 20:06
 d54d6f4 feat(home): agrega torta de gasto por categoria y compacta el layout (variante K)
 be68a3e docs: auto-update 2026-09-27 19:31
-8f29375 feat(home): reconstruye la pagina Home segun la variante D aprobada
-2147263 docs: auto-update 2026-09-27 19:19
